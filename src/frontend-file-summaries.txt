@@ -1,0 +1,20 @@
+{
+  "frontend/src/App.tsx": "Main application component with bilingual support, header language switcher dropdown, location search, weather display, and translated empty state and footer.",
+  "frontend/src/components/ThemeProvider.tsx": "Context provider that manages weather-based themes and automatically applies dark mode class when the active weather theme has a dark background.",
+  "frontend/src/components/BackgroundIllustration.tsx": "Component that displays weather-themed background images with smooth transitions and theme-aware overlay gradients that maintain stable contrast during transitions.",
+  "frontend/src/components/LocationSearch.tsx": "Search interface for locations with translated placeholder, error messages, and no-results text using the i18n hook.",
+  "frontend/src/components/WeatherPanel.tsx": "Comprehensive weather display with all labels, titles, and error messages translated via i18n hook and localized weather condition descriptions.",
+  "frontend/src/hooks/usePersistedLocation.ts": "Custom hook that manages location persistence in localStorage with save, load, and clear functionality.",
+  "frontend/src/hooks/useGeocodingSearch.ts": "React hook that handles debounced geocoding searches with loading and error states.",
+  "frontend/src/hooks/useWeather.ts": "React Query hook that fetches and transforms weather data from Open-Meteo API with automatic refetching.",
+  "frontend/src/hooks/useQueries.ts": "Empty file as backend actor is not used; all data fetched from Open-Meteo APIs.",
+  "frontend/src/lib/openMeteo.ts": "Client library for Open-Meteo APIs including geocoding search and weather data fetching with TypeScript interfaces.",
+  "frontend/src/lib/weatherTheme.ts": "Utility functions for mapping WMO weather codes to themes, icons, and translation keys for locale-driven weather condition descriptions.",
+  "frontend/src/index.css": "Global styles with OKLCH color system defining enhanced dark mode tokens with improved foreground/muted-foreground contrast for readability on dark backgrounds.",
+  "frontend/tailwind.config.js": "Tailwind configuration with extended theme including custom fonts, colors mapped to CSS variables, and additional utilities.",
+  "frontend/src/lib/weatherContrast.ts": "Helper utility that determines whether a weather theme (rain/snow) should be treated as having a dark background requiring high-contrast light text.",
+  "frontend/src/i18n/translations.ts": "Centralized translation dictionaries for Turkish (default) and English with complete key coverage for all UI strings including weather conditions, labels, and messages.",
+  "frontend/src/i18n/I18nProvider.tsx": "React context provider that manages active locale with localStorage persistence, provides translation function, and defaults to Turkish with validation and fallback.",
+  "frontend/src/i18n/useI18n.ts": "Custom hook that provides access to i18n context (locale, setLocale, t) for components without prop drilling.",
+  "frontend/src/main.tsx": "Application entry point that wraps the app with QueryClientProvider, InternetIdentityProvider, and I18nProvider for global state management and translations."
+}

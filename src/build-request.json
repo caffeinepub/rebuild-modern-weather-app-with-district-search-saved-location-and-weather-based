@@ -1,0 +1,97 @@
+{
+  "kind": "build_request",
+  "title": "Add Turkish-default bilingual (TR/EN) UI with language toggle and full translation coverage",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-10",
+      "text": "Implement app-wide i18n with two locales (Turkish and English), where Turkish is the default locale on first load.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "recent-messages"
+        ],
+        "quotes": [
+          "Uygulama dili türkçe olsun ingilizce alternatif olsun",
+          "1 evet 2 evet herşey çevrilsin",
+          "build"
+        ]
+      },
+      "acceptanceCriteria": [
+        "On first load (no prior user preference), the UI renders in Turkish.",
+        "All translation keys have values for both Turkish (tr) and English (en).",
+        "No user-facing strings are hardcoded in components that are in scope for translation (they must come from the i18n layer)."
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "text": "Add a visible language switcher (toggle or segmented control) in the main header that allows the user to switch between Turkish and English at any time.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "recent-messages"
+        ],
+        "quotes": [
+          "İngilizce’ye geçiş için kullanıcıya bir dil değiştirici (ör. sağ üstte bir toggle) eklememi ister misiniz?",
+          "2 evet"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A language control is visible in the header area near the existing title/icon.",
+        "Toggling the language updates the UI text immediately without a page reload.",
+        "The toggle has clear labels for both languages (e.g., “TR” and “EN” or “Türkçe” and “English”)."
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "text": "Persist the user’s selected language on the client (e.g., localStorage) and restore it on reload so the app stays in the previously selected language.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "recent-messages"
+        ],
+        "quotes": [
+          "İngilizce alternatif olsun",
+          "2 evet"
+        ]
+      },
+      "acceptanceCriteria": [
+        "After changing language and refreshing the page, the selected language remains active.",
+        "If persisted language is missing or invalid, the app falls back to Turkish."
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "text": "Translate all existing user-facing UI text in the current app into Turkish and English, including (but not limited to) header title, empty-state text, search placeholder, error/no-results messages, weather panel headings/labels, and weather condition descriptions derived from weather codes.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "recent-messages"
+        ],
+        "quotes": [
+          "herşey çevrilsin"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Strings currently present in frontend/src/App.tsx (e.g., “Weather Dashboard”, empty state heading/description, footer text) are translated and switchable.",
+        "Strings currently present in frontend/src/components/LocationSearch.tsx (placeholder, error message, no results message) are translated and switchable.",
+        "Strings currently present in frontend/src/components/WeatherPanel.tsx (section titles and labels like “Current Weather”, “Feels like”, “Wind Speed”, “Humidity”, “Pressure”, “Cloud Cover”, “24-Hour Forecast”, “7-Day Forecast”, “High”, “Low”, and error text) are translated and switchable.",
+        "Weather condition descriptions currently returned from frontend/src/lib/weatherTheme.ts (e.g., “Clear sky”, “Overcast”, etc.) are localized for both Turkish and English and update when the language is changed."
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not edit files under frontend/src/components/ui (read-only components must be composed, not modified).",
+    "Do not edit frontend/src/hooks/useInternetIdentity.ts or frontend/src/hooks/useActor.ts (immutable paths).",
+    "Keep the backend as a single Motoko actor; do not add new backend services or external databases."
+  ],
+  "nonGoals": [
+    "Adding additional languages beyond Turkish and English.",
+    "Adding third-party authentication or requiring login for language selection.",
+    "Moving Open-Meteo API calls to the backend."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

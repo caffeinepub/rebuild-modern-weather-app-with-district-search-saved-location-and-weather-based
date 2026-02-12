@@ -1,0 +1,116 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Turkish-default bilingual (TR/EN) UI with header language toggle and full translation coverage",
+  "requirements": [
+    {
+      "id": "REQ-10",
+      "summary": "Add app-wide i18n layer supporting Turkish (default) and English with complete key coverage and no hardcoded user-facing strings in translated scope.",
+      "acceptanceCriteria": [
+        "On first load (no prior user preference), the UI renders in Turkish.",
+        "All translation keys have values for both Turkish (tr) and English (en).",
+        "No user-facing strings are hardcoded in components that are in scope for translation (they must come from the i18n layer)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/i18n/translations.ts",
+          "operation": "create",
+          "description": "Create centralized translation dictionaries for tr and en, ensuring every key used by the app exists in both locales (including weather condition keys)."
+        },
+        {
+          "path": "frontend/src/i18n/I18nProvider.tsx",
+          "operation": "create",
+          "description": "Create an I18nProvider (React context) that exposes the active locale and a translation function (e.g., t(key)) with safe fallback behavior (missing/unknown keys still return a user-safe string)."
+        },
+        {
+          "path": "frontend/src/i18n/useI18n.ts",
+          "operation": "create",
+          "description": "Create a small hook to access i18n context (locale, setLocale, t) from components without prop drilling."
+        },
+        {
+          "path": "frontend/src/main.tsx",
+          "operation": "modify",
+          "description": "Wrap the app with I18nProvider so translations are available app-wide and components can render using the i18n layer."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Replace header, empty-state, and footer user-facing strings with i18n translation lookups via the i18n layer (no hardcoded strings in translated scope)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "summary": "Add a visible header language switcher to toggle between Turkish and English with immediate UI updates.",
+      "acceptanceCriteria": [
+        "A language control is visible in the header area near the existing title/icon.",
+        "Toggling the language updates the UI text immediately without a page reload.",
+        "The toggle has clear labels for both languages (e.g., “TR” and “EN” or “Türkçe” and “English”)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add a language switcher control in the header near the title/icon; implement it by composing existing shadcn-ui components (e.g., Button) for a clear TR/EN toggle. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Add minimal global styling adjustments if needed to ensure the header language switcher aligns well with existing layout and remains visible/accessible across themes (without modifying any files under frontend/src/components/ui)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "summary": "Persist selected language on the client and restore it on reload with Turkish fallback for missing/invalid values.",
+      "acceptanceCriteria": [
+        "After changing language and refreshing the page, the selected language remains active.",
+        "If persisted language is missing or invalid, the app falls back to Turkish."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/i18n/I18nProvider.tsx",
+          "operation": "modify",
+          "description": "Implement client persistence (e.g., localStorage) for the selected locale and restoration on load; validate persisted value and fall back to 'tr' when absent/invalid; ensure locale changes re-render text immediately without reload."
+        }
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "summary": "Translate all existing user-facing UI text (App, LocationSearch, WeatherPanel) and localize weather condition descriptions derived from weather codes.",
+      "acceptanceCriteria": [
+        "Strings currently present in frontend/src/App.tsx (e.g., “Weather Dashboard”, empty state heading/description, footer text) are translated and switchable.",
+        "Strings currently present in frontend/src/components/LocationSearch.tsx (placeholder, error message, no results message) are translated and switchable.",
+        "Strings currently present in frontend/src/components/WeatherPanel.tsx (section titles and labels like “Current Weather”, “Feels like”, “Wind Speed”, “Humidity”, “Pressure”, “Cloud Cover”, “24-Hour Forecast”, “7-Day Forecast”, “High”, “Low”, and error text) are translated and switchable.",
+        "Weather condition descriptions currently returned from frontend/src/lib/weatherTheme.ts (e.g., “Clear sky”, “Overcast”, etc.) are localized for both Turkish and English and update when the language is changed."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Translate all user-facing strings in App (header title, empty-state heading/description, footer copy) by replacing literals with i18n keys; ensure switching locale updates these strings immediately."
+        },
+        {
+          "path": "frontend/src/components/LocationSearch.tsx",
+          "operation": "modify",
+          "description": "Translate placeholder text and all user-facing messages (error/no results) by using the i18n hook; keep composing existing shadcn-ui components (Input/Button/Card/etc.) without modifying ui components. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/WeatherPanel.tsx",
+          "operation": "modify",
+          "description": "Translate all labels/titles/error text in the weather panel via i18n; ensure forecast labels (Current Weather, Feels like, Wind Speed, Humidity, Pressure, Cloud Cover, 24-Hour Forecast, 7-Day Forecast, High, Low) update when locale changes. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/lib/weatherTheme.ts",
+          "operation": "modify",
+          "description": "Refactor weather condition descriptions to be locale-driven by returning a stable translation key (or delegating localization via the i18n layer) rather than hardcoded English strings; ensure unknown codes map to an i18n-backed 'unknown' description."
+        },
+        {
+          "path": "frontend/src/i18n/translations.ts",
+          "operation": "modify",
+          "description": "Add/complete translation keys for all user-facing strings used by App, LocationSearch, WeatherPanel, and weather condition descriptions for supported weather codes; ensure both tr and en dictionaries contain all keys."
+        }
+      ]
+    }
+  ]
+}

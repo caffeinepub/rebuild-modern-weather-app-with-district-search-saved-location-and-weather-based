@@ -1,0 +1,166 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 7,
+  "summary": "Kimlik doğrulaması olmayan, modern görünümlü ve hava durumuna göre teması değişen; kullanıcı ilçe adıyla arama yapıp Open‑Meteo Geocoding API’den gelen sonuçlardan birini seçerek konumu kaydeden ve ardından o konumun hava durumu verilerini gösteren; varsayılan dili Türkçe olan ve kullanıcıya İngilizce’ye geçiş için dil değiştirici sunan iki dilli uygulama.",
+  "architectural_notes": [
+    "Kimlik doğrulaması olmayacak.",
+    "Konum arama için Open‑Meteo Geocoding API (geocoding-api.open-meteo.com) kullanılacak.",
+    "Kullanıcı ilçe adını yazar; sonuçlardan birini seçince konum kaydedilir ve hava durumu verileri çekilmeye başlanır.",
+    "UI modern görünümlü olacak ve tema hava durumuna göre değişecek.",
+    "Tema/arka plan koyu olduğunda metin ve UI öğeleri için otomatik kontrast (açık yazı rengi) uygulanacak.",
+    "Uygulama varsayılan dili Türkçe olacak; kullanıcı dil değiştirici ile İngilizce’ye geçebilecek.",
+    "Uygulamadaki tüm kullanıcı arayüzü metinleri Türkçe ve İngilizce olarak sağlanacak (tam kapsamlı çeviri)."
+  ],
+  "known_issues": [
+    "Derleme/istek işleme sırasında hata oluştu; kullanıcı yeniden derleme talep etti.",
+    "Koyu arka plan temalarında yazılar yeterince okunmuyor (kontrast yetersiz)."
+  ],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-create-a-no-auth-weather-application-where-the-user-types-a-district-name-the-app-queries-open-meteo-s-geocoding-api-at-geocoding-api-open-meteo-com-and-displays-a-list-of-matching-locations-for-the-user-to-select",
+      "title": "Create a no-auth weather application where the user types a district name, the app queries Open‑Meteo’s Geocoding API at geocoding-api.open-meteo.com, and displays a list of matching locations for the user to select.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-when-the-user-selects-a-geocoding-result-persist-the-selected-location-on-the-client-e-g-localstorage-and-automatically-restore-it-on-reload-so-the-app-immediately-resumes-fetching-and-showing-weather-data-for-that-location",
+      "title": "When the user selects a geocoding result, persist the selected location on the client (e.g., localStorage) and automatically restore it on reload so the app immediately resumes fetching and showing weather data for that location.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-after-a-location-is-selected-or-restored-fetch-and-display-current-conditions-and-a-short-forecast-for-that-location-using-open-meteo-weather-data-and-keep-the-ui-responsive-with-loading-and-error-states",
+      "title": "After a location is selected (or restored), fetch and display current conditions and a short forecast for that location using Open‑Meteo weather data, and keep the UI responsive with loading and error states.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-modern-ui-with-a-dynamic-theme-that-changes-based-on-the-fetched-weather-conditions-e-g-clear-cloudy-rain-snow-and-is-applied-consistently-across-the-app-background-key-surfaces-and-primary-accent",
+      "title": "Implement a modern UI with a dynamic theme that changes based on the fetched weather conditions (e.g., clear/cloudy/rain/snow) and is applied consistently across the app (background, key surfaces, and primary accent).",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-define-and-apply-a-cohesive-visual-style-color-palette-typography-spacing-and-component-styling-that-matches-a-contemporary-clean-weather-dashboard-aesthetic-and-keep-all-user-facing-ui-text-in-english",
+      "title": "Define and apply a cohesive visual style (color palette, typography, spacing, and component styling) that matches a contemporary, clean weather-dashboard aesthetic, and keep all user-facing UI text in English.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-weather-themed-static-background-illustrations-generated-assets-and-wire-them-into-the-frontend-so-the-currently-active-theme-can-display-the-appropriate-background-image",
+      "title": "Add weather-themed static background illustrations (generated assets) and wire them into the frontend so the currently active theme can display the appropriate background image.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-automatically-switch-the-app-s-ui-colors-to-a-high-contrast-light-text-on-dark-surfaces-mode-when-the-active-weather-background-theme-is-dark-so-text-remains-readable-without-manual-user-toggles",
+      "title": "Automatically switch the app’s UI colors to a high-contrast (light text on dark surfaces) mode when the active weather background/theme is dark, so text remains readable without manual user toggles.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-adjust-the-theme-color-tokens-css-variables-used-by-tailwind-classes-like-bg-background-text-foreground-text-muted-foreground-bg-card-border-border-so-that-both-normal-and-muted-text-meet-clear-readability-on-dark-backgrounds-while-preserving-the-existing-weather-based-theming-behavior",
+      "title": "Adjust the theme color tokens (CSS variables used by Tailwind classes like bg-background, text-foreground, text-muted-foreground, bg-card, border-border) so that both normal and muted text meet clear readability on dark backgrounds while preserving the existing weather-based theming behavior.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-background-overlay-gradient-styling-so-foreground-content-header-cards-and-panels-remains-legible-across-all-weather-illustration-backgrounds-including-the-darkest-images",
+      "title": "Update the background overlay/gradient styling so foreground content (header, cards, and panels) remains legible across all weather illustration backgrounds, including the darkest images.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-app-wide-i18n-with-two-locales-turkish-and-english-where-turkish-is-the-default-locale-on-first-load",
+      "title": "Implement app-wide i18n with two locales (Turkish and English), where Turkish is the default locale on first load.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-visible-language-switcher-toggle-or-segmented-control-in-the-main-header-that-allows-the-user-to-switch-between-turkish-and-english-at-any-time",
+      "title": "Add a visible language switcher (toggle or segmented control) in the main header that allows the user to switch between Turkish and English at any time.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-persist-the-user-s-selected-language-on-the-client-e-g-localstorage-and-restore-it-on-reload-so-the-app-stays-in-the-previously-selected-language",
+      "title": "Persist the user’s selected language on the client (e.g., localStorage) and restore it on reload so the app stays in the previously selected language.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-translate-all-existing-user-facing-ui-text-in-the-current-app-into-turkish-and-english-including-but-not-limited-to-header-title-empty-state-text-search-placeholder-error-no-results-messages-weather-panel-headings-labels-and-weather-condition-descriptions-derived-from-weather-codes",
+      "title": "Translate all existing user-facing UI text in the current app into Turkish and English, including (but not limited to) header title, empty-state text, search placeholder, error/no-results messages, weather panel headings/labels, and weather condition descriptions derived from weather codes.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Kimlik doğrulaması olmayan modern hava durumu uygulaması",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "İlçe adıyla konum arama ve Open‑Meteo geocoding-api.open-meteo.com üzerinden sonuçları listeleme",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Arama sonuçlarından seçim yapınca konumu kaydetme ve seçilen konum için hava durumu verilerini çekip göstermeye başlama",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Hava durumuna göre değişen tema (dinamik UI teması)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Koyu arka planlarda metin okunabilirliği için yazı renklerini/kontrastı temaya göre otomatik ayarlama",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Varsayılan dili Türkçe olan ve İngilizce alternatifi bulunan; tüm UI metinlerini iki dile çeviren ve dil değiştirici (toggle) içeren çok dilli/i18n desteği",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Rebuild: Modern weather app with district search, saved location, and weather-based theming (Open‑Meteo)",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

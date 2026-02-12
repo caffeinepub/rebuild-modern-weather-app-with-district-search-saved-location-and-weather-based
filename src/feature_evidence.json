@@ -1,0 +1,84 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-implement-app-wide-i18n-with-two-locales-turkish-and-english-where-turkish-is-the-default-locale-on-first-load",
+      "featureTitle": "Implement app-wide i18n with two locales (Turkish and English), where Turkish is the default locale on first load.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/i18n/I18nProvider.tsx",
+        "frontend/src/i18n/translations.ts",
+        "frontend/src/i18n/useI18n.ts"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-10"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-visible-language-switcher-toggle-or-segmented-control-in-the-main-header-that-allows-the-user-to-switch-between-turkish-and-english-at-any-time",
+      "featureTitle": "Add a visible language switcher (toggle or segmented control) in the main header that allows the user to switch between Turkish and English at any time.",
+      "files": [
+        "frontend/src/App.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-11"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-persist-the-user-s-selected-language-on-the-client-e-g-localstorage-and-restore-it-on-reload-so-the-app-stays-in-the-previously-selected-language",
+      "featureTitle": "Persist the user’s selected language on the client (e.g., localStorage) and restore it on reload so the app stays in the previously selected language.",
+      "files": [
+        "frontend/src/i18n/I18nProvider.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-12"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-translate-all-existing-user-facing-ui-text-in-the-current-app-into-turkish-and-english-including-but-not-limited-to-header-title-empty-state-text-search-placeholder-error-no-results-messages-weather-panel-headings-labels-and-weather-condition-descriptions-derived-from-weather-codes",
+      "featureTitle": "Translate all existing user-facing UI text in the current app into Turkish and English, including (but not limited to) header title, empty-state text, search placeholder, error/no-results messages, weather panel headings/labels, and weather condition descriptions derived from weather codes.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/LocationSearch.tsx",
+        "frontend/src/components/WeatherPanel.tsx",
+        "frontend/src/i18n/translations.ts",
+        "frontend/src/lib/weatherTheme.ts"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-13"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

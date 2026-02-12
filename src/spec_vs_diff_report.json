@@ -1,0 +1,44 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-12T12:44:03.654Z",
+  "summary": "The diff implements a TR/EN i18n layer with Turkish default + localStorage persistence, adds a header language switcher, and updates major UI components to use translation keys including weather-condition descriptions via weather codes. Some additional, non-requested styling/utility changes were also introduced.",
+  "missing_requirements": [],
+  "hallucinated_features": [
+    {
+      "description": "Global styling and Tailwind theme/token changes unrelated to bilingual i18n requirements (e.g., OKLCH tokens, contrast/readability adjustments).",
+      "reason": "BuildRequest focuses on i18n, language toggle, persistence, and translation coverage; it does not request global redesign or color/token system changes.",
+      "evidence": [
+        "frontend/src/index.css",
+        "frontend/tailwind.config.js"
+      ]
+    },
+    {
+      "description": "Added a weather-contrast helper utility not mentioned in the i18n-focused requirements.",
+      "reason": "REQ-10..REQ-13 do not request new contrast utilities; this appears to be extra functionality beyond translation/toggling/persistence.",
+      "evidence": [
+        "frontend/src/lib/weatherContrast.ts",
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "description": "Introduced/maintained an empty hook file described as unused backend actor integration.",
+      "reason": "The BuildRequest does not ask to add new placeholder/empty hooks; this is unrelated to i18n and could be considered extraneous.",
+      "evidence": [
+        "frontend-file-summaries.txt (frontend/src/hooks/useQueries.ts)"
+      ]
+    }
+  ],
+  "confidence": 0.72,
+  "changed_files": [
+    "frontend-file-summaries.txt",
+    "frontend/src/App.tsx",
+    "frontend/src/components/LocationSearch.tsx",
+    "frontend/src/components/WeatherPanel.tsx",
+    "frontend/src/i18n/I18nProvider.tsx",
+    "frontend/src/i18n/translations.ts",
+    "frontend/src/i18n/useI18n.ts",
+    "frontend/src/lib/weatherTheme.ts",
+    "project_state.json"
+  ]
+}
