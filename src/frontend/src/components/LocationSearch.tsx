@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Search, MapPin, X, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { FloatingAutocompleteDropdown } from './FloatingAutocompleteDropdown';
 import { useGeocodingSearch } from '../hooks/useGeocodingSearch';
 import { useI18n } from '../i18n/useI18n';
 import type { SavedLocation } from '../hooks/usePersistedLocation';
@@ -21,6 +22,7 @@ export function LocationSearch({
   const [query, setQuery] = useState('');
   const { results, isLoading, error } = useGeocodingSearch(query);
   const [showResults, setShowResults] = useState(false);
+  const inputContainerRef = useRef<HTMLDivElement | null>(null);
   const { t } = useI18n();
 
   useEffect(() => {
@@ -64,7 +66,7 @@ export function LocationSearch({
           )}
 
           {/* Search Input */}
-          <div className="relative">
+          <div ref={inputContainerRef} className="relative">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -79,29 +81,31 @@ export function LocationSearch({
               )}
             </div>
 
-            {/* Results Dropdown */}
-            {showResults && (
-              <div className="absolute top-full z-50 mt-2 w-full rounded-xl glass-surface-strong shadow-xl">
-                <div className="max-h-[300px] overflow-y-auto p-2">
-                  {results.map((result, index) => (
-                    <button
-                      key={`${result.latitude}-${result.longitude}-${index}`}
-                      onClick={() => handleSelect(result)}
-                      className="flex w-full items-start gap-3 rounded-lg p-4 text-left transition-all hover:bg-accent/40 hover:scale-[1.02] active:scale-[0.98] focus-ring-strong"
-                    >
-                      <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
-                      <div className="flex-1 space-y-1">
-                        <p className="font-semibold text-foreground">{result.name}</p>
-                        <div className="flex flex-wrap gap-2 text-sm font-medium text-muted-foreground">
-                          {result.admin1 && <span>{result.admin1}</span>}
-                          <span>{result.country}</span>
-                        </div>
+            {/* Floating Results Dropdown */}
+            <FloatingAutocompleteDropdown
+              anchorRef={inputContainerRef}
+              isOpen={showResults}
+              onClose={() => setShowResults(false)}
+            >
+              <div className="p-2">
+                {results.map((result, index) => (
+                  <button
+                    key={`${result.latitude}-${result.longitude}-${index}`}
+                    onClick={() => handleSelect(result)}
+                    className="flex w-full items-start gap-3 rounded-lg p-4 text-left transition-all hover:bg-accent/40 hover:scale-[1.02] active:scale-[0.98] focus-ring-strong"
+                  >
+                    <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
+                    <div className="flex-1 space-y-1">
+                      <p className="font-semibold text-foreground">{result.name}</p>
+                      <div className="flex flex-wrap gap-2 text-sm font-medium text-muted-foreground">
+                        {result.admin1 && <span>{result.admin1}</span>}
+                        <span>{result.country}</span>
                       </div>
-                    </button>
-                  ))}
-                </div>
+                    </div>
+                  </button>
+                ))}
               </div>
-            )}
+            </FloatingAutocompleteDropdown>
 
             {/* Error State */}
             {error && query.length > 0 && (

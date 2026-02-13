@@ -1,54 +1,73 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-13T00:06:54.116Z",
+  "generatedAt": "2026-02-13T13:36:42.867Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 4,
+    "implemented": 4,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Update the global glass surface utilities so that all UI “window/panel” surfaces using `.glass-surface` and `.glass-surface-strong` render at 30% opaque / 70% transparent (i.e., background alpha = 0.3) while preserving existing blur, borders, and shadows.",
+        "summary": "Update app branding so the name \"WeatherVerse\" is displayed consistently across the web app (HTML document title and in-app header title) for all locales.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/index.css"
+          "frontend/index.html",
+          "frontend/src/i18n/translations.ts",
+          "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/index.css"
+          "frontend/index.html",
+          "frontend/src/i18n/translations.ts",
+          "frontend/src/App.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Ensure the Laundry Drying panel in the Weather tab uses the same global glass surface styling (30% opaque / 70% transparent) as other windows/panels, instead of its current custom `bg-card/80` styling, so it visually matches the rest of the app.",
+        "summary": "Implement an imminent weather event alert system that detects if rain, snow, storm/thunderstorm, or fog is expected within approximately the next 1 hour for the selected location, and displays an in-app alert banner when triggered.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/LaundryDryingRecommendation.tsx"
+          "frontend/src/lib/imminentWeatherAlerts.ts",
+          "frontend/src/hooks/useImminentWeatherAlerts.ts",
+          "frontend/src/components/ImminentWeatherAlertBanner.tsx",
+          "frontend/src/i18n/translations.ts",
+          "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/LaundryDryingRecommendation.tsx"
+          "frontend/src/lib/imminentWeatherAlerts.ts",
+          "frontend/src/hooks/useImminentWeatherAlerts.ts",
+          "frontend/src/components/ImminentWeatherAlertBanner.tsx",
+          "frontend/src/i18n/translations.ts",
+          "frontend/src/App.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Verify and enforce that all other major window/panel surfaces across all tabs (Weather, Farmer, Driver, Radar, Beach, and empty states) use the global glass utilities (or otherwise match the 30% opaque / 70% transparent ratio) so the transparency is consistent app-wide.",
+        "summary": "Add an optional JavaScript-to-Android WebView bridge integration that, when an imminent weather alert is detected, calls an Android-provided bridge function (if present) so the native Android layer can display a system notification.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/FarmerGardenWeatherPanel.tsx",
-          "frontend/src/components/DriverWeatherPanel.tsx",
-          "frontend/src/components/radar/RadarEmptyState.tsx",
-          "frontend/src/components/RadarScreen.tsx",
-          "frontend/src/components/radar/RadarOverlayStatus.tsx"
+          "frontend/src/types/androidBridge.d.ts",
+          "frontend/src/hooks/useImminentWeatherAlerts.ts"
         ],
         "matchedFiles": [
-          "frontend/src/components/FarmerGardenWeatherPanel.tsx",
-          "frontend/src/components/DriverWeatherPanel.tsx",
-          "frontend/src/components/radar/RadarEmptyState.tsx",
-          "frontend/src/components/RadarScreen.tsx",
-          "frontend/src/components/radar/RadarOverlayStatus.tsx"
+          "frontend/src/types/androidBridge.d.ts",
+          "frontend/src/hooks/useImminentWeatherAlerts.ts"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Choose and apply a cohesive visual theme for WeatherVerse (colors, typography, and component styling) that fits a modern weather-alert dashboard, and use it consistently for the new alert banner and any new UI controls added for alerts/bridge behavior.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/index.css",
+          "frontend/src/components/ImminentWeatherAlertBanner.tsx",
+          "frontend/tailwind.config.js"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/ImminentWeatherAlertBanner.tsx"
         ]
       }
     ]
@@ -58,14 +77,13 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/DriverWeatherPanel.tsx",
-    "frontend/src/components/FarmerGardenWeatherPanel.tsx",
-    "frontend/src/components/LaundryDryingRecommendation.tsx",
-    "frontend/src/components/RadarScreen.tsx",
-    "frontend/src/components/RouteLocationSearch.tsx",
-    "frontend/src/components/radar/RadarEmptyState.tsx",
-    "frontend/src/components/radar/RadarOverlayStatus.tsx",
-    "frontend/src/index.css",
+    "frontend/index.html",
+    "frontend/src/App.tsx",
+    "frontend/src/components/ImminentWeatherAlertBanner.tsx",
+    "frontend/src/hooks/useImminentWeatherAlerts.ts",
+    "frontend/src/i18n/translations.ts",
+    "frontend/src/lib/imminentWeatherAlerts.ts",
+    "frontend/src/types/androidBridge.d.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

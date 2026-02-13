@@ -2,10 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-global-glass-surface-utilities-so-that-all-ui-window-panel-surfaces-using-glass-surface-and-glass-surface-strong-render-at-30-opaque-70-transparent-i-e-background-alpha-0-3-while-preserving-existing-blur-borders-and-shadows",
-      "featureTitle": "Update the global glass surface utilities so that all UI “window/panel” surfaces using `.glass-surface` and `.glass-surface-strong` render at 30% opaque / 70% transparent (i.e., background alpha = 0.3) while preserving existing blur, borders, and shadows.",
+      "featureId": "feature-update-app-branding-so-the-name-weatherverse-is-displayed-consistently-across-the-web-app-html-document-title-and-in-app-header-title-for-all-locales",
+      "featureTitle": "Update app branding so the name \"WeatherVerse\" is displayed consistently across the web app (HTML document title and in-app header title) for all locales.",
       "files": [
-        "frontend/src/index.css"
+        "frontend/index.html",
+        "frontend/src/App.tsx",
+        "frontend/src/i18n/translations.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -20,10 +22,14 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-ensure-the-laundry-drying-panel-in-the-weather-tab-uses-the-same-global-glass-surface-styling-30-opaque-70-transparent-as-other-windows-panels-instead-of-its-current-custom-bg-card-80-styling-so-it-visually-matches-the-rest-of-the-app",
-      "featureTitle": "Ensure the Laundry Drying panel in the Weather tab uses the same global glass surface styling (30% opaque / 70% transparent) as other windows/panels, instead of its current custom `bg-card/80` styling, so it visually matches the rest of the app.",
+      "featureId": "feature-implement-an-imminent-weather-event-alert-system-that-detects-if-rain-snow-storm-thunderstorm-or-fog-is-expected-within-approximately-the-next-1-hour-for-the-selected-location-and-displays-an-in-app-alert-banner-when-triggered",
+      "featureTitle": "Implement an imminent weather event alert system that detects if rain, snow, storm/thunderstorm, or fog is expected within approximately the next 1 hour for the selected location, and displays an in-app alert banner when triggered.",
       "files": [
-        "frontend/src/components/LaundryDryingRecommendation.tsx"
+        "frontend/src/App.tsx",
+        "frontend/src/components/ImminentWeatherAlertBanner.tsx",
+        "frontend/src/hooks/useImminentWeatherAlerts.ts",
+        "frontend/src/i18n/translations.ts",
+        "frontend/src/lib/imminentWeatherAlerts.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -38,14 +44,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-verify-and-enforce-that-all-other-major-window-panel-surfaces-across-all-tabs-weather-farmer-driver-radar-beach-and-empty-states-use-the-global-glass-utilities-or-otherwise-match-the-30-opaque-70-transparent-ratio-so-the-transparency-is-consistent-app-wide",
-      "featureTitle": "Verify and enforce that all other major window/panel surfaces across all tabs (Weather, Farmer, Driver, Radar, Beach, and empty states) use the global glass utilities (or otherwise match the 30% opaque / 70% transparent ratio) so the transparency is consistent app-wide.",
+      "featureId": "feature-add-an-optional-javascript-to-android-webview-bridge-integration-that-when-an-imminent-weather-alert-is-detected-calls-an-android-provided-bridge-function-if-present-so-the-native-android-layer-can-display-a-system-notification",
+      "featureTitle": "Add an optional JavaScript-to-Android WebView bridge integration that, when an imminent weather alert is detected, calls an Android-provided bridge function (if present) so the native Android layer can display a system notification.",
       "files": [
-        "frontend/src/components/DriverWeatherPanel.tsx",
-        "frontend/src/components/FarmerGardenWeatherPanel.tsx",
-        "frontend/src/components/RadarScreen.tsx",
-        "frontend/src/components/radar/RadarEmptyState.tsx",
-        "frontend/src/components/radar/RadarOverlayStatus.tsx"
+        "frontend/src/hooks/useImminentWeatherAlerts.ts",
+        "frontend/src/types/androidBridge.d.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -56,6 +59,24 @@
       ],
       "testIds": [
         "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-choose-and-apply-a-cohesive-visual-theme-for-weatherverse-colors-typography-and-component-styling-that-fits-a-modern-weather-alert-dashboard-and-use-it-consistently-for-the-new-alert-banner-and-any-new-ui-controls-added-for-alerts-bridge-behavior",
+      "featureTitle": "Choose and apply a cohesive visual theme for WeatherVerse (colors, typography, and component styling) that fits a modern weather-alert dashboard, and use it consistently for the new alert banner and any new UI controls added for alerts/bridge behavior.",
+      "files": [
+        "frontend/src/components/ImminentWeatherAlertBanner.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
       ],
       "confidence": "high"
     }

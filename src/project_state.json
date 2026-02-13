@@ -1,32 +1,42 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project: UI transparency update across the app—set all windows to 30% opaque / 70% transparent and ensure the same transparency is applied in the Weather tab (including the laundry drying window).",
-  "architectural_notes": [],
+  "summary": "WeatherVerse: weather app with imminent weather event alerts (rain/snow/storm/fog) and optional Android WebView bridge to trigger native notifications from web-detected events.",
+  "architectural_notes": [
+    "Target deployment includes Android Studio native wrapper using WebView; Android side may handle real notification display via JS-Android bridge invoked from the web app."
+  ],
   "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-update-the-global-glass-surface-utilities-so-that-all-ui-window-panel-surfaces-using-glass-surface-and-glass-surface-strong-render-at-30-opaque-70-transparent-i-e-background-alpha-0-3-while-preserving-existing-blur-borders-and-shadows",
-      "title": "Update the global glass surface utilities so that all UI “window/panel” surfaces using `.glass-surface` and `.glass-surface-strong` render at 30% opaque / 70% transparent (i.e., background alpha = 0.3) while preserving existing blur, borders, and shadows.",
+      "id": "feature-update-app-branding-so-the-name-weatherverse-is-displayed-consistently-across-the-web-app-html-document-title-and-in-app-header-title-for-all-locales",
+      "title": "Update app branding so the name \"WeatherVerse\" is displayed consistently across the web app (HTML document title and in-app header title) for all locales.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-ensure-the-laundry-drying-panel-in-the-weather-tab-uses-the-same-global-glass-surface-styling-30-opaque-70-transparent-as-other-windows-panels-instead-of-its-current-custom-bg-card-80-styling-so-it-visually-matches-the-rest-of-the-app",
-      "title": "Ensure the Laundry Drying panel in the Weather tab uses the same global glass surface styling (30% opaque / 70% transparent) as other windows/panels, instead of its current custom `bg-card/80` styling, so it visually matches the rest of the app.",
+      "id": "feature-implement-an-imminent-weather-event-alert-system-that-detects-if-rain-snow-storm-thunderstorm-or-fog-is-expected-within-approximately-the-next-1-hour-for-the-selected-location-and-displays-an-in-app-alert-banner-when-triggered",
+      "title": "Implement an imminent weather event alert system that detects if rain, snow, storm/thunderstorm, or fog is expected within approximately the next 1 hour for the selected location, and displays an in-app alert banner when triggered.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-verify-and-enforce-that-all-other-major-window-panel-surfaces-across-all-tabs-weather-farmer-driver-radar-beach-and-empty-states-use-the-global-glass-utilities-or-otherwise-match-the-30-opaque-70-transparent-ratio-so-the-transparency-is-consistent-app-wide",
-      "title": "Verify and enforce that all other major window/panel surfaces across all tabs (Weather, Farmer, Driver, Radar, Beach, and empty states) use the global glass utilities (or otherwise match the 30% opaque / 70% transparent ratio) so the transparency is consistent app-wide.",
+      "id": "feature-add-an-optional-javascript-to-android-webview-bridge-integration-that-when-an-imminent-weather-alert-is-detected-calls-an-android-provided-bridge-function-if-present-so-the-native-android-layer-can-display-a-system-notification",
+      "title": "Add an optional JavaScript-to-Android WebView bridge integration that, when an imminent weather alert is detected, calls an Android-provided bridge function (if present) so the native Android layer can display a system notification.",
       "reqIds": [
         "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-choose-and-apply-a-cohesive-visual-theme-for-weatherverse-colors-typography-and-component-styling-that-fits-a-modern-weather-alert-dashboard-and-use-it-consistently-for-the-new-alert-banner-and-any-new-ui-controls-added-for-alerts-bridge-behavior",
+      "title": "Choose and apply a cohesive visual theme for WeatherVerse (colors, typography, and component styling) that fits a modern weather-alert dashboard, and use it consistently for the new alert banner and any new UI controls added for alerts/bridge behavior.",
+      "reqIds": [
+        "REQ-4"
       ],
       "version": 1
     }
@@ -34,12 +44,25 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Apply 30% opaque / 70% transparent styling to all windows and the Weather tab (including the laundry drying window).",
+      "summary": "Implement weather event alert system (e.g., rain/snow/storm/fog expected within ~1 hour) in the web app.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Add WebView JS-to-Android bridge hook so the web app can trigger Android-side native notifications when a weather alert is detected.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Set and display the app name as \"WeatherVerse\" everywhere in the app/UI branding.",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Apply 30% opaque / 70% transparent glass surfaces across all panels (including Weather tab laundry panel)",
+  "gameProjectType": "none",
+  "projectName": "WeatherVerse",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

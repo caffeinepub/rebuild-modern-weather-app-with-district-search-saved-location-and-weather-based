@@ -1,69 +1,94 @@
 {
   "kind": "build_request",
-  "title": "Apply 30% opaque / 70% transparent glass surfaces across all panels (including Weather tab laundry panel)",
+  "title": "WeatherVerse branding + imminent weather alerts with optional Android WebView notification bridge",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the global glass surface utilities so that all UI “window/panel” surfaces using `.glass-surface` and `.glass-surface-strong` render at 30% opaque / 70% transparent (i.e., background alpha = 0.3) while preserving existing blur, borders, and shadows.",
+      "text": "Update app branding so the name \"WeatherVerse\" is displayed consistently across the web app (HTML document title and in-app header title) for all locales.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-13",
+          "recent-15"
         ],
         "quotes": [
-          "Tüm pencerelerde bu oran olsun",
-          "şeffaflık durumunu 30 opak - 70 şeffaf şeklinde yeniden düzenle"
+          "Uygulama ismini WeatherVerse olarak işle uygulama ismi olarak her yerde WeatherVerse ismi gözüksün",
+          "başla"
         ]
       },
       "acceptanceCriteria": [
-        "In `frontend/src/index.css`, `.glass-surface` and `.glass-surface-strong` use a background color alpha of 0.3 (70% transparent) rather than the previous value.",
-        "UI panels using these classes (e.g., header/footer, cards already using `glass-surface(-strong)`) visibly match the new transparency level in both light and dark modes."
+        "The browser tab/title in `frontend/index.html` is \"WeatherVerse\".",
+        "The in-app header title (currently `t('header.title')` in `frontend/src/App.tsx`) renders \"WeatherVerse\" in both English and Turkish locales.",
+        "No other user-facing title string contradicts the WeatherVerse name."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Ensure the Laundry Drying panel in the Weather tab uses the same global glass surface styling (30% opaque / 70% transparent) as other windows/panels, instead of its current custom `bg-card/80` styling, so it visually matches the rest of the app.",
+      "text": "Implement an imminent weather event alert system that detects if rain, snow, storm/thunderstorm, or fog is expected within approximately the next 1 hour for the selected location, and displays an in-app alert banner when triggered.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-4"
         ],
         "quotes": [
-          "çamaşır kurutma penceresinde neden bu opaklık durumu yok orada da istiyorum",
-          "hava durumu sekmesinde ondada aynı oranda olsun"
+          "Birşey soracağım mesele kısa şöyle bildirimler vermemiz mümkün mü yağmur başlayacak, kar başlayacak, fırtına başlayacak, sis etkili olacak gib isinden işte 1 saate filan diye"
         ]
       },
       "acceptanceCriteria": [
-        "`frontend/src/components/LaundryDryingRecommendation.tsx` no longer uses a hard-coded `bg-card/80 backdrop-blur-sm` surface that breaks the global transparency ratio.",
-        "The Laundry Drying panel background transparency matches other app windows/panels that use `.glass-surface` / `.glass-surface-strong` (30% opaque / 70% transparent)."
+        "When a location is selected and weather data is available, the app evaluates the next ~1 hour of forecast data and determines whether any of: rain, snow, storm/thunderstorm, fog is imminent.",
+        "If at least one imminent event is detected, an alert banner is shown in the UI (in-app), with a clear title and message in English when locale is EN and in Turkish when locale is TR.",
+        "The alert banner can be dismissed, and dismissal prevents it from immediately reappearing for the same event unless the detected event changes or a reasonable time window has passed (persist the dismissal state in sessionStorage or localStorage).",
+        "The implementation does not require any backend changes; it runs purely in the frontend using the existing Open-Meteo-derived `weatherData` from `useWeather`."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Verify and enforce that all other major window/panel surfaces across all tabs (Weather, Farmer, Driver, Radar, Beach, and empty states) use the global glass utilities (or otherwise match the 30% opaque / 70% transparent ratio) so the transparency is consistent app-wide.",
+      "text": "Add an optional JavaScript-to-Android WebView bridge integration that, when an imminent weather alert is detected, calls an Android-provided bridge function (if present) so the native Android layer can display a system notification.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-12"
         ],
         "quotes": [
-          "1-Tüm pencerelerde bu oran olsun"
+          "web tarafından çağrı gitse anroid tarafı da bildirimi gösterse olur mu?"
         ]
       },
       "acceptanceCriteria": [
-        "No prominent panel/window remains at a noticeably different opacity than the updated global ratio when navigating across tabs.",
-        "Any exceptions found during review are updated to use `.glass-surface` or `.glass-surface-strong` (or an equivalent 0.3 alpha surface) without changing layout or functionality."
+        "The web app checks for the presence of an Android bridge function on `window` (e.g., `window.Android.showNotification`) before calling it; if absent, the app continues without errors.",
+        "When an imminent weather alert is newly triggered (not repeatedly on every re-render/refetch), the app invokes the bridge with enough information for Android to show a notification (at minimum: title and message; optionally include a type/severity).",
+        "Duplicate Android bridge calls are suppressed for the same alert within a short cooldown window (e.g., tracked via sessionStorage/localStorage) so the native side does not spam notifications.",
+        "TypeScript is satisfied (add a safe `declare global` typing for `window.Android` in a non-immutable path)."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Choose and apply a cohesive visual theme for WeatherVerse (colors, typography, and component styling) that fits a modern weather-alert dashboard, and use it consistently for the new alert banner and any new UI controls added for alerts/bridge behavior.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "recent-15"
+        ],
+        "quotes": [
+          "başla"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A single, coherent visual direction is applied (e.g., warm neutrals + high-contrast accent) without introducing new product features.",
+        "New alert UI uses the existing Tailwind + shadcn components and matches existing glass-surface styling conventions.",
+        "No blue/purple-dominant theme is introduced unless it already exists in the project tokens."
       ]
     }
   ],
   "constraints": [
-    "Do not change the weather-based background images or their transition behavior; only adjust UI surfaces above the background (keep `BackgroundIllustration` behavior unchanged).",
-    "Do not edit files under `frontend/src/components/ui` (immutable UI components); apply changes via composition and app-level styles/components instead."
+    "Frontend immutable paths must not be edited: `frontend/src/hooks/useInternetIdentity.ts`, `frontend/src/hooks/useInternetIdentity.tsx`, `frontend/src/hooks/useActor.ts`, `frontend/src/main.tsx`, `frontend/src/components/ui`.",
+    "Backend must remain single-actor (`backend/main.mo`); do not introduce additional backend services.",
+    "Do not implement real web push notifications (not supported on this platform); only in-app alerts and an optional WebView bridge call are in scope."
   ],
   "nonGoals": [
-    "Adding new tabs, features, or changing weather data fetching/logic.",
-    "Backend changes (backend actor remains unchanged)."
+    "Building or configuring the native Android notification system in Android Studio (assumed to be handled by the user).",
+    "Implementing APNs/FCM, service workers, or any true push notification delivery from the Internet Computer.",
+    "Adding external databases or third-party auth providers beyond Internet Identity."
   ],
   "imageRequirements": {
     "required": [],

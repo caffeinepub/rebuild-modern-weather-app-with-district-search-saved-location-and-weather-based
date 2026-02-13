@@ -1,11 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Make all app window/panel “glass” surfaces consistently render at 30% opaque / 70% transparent across every tab, including the Weather tab’s Laundry Drying panel.
+**Goal:** Rebrand the app as “WeatherVerse” and add imminent (next ~1 hour) in-app weather alert banners, with an optional Android WebView bridge call for native notifications.
 
 **Planned changes:**
-- Update global `.glass-surface` and `.glass-surface-strong` styles to use a background alpha of `0.3` while preserving existing blur, borders, and shadows.
-- Replace the Laundry Drying panel’s custom surface styling with the global glass surface utility so it matches the rest of the app.
-- Review major panels across Weather, Farmer, Driver, Radar, Beach, and empty states to ensure they use the global glass utilities (or an equivalent 0.3 alpha surface) without changing layout or functionality.
+- Update branding so “WeatherVerse” appears consistently (HTML document title and in-app header title) across English and Turkish locales.
+- Add frontend-only detection of imminent rain, snow, storm/thunderstorm, and fog from the existing forecast (`useWeather` / Open-Meteo-derived `weatherData`) and display a dismissible in-app alert banner when triggered.
+- Persist alert dismissal state (sessionStorage/localStorage) to avoid immediate reappearance for the same alert unless the event changes or enough time has passed.
+- Add an optional Android WebView bridge integration that safely calls `window.Android.showNotification` (if present) when a newly-triggered imminent alert occurs, with suppression/cooldown to prevent duplicate calls and TypeScript-safe window typing.
+- Apply a cohesive, modern WeatherVerse visual theme (colors/typography/component styling) consistent with existing Tailwind + shadcn glass-surface styling, including the new alert banner and any new alert/bridge-related UI.
 
-**User-visible outcome:** All panels/windows throughout the app (including the Laundry Drying panel) have the same 30% opaque glass look, creating consistent transparency in both light and dark modes while background weather images remain unchanged.
+**User-visible outcome:** The app consistently shows the “WeatherVerse” name, warns users in-app when rain/snow/storm/fog is expected within about the next hour for the selected location (in EN/TR), and can optionally trigger an Android-native notification via a WebView bridge when available.

@@ -9,9 +9,11 @@ import { BeachMarineScreen } from './components/BeachMarineScreen';
 import { BottomNav } from './components/BottomNav';
 import { BackgroundIllustration } from './components/BackgroundIllustration';
 import { InitialRenderErrorBoundary } from './components/InitialRenderErrorBoundary';
+import { ImminentWeatherAlertBanner } from './components/ImminentWeatherAlertBanner';
 import { I18nProvider } from './i18n/I18nProvider';
 import { usePersistedLocation } from './hooks/usePersistedLocation';
 import { useWeather } from './hooks/useWeather';
+import { useImminentWeatherAlerts } from './hooks/useImminentWeatherAlerts';
 import { getWeatherTheme } from './lib/weatherTheme';
 import { useI18n } from './i18n/useI18n';
 import type { SavedLocation } from './hooks/usePersistedLocation';
@@ -43,6 +45,9 @@ function AppContent() {
     activeLocation?.latitude,
     activeLocation?.longitude
   );
+
+  // Imminent weather alerts
+  const { activeAlert, dismiss } = useImminentWeatherAlerts(weatherData, activeLocation, locale);
 
   // Determine current theme based on weather
   const currentTheme = weatherData ? getWeatherTheme(weatherData.current.weatherCode) : 'clear';
@@ -76,7 +81,7 @@ function AppContent() {
 
   return (
     <ThemeProvider theme={currentTheme}>
-      <div className="relative min-h-screen overflow-hidden flex flex-col">
+      <div className="relative min-h-screen overflow-x-hidden flex flex-col">
         <BackgroundIllustration theme={currentTheme} />
         
         <div className="relative z-10 flex min-h-screen flex-col">
@@ -87,7 +92,7 @@ function AppContent() {
                 <div className="rounded-xl bg-primary/10 p-2.5 shadow-glow">
                   <Cloud className="h-9 w-9 text-primary" />
                 </div>
-                <h1 className="text-2xl font-bold tracking-tight">{t('header.title')}</h1>
+                <h1 className="text-2xl font-bold tracking-tight">WeatherVerse</h1>
               </div>
               
               {/* Language Switcher */}
@@ -119,6 +124,11 @@ function AppContent() {
           {/* Main Content */}
           <main className="container mx-auto flex-1 px-4 py-8 pb-24">
             <div className="mx-auto max-w-6xl space-y-6">
+              {/* Imminent Weather Alert Banner */}
+              {activeAlert && activeLocation && (
+                <ImminentWeatherAlertBanner alert={activeAlert} onDismiss={dismiss} />
+              )}
+
               {/* Location Search - hide on radar tab */}
               {activeTab !== 'radar' && (
                 <LocationSearch

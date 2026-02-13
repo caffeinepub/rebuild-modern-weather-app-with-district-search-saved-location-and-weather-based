@@ -1,70 +1,116 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Normalize glass surface opacity to 30% across all panels",
+  "title": "WeatherVerse branding + imminent in-app alerts + optional Android WebView bridge",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Adjust global glass surface utility classes to 30% opaque / 70% transparent while preserving existing blur, borders, and shadows.",
+      "summary": "Apply WeatherVerse branding consistently in the HTML document title and in-app header title across locales.",
       "acceptanceCriteria": [
-        "In `frontend/src/index.css`, `.glass-surface` and `.glass-surface-strong` use a background color alpha of 0.3 (70% transparent) rather than the previous value.",
-        "UI panels using these classes (e.g., header/footer, cards already using `glass-surface(-strong)`) visibly match the new transparency level in both light and dark modes."
+        "The browser tab/title in `frontend/index.html` is \"WeatherVerse\".",
+        "The in-app header title (currently `t('header.title')` in `frontend/src/App.tsx`) renders \"WeatherVerse\" in both English and Turkish locales.",
+        "No other user-facing title string contradicts the WeatherVerse name."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/index.css",
+          "path": "frontend/index.html",
           "operation": "modify",
-          "description": "Update `.glass-surface` and `.glass-surface-strong` background alpha to 0.3 (from current 0.5) while keeping existing backdrop blur, border widths/colors, and box-shadow values unchanged."
+          "description": "Update the HTML <title> to exactly \"WeatherVerse\" to ensure the browser tab title matches the new branding."
+        },
+        {
+          "path": "frontend/src/i18n/translations.ts",
+          "operation": "modify",
+          "description": "Update the `header.title` translation in both `tr` and `en` locales to exactly \"WeatherVerse\" (so `t('header.title')` renders the same brand name for all locales)."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Audit any other user-facing header/title text usage and ensure the header continues to render `t('header.title')` (now \"WeatherVerse\" for all locales), with no contradictory app-name strings introduced elsewhere in the app shell."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Make the Weather tab Laundry Drying panel use the global glass surface styling instead of a custom semi-opaque card background.",
+      "summary": "Detect imminent rain/snow/storm/fog within ~1 hour using existing `useWeather` data and show a dismissible in-app alert banner with persistence.",
       "acceptanceCriteria": [
-        "`frontend/src/components/LaundryDryingRecommendation.tsx` no longer uses a hard-coded `bg-card/80 backdrop-blur-sm` surface that breaks the global transparency ratio.",
-        "The Laundry Drying panel background transparency matches other app windows/panels that use `.glass-surface` / `.glass-surface-strong` (30% opaque / 70% transparent)."
+        "When a location is selected and weather data is available, the app evaluates the next ~1 hour of forecast data and determines whether any of: rain, snow, storm/thunderstorm, fog is imminent.",
+        "If at least one imminent event is detected, an alert banner is shown in the UI (in-app), with a clear title and message in English when locale is EN and in Turkish when locale is TR.",
+        "The alert banner can be dismissed, and dismissal prevents it from immediately reappearing for the same event unless the detected event changes or a reasonable time window has passed (persist the dismissal state in sessionStorage or localStorage).",
+        "The implementation does not require any backend changes; it runs purely in the frontend using the existing Open-Meteo-derived `weatherData` from `useWeather`."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/LaundryDryingRecommendation.tsx",
+          "path": "frontend/src/lib/imminentWeatherAlerts.ts",
+          "operation": "create",
+          "description": "Add a small frontend-only alert evaluation helper that inspects the next ~60 minutes of `WeatherData.hourly` (timestamps, weather codes, precipitation, humidity as needed) and returns a normalized imminent-alert result (event type, stable dedupe key, title/message translation keys, and optional severity)."
+        },
+        {
+          "path": "frontend/src/hooks/useImminentWeatherAlerts.ts",
+          "operation": "create",
+          "description": "Create a React hook that (1) runs imminent-alert evaluation when `weatherData` changes, (2) manages a dismiss state persisted to sessionStorage/localStorage (including a cooldown window), and (3) exposes the current active imminent alert plus `dismiss()` (ensuring dismissed alerts do not instantly reappear unless the alert key changes or cooldown expires)."
+        },
+        {
+          "path": "frontend/src/components/ImminentWeatherAlertBanner.tsx",
+          "operation": "create",
+          "description": "Implement the in-app imminent alert banner UI using shadcn-ui Alert + Button building blocks for consistent styling. Verify the component's usage instructions before implementing. The banner should render localized title/message via i18n keys, show an appropriate icon, and provide a dismiss action."
+        },
+        {
+          "path": "frontend/src/i18n/translations.ts",
           "operation": "modify",
-          "description": "Replace the top-level Laundry panel surface styling (`bg-card/80 backdrop-blur-sm`) with the global `glass-surface` (or `glass-surface-strong`) class so it inherits the 0.3 alpha glass ratio; keep internal layout and content unchanged."
+          "description": "Add translation strings (EN + TR) for imminent alert titles/messages for rain, snow, storm/thunderstorm, and fog (plus a shared dismiss label if needed), ensuring the banner content is fully localized."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wire the imminent alert system into the app shell: call `useImminentWeatherAlerts(weatherData, activeLocation, locale)` (as designed) and render `ImminentWeatherAlertBanner` near the top of main content when an alert is active, passing `dismiss()` to persist dismissal. Ensure the banner appears only when a location is selected and weather data is available."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Ensure all major panels/windows across Weather, Farmer, Driver, Radar, Beach, and empty states consistently use the global glass utilities (or equivalent 0.3 alpha surfaces).",
+      "summary": "Optionally notify an Android WebView host when a new imminent alert triggers, with safe window checks, cooldown suppression, and TypeScript typings.",
       "acceptanceCriteria": [
-        "No prominent panel/window remains at a noticeably different opacity than the updated global ratio when navigating across tabs.",
-        "Any exceptions found during review are updated to use `.glass-surface` or `.glass-surface-strong` (or an equivalent 0.3 alpha surface) without changing layout or functionality."
+        "The web app checks for the presence of an Android bridge function on `window` (e.g., `window.Android.showNotification`) before calling it; if absent, the app continues without errors.",
+        "When an imminent weather alert is newly triggered (not repeatedly on every re-render/refetch), the app invokes the bridge with enough information for Android to show a notification (at minimum: title and message; optionally include a type/severity).",
+        "Duplicate Android bridge calls are suppressed for the same alert within a short cooldown window (e.g., tracked via sessionStorage/localStorage) so the native side does not spam notifications.",
+        "TypeScript is satisfied (add a safe `declare global` typing for `window.Android` in a non-immutable path)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/FarmerGardenWeatherPanel.tsx",
-          "operation": "modify",
-          "description": "Update prominent Farmer tab card surfaces currently using `bg-card/80 backdrop-blur-sm` to use `glass-surface` / `glass-surface-strong` instead, preserving grid/layout and all inner content styling."
+          "path": "frontend/src/types/androidBridge.d.ts",
+          "operation": "create",
+          "description": "Add a global TypeScript declaration for the optional Android WebView bridge on `window` (e.g., `window.Android?.showNotification(title, message, type?)`) so TS compiles cleanly while keeping calls guarded at runtime."
         },
         {
-          "path": "frontend/src/components/DriverWeatherPanel.tsx",
+          "path": "frontend/src/hooks/useImminentWeatherAlerts.ts",
           "operation": "modify",
-          "description": "Update prominent Driver tab card surfaces currently using `bg-card/60 backdrop-blur-sm` to use `glass-surface` / `glass-surface-strong` for consistent 0.3 alpha glass panels, without changing sizing, spacing, or functionality."
+          "description": "Enhance the hook to (a) detect when an imminent alert is newly triggered (transition from none/other-key to a new alert key), (b) check for `window.Android?.showNotification` before calling, and (c) suppress duplicate calls for the same alert within a short cooldown using sessionStorage/localStorage (separate from the banner dismissal cooldown as needed). Ensure the app continues without errors when the bridge is absent."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Apply a cohesive modern WeatherVerse theme for alert-related UI, ensuring new banner/controls match existing Tailwind + shadcn glass styling and avoid introducing a new blue/purple-dominant direction.",
+      "acceptanceCriteria": [
+        "A single, coherent visual direction is applied (e.g., warm neutrals + high-contrast accent) without introducing new product features.",
+        "New alert UI uses the existing Tailwind + shadcn components and matches existing glass-surface styling conventions.",
+        "No blue/purple-dominant theme is introduced unless it already exists in the project tokens."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Add/adjust minimal theme-safe utility styling for the imminent alert banner container (e.g., spacing, border emphasis, glass-surface harmony) using existing warm/citrus token variables—without changing immutable shadcn component files. Ensure the banner reads well across light/dark weather themes."
         },
         {
-          "path": "frontend/src/components/radar/RadarEmptyState.tsx",
+          "path": "frontend/src/components/ImminentWeatherAlertBanner.tsx",
           "operation": "modify",
-          "description": "Replace the Radar empty-state container surface (`bg-card/60 backdrop-blur-sm`) with `glass-surface` so it matches the global glass opacity ratio."
+          "description": "Refine the banner styling to align with existing glass-surface conventions and the current warm palette, using shadcn-ui components for consistent typography and spacing. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/RadarScreen.tsx",
+          "path": "frontend/tailwind.config.js",
           "operation": "modify",
-          "description": "Update the Radar main container and major surface wrappers currently using `bg-card/60` and `bg-background/80` (with blur) to use `glass-surface` / `glass-surface-strong` (or an equivalent 0.3 alpha surface) so Radar panels match the app-wide glass ratio; keep the map layering/z-index behavior unchanged."
-        },
-        {
-          "path": "frontend/src/components/radar/RadarOverlayStatus.tsx",
-          "operation": "modify",
-          "description": "Adjust the overlay status alert surface styling (`bg-background/95 backdrop-blur-sm`) to match the global glass ratio by using `glass-surface` (or an equivalent 0.3 alpha surface), maintaining its absolute positioning and z-index."
+          "description": "If required to keep alert styling consistent, extend Tailwind theme tokens in a minimal way (e.g., semantic colors for warning/info/success mapped to existing CSS variables), ensuring no new blue/purple-dominant theme is introduced."
         }
       ]
     }
