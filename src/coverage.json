@@ -1,73 +1,54 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T12:44:03.657Z",
+  "generatedAt": "2026-02-13T00:06:54.116Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 4,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-10",
-        "summary": "Implement app-wide i18n with two locales (Turkish and English), where Turkish is the default locale on first load.",
+        "id": "REQ-1",
+        "summary": "Update the global glass surface utilities so that all UI “window/panel” surfaces using `.glass-surface` and `.glass-surface-strong` render at 30% opaque / 70% transparent (i.e., background alpha = 0.3) while preserving existing blur, borders, and shadows.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/i18n/translations.ts",
-          "frontend/src/i18n/I18nProvider.tsx",
-          "frontend/src/i18n/useI18n.ts",
-          "frontend/src/main.tsx",
-          "frontend/src/App.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/i18n/translations.ts",
-          "frontend/src/i18n/I18nProvider.tsx",
-          "frontend/src/i18n/useI18n.ts",
-          "frontend/src/App.tsx"
-        ]
-      },
-      {
-        "id": "REQ-11",
-        "summary": "Add a visible language switcher (toggle or segmented control) in the main header that allows the user to switch between Turkish and English at any time.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/App.tsx",
           "frontend/src/index.css"
         ],
         "matchedFiles": [
-          "frontend/src/App.tsx"
+          "frontend/src/index.css"
         ]
       },
       {
-        "id": "REQ-12",
-        "summary": "Persist the user’s selected language on the client (e.g., localStorage) and restore it on reload so the app stays in the previously selected language.",
+        "id": "REQ-2",
+        "summary": "Ensure the Laundry Drying panel in the Weather tab uses the same global glass surface styling (30% opaque / 70% transparent) as other windows/panels, instead of its current custom `bg-card/80` styling, so it visually matches the rest of the app.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/i18n/I18nProvider.tsx"
+          "frontend/src/components/LaundryDryingRecommendation.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/i18n/I18nProvider.tsx"
+          "frontend/src/components/LaundryDryingRecommendation.tsx"
         ]
       },
       {
-        "id": "REQ-13",
-        "summary": "Translate all existing user-facing UI text in the current app into Turkish and English, including (but not limited to) header title, empty-state text, search placeholder, error/no-results messages, weather panel headings/labels, and weather condition descriptions derived from weather codes.",
+        "id": "REQ-3",
+        "summary": "Verify and enforce that all other major window/panel surfaces across all tabs (Weather, Farmer, Driver, Radar, Beach, and empty states) use the global glass utilities (or otherwise match the 30% opaque / 70% transparent ratio) so the transparency is consistent app-wide.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/components/LocationSearch.tsx",
-          "frontend/src/components/WeatherPanel.tsx",
-          "frontend/src/lib/weatherTheme.ts",
-          "frontend/src/i18n/translations.ts"
+          "frontend/src/components/FarmerGardenWeatherPanel.tsx",
+          "frontend/src/components/DriverWeatherPanel.tsx",
+          "frontend/src/components/radar/RadarEmptyState.tsx",
+          "frontend/src/components/RadarScreen.tsx",
+          "frontend/src/components/radar/RadarOverlayStatus.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/components/LocationSearch.tsx",
-          "frontend/src/components/WeatherPanel.tsx",
-          "frontend/src/lib/weatherTheme.ts",
-          "frontend/src/i18n/translations.ts"
+          "frontend/src/components/FarmerGardenWeatherPanel.tsx",
+          "frontend/src/components/DriverWeatherPanel.tsx",
+          "frontend/src/components/radar/RadarEmptyState.tsx",
+          "frontend/src/components/RadarScreen.tsx",
+          "frontend/src/components/radar/RadarOverlayStatus.tsx"
         ]
       }
     ]
@@ -77,13 +58,14 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
-    "frontend/src/components/LocationSearch.tsx",
-    "frontend/src/components/WeatherPanel.tsx",
-    "frontend/src/i18n/I18nProvider.tsx",
-    "frontend/src/i18n/translations.ts",
-    "frontend/src/i18n/useI18n.ts",
-    "frontend/src/lib/weatherTheme.ts",
+    "frontend/src/components/DriverWeatherPanel.tsx",
+    "frontend/src/components/FarmerGardenWeatherPanel.tsx",
+    "frontend/src/components/LaundryDryingRecommendation.tsx",
+    "frontend/src/components/RadarScreen.tsx",
+    "frontend/src/components/RouteLocationSearch.tsx",
+    "frontend/src/components/radar/RadarEmptyState.tsx",
+    "frontend/src/components/radar/RadarOverlayStatus.tsx",
+    "frontend/src/index.css",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

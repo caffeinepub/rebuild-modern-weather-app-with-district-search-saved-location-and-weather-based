@@ -10,6 +10,10 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+/**
+ * / This backend does not fetch or store marine/beach conditions.
+ * / Marine integration is client-side only. (Open-Meteo queries from the TypeScript frontend)
+ */
 export interface _SERVICE {}
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

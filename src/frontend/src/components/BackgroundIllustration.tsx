@@ -31,6 +31,9 @@ export function BackgroundIllustration({ theme }: BackgroundIllustrationProps) {
     }
   }, [theme, currentImage]);
 
+  // Note: Background image selection and transition behavior are intentionally unchanged.
+  // This component only displays weather-themed backgrounds; UI surface transparency
+  // is controlled centrally via .glass-surface utilities in index.css.
   return (
     <div className="fixed inset-0 z-0">
       <div
@@ -39,12 +42,12 @@ export function BackgroundIllustration({ theme }: BackgroundIllustrationProps) {
         }`}
         style={{ backgroundImage: `url(${currentImage})` }}
       />
-      {/* Stable overlay that doesn't fade with image transitions */}
+      {/* Enhanced overlay for better readability */}
       <div 
-        className={`absolute inset-0 transition-colors duration-700 ${
+        className={`absolute inset-0 transition-opacity duration-700 ${
           isDark 
-            ? 'bg-gradient-to-b from-black/70 via-black/60 to-black/75' 
-            : 'bg-gradient-to-b from-background/60 via-background/40 to-background/80'
+            ? 'bg-gradient-to-b from-black/30 via-black/20 to-black/40' 
+            : 'bg-gradient-to-b from-white/25 via-white/15 to-white/30'
         }`}
       />
     </div>

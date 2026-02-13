@@ -6,89 +6,105 @@
     :root {
         --radius: 0.75rem;
         
-        /* Base theme - Clear/Sunny */
-        --background: 0.98 0.02 85;
-        --foreground: 0.25 0.015 85;
-        --card: 1 0 0;
-        --card-foreground: 0.25 0.015 85;
-        --popover: 1 0 0;
-        --popover-foreground: 0.25 0.015 85;
-        --primary: 0.55 0.18 45;
-        --primary-foreground: 0.98 0 0;
-        --secondary: 0.92 0.03 85;
-        --secondary-foreground: 0.25 0.015 85;
-        --muted: 0.94 0.02 85;
-        --muted-foreground: 0.55 0.01 85;
-        --accent: 0.90 0.04 85;
-        --accent-foreground: 0.25 0.015 85;
-        --destructive: 0.55 0.22 25;
-        --destructive-foreground: 0.98 0 0;
-        --border: 0.88 0.02 85;
-        --input: 0.88 0.02 85;
-        --ring: 0.55 0.18 45;
+        /* Base theme - Warm Citrus + Coral Palette */
+        --background: 0.98 0.03 85;
+        --foreground: 0.20 0.02 280;
+        --card: 0.99 0.02 85;
+        --card-foreground: 0.22 0.02 280;
+        --popover: 0.99 0.01 85;
+        --popover-foreground: 0.22 0.02 280;
+        --primary: 0.65 0.22 35;
+        --primary-foreground: 0.99 0.01 85;
+        --secondary: 0.75 0.18 65;
+        --secondary-foreground: 0.20 0.02 280;
+        --muted: 0.92 0.04 75;
+        --muted-foreground: 0.50 0.03 280;
+        --accent: 0.70 0.20 15;
+        --accent-foreground: 0.99 0.01 85;
+        --destructive: 0.55 0.24 20;
+        --destructive-foreground: 0.99 0.01 85;
+        --border: 0.85 0.05 75 / 0.5;
+        --input: 0.88 0.04 75;
+        --ring: 0.65 0.22 35;
+        --success: 0.60 0.20 140;
+        --success-foreground: 0.99 0.01 85;
+        --warning: 0.70 0.22 55;
+        --warning-foreground: 0.20 0.02 280;
     }
 
     .dark {
-        --background: 0.20 0.015 240;
-        --foreground: 0.97 0.01 240;
-        --card: 0.25 0.02 240;
-        --card-foreground: 0.96 0.01 240;
-        --popover: 0.23 0.02 240;
-        --popover-foreground: 0.96 0.01 240;
-        --primary: 0.70 0.16 45;
-        --primary-foreground: 0.15 0.015 240;
-        --secondary: 0.32 0.02 240;
-        --secondary-foreground: 0.96 0.01 240;
-        --muted: 0.35 0.02 240;
-        --muted-foreground: 0.75 0.01 240;
-        --accent: 0.40 0.03 240;
-        --accent-foreground: 0.96 0.01 240;
-        --destructive: 0.60 0.20 25;
-        --destructive-foreground: 0.98 0 0;
-        --border: 0.35 0.02 240;
-        --input: 0.35 0.02 240;
-        --ring: 0.70 0.16 45;
+        --background: 0.18 0.02 260;
+        --foreground: 0.98 0.01 85;
+        --card: 0.22 0.03 260;
+        --card-foreground: 0.97 0.01 85;
+        --popover: 0.20 0.03 260;
+        --popover-foreground: 0.97 0.01 85;
+        --primary: 0.72 0.20 35;
+        --primary-foreground: 0.15 0.02 260;
+        --secondary: 0.78 0.16 65;
+        --secondary-foreground: 0.15 0.02 260;
+        --muted: 0.30 0.03 260;
+        --muted-foreground: 0.70 0.02 85;
+        --accent: 0.75 0.18 15;
+        --accent-foreground: 0.15 0.02 260;
+        --destructive: 0.60 0.22 20;
+        --destructive-foreground: 0.98 0.01 85;
+        --border: 0.35 0.04 260 / 0.5;
+        --input: 0.32 0.03 260;
+        --ring: 0.72 0.20 35;
+        --success: 0.65 0.18 140;
+        --success-foreground: 0.15 0.02 260;
+        --warning: 0.75 0.20 55;
+        --warning-foreground: 0.15 0.02 260;
     }
 
-    /* Weather Theme Variants */
+    /* Weather Theme Variants - Enhanced with warm palette */
     [data-weather-theme="clear"] {
-        --primary: 0.60 0.20 50;
-        --ring: 0.60 0.20 50;
+        --primary: 0.68 0.24 40;
+        --ring: 0.68 0.24 40;
+        --accent: 0.72 0.22 50;
     }
 
     [data-weather-theme="clear"].dark {
-        --primary: 0.70 0.18 50;
-        --ring: 0.70 0.18 50;
+        --primary: 0.75 0.22 40;
+        --ring: 0.75 0.22 40;
+        --accent: 0.78 0.20 50;
     }
 
     [data-weather-theme="cloudy"] {
-        --primary: 0.50 0.08 240;
-        --ring: 0.50 0.08 240;
+        --primary: 0.60 0.16 200;
+        --ring: 0.60 0.16 200;
+        --accent: 0.65 0.18 220;
     }
 
     [data-weather-theme="cloudy"].dark {
-        --primary: 0.60 0.10 240;
-        --ring: 0.60 0.10 240;
+        --primary: 0.68 0.18 200;
+        --ring: 0.68 0.18 200;
+        --accent: 0.72 0.20 220;
     }
 
     [data-weather-theme="rain"] {
-        --primary: 0.55 0.15 220;
-        --ring: 0.55 0.15 220;
+        --primary: 0.62 0.20 210;
+        --ring: 0.62 0.20 210;
+        --accent: 0.68 0.22 230;
     }
 
     [data-weather-theme="rain"].dark {
-        --primary: 0.68 0.18 220;
-        --ring: 0.68 0.18 220;
+        --primary: 0.70 0.22 210;
+        --ring: 0.70 0.22 210;
+        --accent: 0.75 0.24 230;
     }
 
     [data-weather-theme="snow"] {
-        --primary: 0.70 0.05 200;
-        --ring: 0.70 0.05 200;
+        --primary: 0.72 0.12 190;
+        --ring: 0.72 0.12 190;
+        --accent: 0.75 0.14 210;
     }
 
     [data-weather-theme="snow"].dark {
-        --primary: 0.78 0.08 200;
-        --ring: 0.78 0.08 200;
+        --primary: 0.80 0.14 190;
+        --ring: 0.80 0.14 190;
+        --accent: 0.82 0.16 210;
     }
 
     * {
@@ -99,4 +115,98 @@
         @apply bg-background text-foreground;
         font-feature-settings: "rlig" 1, "calt" 1;
     }
+}
+
+@layer utilities {
+    /* 30% opaque / 70% transparent glass surfaces - allows background to show through while maintaining readability */
+    .glass-surface {
+        backdrop-filter: blur(16px);
+        background-color: oklch(var(--card) / 0.3);
+        border-width: 2.5px;
+        border-color: oklch(var(--border));
+        box-shadow: 0 8px 12px -2px rgb(0 0 0 / 0.15), 0 4px 6px -2px rgb(0 0 0 / 0.12);
+    }
+    
+    .glass-surface-strong {
+        backdrop-filter: blur(20px);
+        background-color: oklch(var(--card) / 0.3);
+        border-width: 3px;
+        border-color: oklch(var(--primary) / 0.3);
+        box-shadow: 0 12px 20px -4px rgb(0 0 0 / 0.18), 0 6px 8px -4px rgb(0 0 0 / 0.15);
+    }
+    
+    .focus-ring-strong {
+        @apply focus-visible:outline-none focus-visible:ring-offset-2;
+        outline: none;
+    }
+    
+    .focus-ring-strong:focus-visible {
+        ring-width: 4px;
+        ring-color: oklch(var(--ring) / 0.4);
+    }
+    
+    .interactive-hover {
+        transition-property: all;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 200ms;
+    }
+    
+    .interactive-hover:hover {
+        transform: scale(1.02);
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+    
+    .interactive-hover:active {
+        transform: scale(0.98);
+    }
+}
+
+/* Radar overlay controls - ensure they stay above Leaflet map */
+.radar-layer-toggle-container {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+.radar-alert-controls-container {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+/* Wind arrow icon styling */
+.wind-arrow-icon {
+  background: transparent !important;
+  border: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: oklch(0.4 0.1 240);
+}
+
+/* Ensure Leaflet controls don't interfere with our overlays */
+.leaflet-control-container {
+  z-index: 500;
+}
+
+/* Ensure weather overlay pane is above precipitation */
+.leaflet-pane {
+  z-index: 400;
+}
+
+.leaflet-tile-pane {
+  z-index: 200;
+}
+
+/* Ensure weather overlays are visible and stay on top during interactions */
+.leaflet-overlay-pane {
+  z-index: 400;
+}
+
+.leaflet-map-pane {
+  z-index: auto;
 }

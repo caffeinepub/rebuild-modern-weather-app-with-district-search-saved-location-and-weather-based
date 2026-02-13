@@ -7,50 +7,63 @@ export interface WeatherData {
     apparentTemperature: number;
     weatherCode: number;
     windSpeed: number;
+    windDirection: number;
     humidity: number;
     pressure: number;
     cloudCover: number;
   };
   hourly: Array<{
     time: string;
+    timestamp: string; // ISO timestamp for accurate time calculations
     temperature: number;
     weatherCode: number;
+    precipitation: number;
+    windSpeed: number;
+    windDirection: number;
+    soilMoisture: number;
+    humidity: number;
   }>;
   daily: Array<{
     date: string;
     temperatureMax: number;
     temperatureMin: number;
     weatherCode: number;
+    precipitationSum: number;
   }>;
 }
 
 function transformWeatherData(data: WeatherResponse): WeatherData {
-  const now = new Date();
-  const currentHourIndex = now.getHours();
-
   return {
     current: {
       temperature: data.current.temperature_2m,
       apparentTemperature: data.current.apparent_temperature,
       weatherCode: data.current.weather_code,
       windSpeed: data.current.wind_speed_10m,
+      windDirection: data.current.wind_direction_10m,
       humidity: data.current.relative_humidity_2m,
       pressure: data.current.surface_pressure,
       cloudCover: data.current.cloud_cover,
     },
-    hourly: data.hourly.time.slice(currentHourIndex, currentHourIndex + 24).map((time, index) => {
+    hourly: data.hourly.time.slice(0, 48).map((time, index) => {
       const hour = new Date(time).getHours();
       return {
         time: `${hour.toString().padStart(2, '0')}:00`,
-        temperature: data.hourly.temperature_2m[currentHourIndex + index],
-        weatherCode: data.hourly.weather_code[currentHourIndex + index],
+        timestamp: time, // Preserve ISO timestamp
+        temperature: data.hourly.temperature_2m[index],
+        weatherCode: data.hourly.weather_code[index],
+        precipitation: data.hourly.precipitation[index],
+        windSpeed: data.hourly.wind_speed_10m[index],
+        windDirection: data.hourly.wind_direction_10m[index],
+        soilMoisture: data.hourly.soil_moisture_0_to_1cm[index],
+        humidity: data.hourly.relative_humidity_2m[index],
       };
     }),
     daily: data.daily.time.map((date, index) => ({
-      date: new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+      date: date, // Return ISO date string for locale-aware formatting in UI
       temperatureMax: data.daily.temperature_2m_max[index],
       temperatureMin: data.daily.temperature_2m_min[index],
       weatherCode: data.daily.weather_code[index],
+      precipitationSum: data.daily.precipitation_sum[index],
     })),
   };
 }

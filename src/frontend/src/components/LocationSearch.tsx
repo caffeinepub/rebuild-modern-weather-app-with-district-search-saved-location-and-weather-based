@@ -34,17 +34,19 @@ export function LocationSearch({
   };
 
   return (
-    <Card className="border-border/40 bg-card/80 backdrop-blur-sm">
+    <Card className="glass-surface-strong rounded-2xl">
       <CardContent className="p-6">
         <div className="space-y-4">
           {/* Current Location Display */}
           {currentLocation && (
-            <div className="flex items-center justify-between rounded-lg border border-border/40 bg-background/60 p-4">
-              <div className="flex items-center gap-3">
-                <MapPin className="h-5 w-5 text-primary" />
+            <div className="flex items-center justify-between rounded-xl border-2 border-primary/20 bg-primary/5 p-5 shadow-soft">
+              <div className="flex items-center gap-4">
+                <div className="rounded-lg bg-primary/15 p-2.5">
+                  <MapPin className="h-6 w-6 text-primary" />
+                </div>
                 <div>
-                  <p className="font-semibold text-foreground">{currentLocation.name}</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="font-bold text-lg text-foreground">{currentLocation.name}</p>
+                  <p className="text-sm font-medium text-muted-foreground">
                     {currentLocation.country}
                     {currentLocation.admin1 && ` · ${currentLocation.admin1}`}
                   </p>
@@ -54,9 +56,9 @@ export function LocationSearch({
                 variant="ghost"
                 size="sm"
                 onClick={onClearLocation}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg focus-ring-strong"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </Button>
             </div>
           )}
@@ -64,33 +66,33 @@ export function LocationSearch({
           {/* Search Input */}
           <div className="relative">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder={t('location.search.placeholder')}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="pl-10 pr-10"
+                className="pl-12 pr-12 h-12 text-base font-medium border-2 focus:border-primary/50 rounded-xl"
               />
               {isLoading && (
-                <Loader2 className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin text-muted-foreground" />
+                <Loader2 className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin text-primary" />
               )}
             </div>
 
             {/* Results Dropdown */}
             {showResults && (
-              <div className="absolute top-full z-50 mt-2 w-full rounded-lg border border-border bg-popover shadow-lg">
+              <div className="absolute top-full z-50 mt-2 w-full rounded-xl glass-surface-strong shadow-xl">
                 <div className="max-h-[300px] overflow-y-auto p-2">
                   {results.map((result, index) => (
                     <button
                       key={`${result.latitude}-${result.longitude}-${index}`}
                       onClick={() => handleSelect(result)}
-                      className="flex w-full items-start gap-3 rounded-md p-3 text-left transition-colors hover:bg-accent"
+                      className="flex w-full items-start gap-3 rounded-lg p-4 text-left transition-all hover:bg-accent/40 hover:scale-[1.02] active:scale-[0.98] focus-ring-strong"
                     >
-                      <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                      <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
                       <div className="flex-1 space-y-1">
-                        <p className="font-medium text-foreground">{result.name}</p>
-                        <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                        <p className="font-semibold text-foreground">{result.name}</p>
+                        <div className="flex flex-wrap gap-2 text-sm font-medium text-muted-foreground">
                           {result.admin1 && <span>{result.admin1}</span>}
                           <span>{result.country}</span>
                         </div>
@@ -103,14 +105,14 @@ export function LocationSearch({
 
             {/* Error State */}
             {error && query.length > 0 && (
-              <p className="mt-2 text-sm text-destructive">
+              <p className="mt-2 text-sm font-medium text-destructive">
                 {t('location.search.error')}
               </p>
             )}
 
             {/* No Results */}
             {!isLoading && query.length > 0 && results.length === 0 && !error && (
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="mt-2 text-sm font-medium text-muted-foreground">
                 {t('location.search.noResults')}
               </p>
             )}

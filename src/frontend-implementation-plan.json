@@ -1,114 +1,70 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Turkish-default bilingual (TR/EN) UI with header language toggle and full translation coverage",
+  "title": "Normalize glass surface opacity to 30% across all panels",
   "requirements": [
     {
-      "id": "REQ-10",
-      "summary": "Add app-wide i18n layer supporting Turkish (default) and English with complete key coverage and no hardcoded user-facing strings in translated scope.",
+      "id": "REQ-1",
+      "summary": "Adjust global glass surface utility classes to 30% opaque / 70% transparent while preserving existing blur, borders, and shadows.",
       "acceptanceCriteria": [
-        "On first load (no prior user preference), the UI renders in Turkish.",
-        "All translation keys have values for both Turkish (tr) and English (en).",
-        "No user-facing strings are hardcoded in components that are in scope for translation (they must come from the i18n layer)."
+        "In `frontend/src/index.css`, `.glass-surface` and `.glass-surface-strong` use a background color alpha of 0.3 (70% transparent) rather than the previous value.",
+        "UI panels using these classes (e.g., header/footer, cards already using `glass-surface(-strong)`) visibly match the new transparency level in both light and dark modes."
       ],
       "file_operations": [
-        {
-          "path": "frontend/src/i18n/translations.ts",
-          "operation": "create",
-          "description": "Create centralized translation dictionaries for tr and en, ensuring every key used by the app exists in both locales (including weather condition keys)."
-        },
-        {
-          "path": "frontend/src/i18n/I18nProvider.tsx",
-          "operation": "create",
-          "description": "Create an I18nProvider (React context) that exposes the active locale and a translation function (e.g., t(key)) with safe fallback behavior (missing/unknown keys still return a user-safe string)."
-        },
-        {
-          "path": "frontend/src/i18n/useI18n.ts",
-          "operation": "create",
-          "description": "Create a small hook to access i18n context (locale, setLocale, t) from components without prop drilling."
-        },
-        {
-          "path": "frontend/src/main.tsx",
-          "operation": "modify",
-          "description": "Wrap the app with I18nProvider so translations are available app-wide and components can render using the i18n layer."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Replace header, empty-state, and footer user-facing strings with i18n translation lookups via the i18n layer (no hardcoded strings in translated scope)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-11",
-      "summary": "Add a visible header language switcher to toggle between Turkish and English with immediate UI updates.",
-      "acceptanceCriteria": [
-        "A language control is visible in the header area near the existing title/icon.",
-        "Toggling the language updates the UI text immediately without a page reload.",
-        "The toggle has clear labels for both languages (e.g., “TR” and “EN” or “Türkçe” and “English”)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Add a language switcher control in the header near the title/icon; implement it by composing existing shadcn-ui components (e.g., Button) for a clear TR/EN toggle. Verify the component's usage instructions before implementing."
-        },
         {
           "path": "frontend/src/index.css",
           "operation": "modify",
-          "description": "Add minimal global styling adjustments if needed to ensure the header language switcher aligns well with existing layout and remains visible/accessible across themes (without modifying any files under frontend/src/components/ui)."
+          "description": "Update `.glass-surface` and `.glass-surface-strong` background alpha to 0.3 (from current 0.5) while keeping existing backdrop blur, border widths/colors, and box-shadow values unchanged."
         }
       ]
     },
     {
-      "id": "REQ-12",
-      "summary": "Persist selected language on the client and restore it on reload with Turkish fallback for missing/invalid values.",
+      "id": "REQ-2",
+      "summary": "Make the Weather tab Laundry Drying panel use the global glass surface styling instead of a custom semi-opaque card background.",
       "acceptanceCriteria": [
-        "After changing language and refreshing the page, the selected language remains active.",
-        "If persisted language is missing or invalid, the app falls back to Turkish."
+        "`frontend/src/components/LaundryDryingRecommendation.tsx` no longer uses a hard-coded `bg-card/80 backdrop-blur-sm` surface that breaks the global transparency ratio.",
+        "The Laundry Drying panel background transparency matches other app windows/panels that use `.glass-surface` / `.glass-surface-strong` (30% opaque / 70% transparent)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/i18n/I18nProvider.tsx",
+          "path": "frontend/src/components/LaundryDryingRecommendation.tsx",
           "operation": "modify",
-          "description": "Implement client persistence (e.g., localStorage) for the selected locale and restoration on load; validate persisted value and fall back to 'tr' when absent/invalid; ensure locale changes re-render text immediately without reload."
+          "description": "Replace the top-level Laundry panel surface styling (`bg-card/80 backdrop-blur-sm`) with the global `glass-surface` (or `glass-surface-strong`) class so it inherits the 0.3 alpha glass ratio; keep internal layout and content unchanged."
         }
       ]
     },
     {
-      "id": "REQ-13",
-      "summary": "Translate all existing user-facing UI text (App, LocationSearch, WeatherPanel) and localize weather condition descriptions derived from weather codes.",
+      "id": "REQ-3",
+      "summary": "Ensure all major panels/windows across Weather, Farmer, Driver, Radar, Beach, and empty states consistently use the global glass utilities (or equivalent 0.3 alpha surfaces).",
       "acceptanceCriteria": [
-        "Strings currently present in frontend/src/App.tsx (e.g., “Weather Dashboard”, empty state heading/description, footer text) are translated and switchable.",
-        "Strings currently present in frontend/src/components/LocationSearch.tsx (placeholder, error message, no results message) are translated and switchable.",
-        "Strings currently present in frontend/src/components/WeatherPanel.tsx (section titles and labels like “Current Weather”, “Feels like”, “Wind Speed”, “Humidity”, “Pressure”, “Cloud Cover”, “24-Hour Forecast”, “7-Day Forecast”, “High”, “Low”, and error text) are translated and switchable.",
-        "Weather condition descriptions currently returned from frontend/src/lib/weatherTheme.ts (e.g., “Clear sky”, “Overcast”, etc.) are localized for both Turkish and English and update when the language is changed."
+        "No prominent panel/window remains at a noticeably different opacity than the updated global ratio when navigating across tabs.",
+        "Any exceptions found during review are updated to use `.glass-surface` or `.glass-surface-strong` (or an equivalent 0.3 alpha surface) without changing layout or functionality."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/components/FarmerGardenWeatherPanel.tsx",
           "operation": "modify",
-          "description": "Translate all user-facing strings in App (header title, empty-state heading/description, footer copy) by replacing literals with i18n keys; ensure switching locale updates these strings immediately."
+          "description": "Update prominent Farmer tab card surfaces currently using `bg-card/80 backdrop-blur-sm` to use `glass-surface` / `glass-surface-strong` instead, preserving grid/layout and all inner content styling."
         },
         {
-          "path": "frontend/src/components/LocationSearch.tsx",
+          "path": "frontend/src/components/DriverWeatherPanel.tsx",
           "operation": "modify",
-          "description": "Translate placeholder text and all user-facing messages (error/no results) by using the i18n hook; keep composing existing shadcn-ui components (Input/Button/Card/etc.) without modifying ui components. Verify the component's usage instructions before implementing."
+          "description": "Update prominent Driver tab card surfaces currently using `bg-card/60 backdrop-blur-sm` to use `glass-surface` / `glass-surface-strong` for consistent 0.3 alpha glass panels, without changing sizing, spacing, or functionality."
         },
         {
-          "path": "frontend/src/components/WeatherPanel.tsx",
+          "path": "frontend/src/components/radar/RadarEmptyState.tsx",
           "operation": "modify",
-          "description": "Translate all labels/titles/error text in the weather panel via i18n; ensure forecast labels (Current Weather, Feels like, Wind Speed, Humidity, Pressure, Cloud Cover, 24-Hour Forecast, 7-Day Forecast, High, Low) update when locale changes. Verify the component's usage instructions before implementing."
+          "description": "Replace the Radar empty-state container surface (`bg-card/60 backdrop-blur-sm`) with `glass-surface` so it matches the global glass opacity ratio."
         },
         {
-          "path": "frontend/src/lib/weatherTheme.ts",
+          "path": "frontend/src/components/RadarScreen.tsx",
           "operation": "modify",
-          "description": "Refactor weather condition descriptions to be locale-driven by returning a stable translation key (or delegating localization via the i18n layer) rather than hardcoded English strings; ensure unknown codes map to an i18n-backed 'unknown' description."
+          "description": "Update the Radar main container and major surface wrappers currently using `bg-card/60` and `bg-background/80` (with blur) to use `glass-surface` / `glass-surface-strong` (or an equivalent 0.3 alpha surface) so Radar panels match the app-wide glass ratio; keep the map layering/z-index behavior unchanged."
         },
         {
-          "path": "frontend/src/i18n/translations.ts",
+          "path": "frontend/src/components/radar/RadarOverlayStatus.tsx",
           "operation": "modify",
-          "description": "Add/complete translation keys for all user-facing strings used by App, LocationSearch, WeatherPanel, and weather condition descriptions for supported weather codes; ensure both tr and en dictionaries contain all keys."
+          "description": "Adjust the overlay status alert surface styling (`bg-background/95 backdrop-blur-sm`) to match the global glass ratio by using `glass-surface` (or an equivalent 0.3 alpha surface), maintaining its absolute positioning and z-index."
         }
       ]
     }

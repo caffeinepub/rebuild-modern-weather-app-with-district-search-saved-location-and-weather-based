@@ -1,94 +1,69 @@
 {
   "kind": "build_request",
-  "title": "Add Turkish-default bilingual (TR/EN) UI with language toggle and full translation coverage",
+  "title": "Apply 30% opaque / 70% transparent glass surfaces across all panels (including Weather tab laundry panel)",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-10",
-      "text": "Implement app-wide i18n with two locales (Turkish and English), where Turkish is the default locale on first load.",
+      "id": "REQ-1",
+      "text": "Update the global glass surface utilities so that all UI “window/panel” surfaces using `.glass-surface` and `.glass-surface-strong` render at 30% opaque / 70% transparent (i.e., background alpha = 0.3) while preserving existing blur, borders, and shadows.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-1"
         ],
         "quotes": [
-          "Uygulama dili türkçe olsun ingilizce alternatif olsun",
-          "1 evet 2 evet herşey çevrilsin",
-          "build"
+          "Tüm pencerelerde bu oran olsun",
+          "şeffaflık durumunu 30 opak - 70 şeffaf şeklinde yeniden düzenle"
         ]
       },
       "acceptanceCriteria": [
-        "On first load (no prior user preference), the UI renders in Turkish.",
-        "All translation keys have values for both Turkish (tr) and English (en).",
-        "No user-facing strings are hardcoded in components that are in scope for translation (they must come from the i18n layer)."
+        "In `frontend/src/index.css`, `.glass-surface` and `.glass-surface-strong` use a background color alpha of 0.3 (70% transparent) rather than the previous value.",
+        "UI panels using these classes (e.g., header/footer, cards already using `glass-surface(-strong)`) visibly match the new transparency level in both light and dark modes."
       ]
     },
     {
-      "id": "REQ-11",
-      "text": "Add a visible language switcher (toggle or segmented control) in the main header that allows the user to switch between Turkish and English at any time.",
+      "id": "REQ-2",
+      "text": "Ensure the Laundry Drying panel in the Weather tab uses the same global glass surface styling (30% opaque / 70% transparent) as other windows/panels, instead of its current custom `bg-card/80` styling, so it visually matches the rest of the app.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-1"
         ],
         "quotes": [
-          "İngilizce’ye geçiş için kullanıcıya bir dil değiştirici (ör. sağ üstte bir toggle) eklememi ister misiniz?",
-          "2 evet"
+          "çamaşır kurutma penceresinde neden bu opaklık durumu yok orada da istiyorum",
+          "hava durumu sekmesinde ondada aynı oranda olsun"
         ]
       },
       "acceptanceCriteria": [
-        "A language control is visible in the header area near the existing title/icon.",
-        "Toggling the language updates the UI text immediately without a page reload.",
-        "The toggle has clear labels for both languages (e.g., “TR” and “EN” or “Türkçe” and “English”)."
+        "`frontend/src/components/LaundryDryingRecommendation.tsx` no longer uses a hard-coded `bg-card/80 backdrop-blur-sm` surface that breaks the global transparency ratio.",
+        "The Laundry Drying panel background transparency matches other app windows/panels that use `.glass-surface` / `.glass-surface-strong` (30% opaque / 70% transparent)."
       ]
     },
     {
-      "id": "REQ-12",
-      "text": "Persist the user’s selected language on the client (e.g., localStorage) and restore it on reload so the app stays in the previously selected language.",
+      "id": "REQ-3",
+      "text": "Verify and enforce that all other major window/panel surfaces across all tabs (Weather, Farmer, Driver, Radar, Beach, and empty states) use the global glass utilities (or otherwise match the 30% opaque / 70% transparent ratio) so the transparency is consistent app-wide.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-1"
         ],
         "quotes": [
-          "İngilizce alternatif olsun",
-          "2 evet"
+          "1-Tüm pencerelerde bu oran olsun"
         ]
       },
       "acceptanceCriteria": [
-        "After changing language and refreshing the page, the selected language remains active.",
-        "If persisted language is missing or invalid, the app falls back to Turkish."
-      ]
-    },
-    {
-      "id": "REQ-13",
-      "text": "Translate all existing user-facing UI text in the current app into Turkish and English, including (but not limited to) header title, empty-state text, search placeholder, error/no-results messages, weather panel headings/labels, and weather condition descriptions derived from weather codes.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "recent-messages"
-        ],
-        "quotes": [
-          "herşey çevrilsin"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Strings currently present in frontend/src/App.tsx (e.g., “Weather Dashboard”, empty state heading/description, footer text) are translated and switchable.",
-        "Strings currently present in frontend/src/components/LocationSearch.tsx (placeholder, error message, no results message) are translated and switchable.",
-        "Strings currently present in frontend/src/components/WeatherPanel.tsx (section titles and labels like “Current Weather”, “Feels like”, “Wind Speed”, “Humidity”, “Pressure”, “Cloud Cover”, “24-Hour Forecast”, “7-Day Forecast”, “High”, “Low”, and error text) are translated and switchable.",
-        "Weather condition descriptions currently returned from frontend/src/lib/weatherTheme.ts (e.g., “Clear sky”, “Overcast”, etc.) are localized for both Turkish and English and update when the language is changed."
+        "No prominent panel/window remains at a noticeably different opacity than the updated global ratio when navigating across tabs.",
+        "Any exceptions found during review are updated to use `.glass-surface` or `.glass-surface-strong` (or an equivalent 0.3 alpha surface) without changing layout or functionality."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (read-only components must be composed, not modified).",
-    "Do not edit frontend/src/hooks/useInternetIdentity.ts or frontend/src/hooks/useActor.ts (immutable paths).",
-    "Keep the backend as a single Motoko actor; do not add new backend services or external databases."
+    "Do not change the weather-based background images or their transition behavior; only adjust UI surfaces above the background (keep `BackgroundIllustration` behavior unchanged).",
+    "Do not edit files under `frontend/src/components/ui` (immutable UI components); apply changes via composition and app-level styles/components instead."
   ],
   "nonGoals": [
-    "Adding additional languages beyond Turkish and English.",
-    "Adding third-party authentication or requiring login for language selection.",
-    "Moving Open-Meteo API calls to the backend."
+    "Adding new tabs, features, or changing weather data fetching/logic.",
+    "Backend changes (backend actor remains unchanged)."
   ],
   "imageRequirements": {
     "required": [],

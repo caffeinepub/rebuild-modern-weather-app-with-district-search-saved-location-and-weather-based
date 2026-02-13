@@ -1,12 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Add app-wide bilingual UI (Turkish/English) with Turkish as the default language, including a header language toggle and complete translation coverage across the existing UI.
+**Goal:** Make all app window/panel “glass” surfaces consistently render at 30% opaque / 70% transparent across every tab, including the Weather tab’s Laundry Drying panel.
 
 **Planned changes:**
-- Implement a frontend i18n layer with two locales (tr, en) and default to Turkish on first load when no prior preference exists.
-- Add a visible language switcher in the main header (near the existing title/icon) to toggle between TR and EN with immediate UI updates (no reload).
-- Persist the selected language on the client (e.g., localStorage) and restore it on reload, with fallback to Turkish if missing/invalid.
-- Replace existing hardcoded user-facing strings with i18n keys/values across current screens/components, including header/title, empty states, search UI (placeholder/errors/no results), weather panel labels/headings/messages, and localized weather condition descriptions derived from weather codes.
+- Update global `.glass-surface` and `.glass-surface-strong` styles to use a background alpha of `0.3` while preserving existing blur, borders, and shadows.
+- Replace the Laundry Drying panel’s custom surface styling with the global glass surface utility so it matches the rest of the app.
+- Review major panels across Weather, Farmer, Driver, Radar, Beach, and empty states to ensure they use the global glass utilities (or an equivalent 0.3 alpha surface) without changing layout or functionality.
 
-**User-visible outcome:** The app opens in Turkish by default, users can switch between Turkish and English from the header at any time, their choice is remembered after refresh, and all visible UI text (including weather condition descriptions) is translated in both languages.
+**User-visible outcome:** All panels/windows throughout the app (including the Laundry Drying panel) have the same 30% opaque glass look, creating consistent transparency in both light and dark modes while background weather images remain unchanged.
