@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { ThemeProvider } from './components/ThemeProvider';
 import { LocationSearch } from './components/LocationSearch';
 import { WeatherPanel } from './components/WeatherPanel';
@@ -10,6 +10,7 @@ import { BottomNav } from './components/BottomNav';
 import { BackgroundIllustration } from './components/BackgroundIllustration';
 import { InitialRenderErrorBoundary } from './components/InitialRenderErrorBoundary';
 import { ImminentWeatherAlertBanner } from './components/ImminentWeatherAlertBanner';
+import { LanguageDropdownOverlay } from './components/LanguageDropdownOverlay';
 import { I18nProvider } from './i18n/I18nProvider';
 import { usePersistedLocation } from './hooks/usePersistedLocation';
 import { useWeather } from './hooks/useWeather';
@@ -19,19 +20,14 @@ import { useI18n } from './i18n/useI18n';
 import type { SavedLocation } from './hooks/usePersistedLocation';
 import type { TranslationKey } from './i18n/translations';
 import { Cloud, Languages } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 function AppContent() {
   const { location, setLocation, clearLocation } = usePersistedLocation();
   const [activeLocation, setActiveLocation] = useState<SavedLocation | null>(null);
   const [activeTab, setActiveTab] = useState<'weather' | 'farmer' | 'driver' | 'radar' | 'beach'>('weather');
-  const { locale, setLocale, t } = useI18n();
+  const { locale, t } = useI18n();
+  const [isLangOpen, setIsLangOpen] = useState(false);
+  const langButtonRef = useRef<HTMLButtonElement>(null);
 
   // Initialize active location from persisted data
   useEffect(() => {
@@ -95,29 +91,15 @@ function AppContent() {
                 <h1 className="text-2xl font-bold tracking-tight">WeatherVerse</h1>
               </div>
               
-              {/* Language Switcher */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 font-semibold border-2 hover:border-primary/50 hover:bg-primary/5 focus-ring-strong">
-                    <Languages className="h-4 w-4" />
-                    <span className="hidden sm:inline">{locale === 'tr' ? 'TR' : 'EN'}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="glass-surface">
-                  <DropdownMenuItem
-                    onClick={() => setLocale('tr')}
-                    className={`cursor-pointer font-medium ${locale === 'tr' ? 'bg-primary/20 text-primary' : 'hover:bg-accent/50'}`}
-                  >
-                    {t('language.turkish')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setLocale('en')}
-                    className={`cursor-pointer font-medium ${locale === 'en' ? 'bg-primary/20 text-primary' : 'hover:bg-accent/50'}`}
-                  >
-                    {t('language.english')}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {/* Language Switcher Button */}
+              <button
+                ref={langButtonRef}
+                onClick={() => setIsLangOpen(!isLangOpen)}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-semibold border-2 rounded-md hover:border-primary/50 hover:bg-primary/5 transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <Languages className="h-4 w-4" />
+                <span className="hidden sm:inline">{locale === 'tr' ? 'TR' : 'EN'}</span>
+              </button>
             </div>
           </header>
 
@@ -194,7 +176,18 @@ function AppContent() {
 
           {/* Footer */}
           <footer className="glass-surface-strong border-t-2 mt-auto">
-            <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
+            <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground space-y-2">
+              <p>
+                Weather data provided by{' '}
+                <a
+                  href="https://open-meteo.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-primary hover:underline hover:text-accent transition-colors"
+                >
+                  Open-Meteo
+                </a>
+              </p>
               <p>
                 © {new Date().getFullYear()} · {t('footer.builtWith')}{' '}
                 <a
@@ -216,6 +209,13 @@ function AppContent() {
         <div className="fixed bottom-0 left-0 right-0 z-20">
           <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
         </div>
+
+        {/* Language Dropdown Overlay (Portal) */}
+        <LanguageDropdownOverlay
+          isOpen={isLangOpen}
+          onClose={() => setIsLangOpen(false)}
+          triggerRef={langButtonRef}
+        />
       </div>
     </ThemeProvider>
   );

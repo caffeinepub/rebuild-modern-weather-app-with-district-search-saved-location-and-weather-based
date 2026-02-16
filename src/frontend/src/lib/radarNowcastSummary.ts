@@ -1,4 +1,4 @@
-import type { RainViewerData } from './rainviewer';
+import type { RainViewerData, RadarFrame } from './rainviewer';
 import type { SavedLocation } from '../hooks/usePersistedLocation';
 import type { TranslationKey } from '../i18n/translations';
 
@@ -11,10 +11,11 @@ interface RadarSummary {
 
 export function computeRadarSummary(
   radarData: RainViewerData | null | undefined,
+  playbackFrames: RadarFrame[],
   currentFrameIndex: number,
   location: SavedLocation
 ): RadarSummary {
-  if (!radarData || radarData.frames.length === 0) {
+  if (!radarData || playbackFrames.length === 0) {
     return {
       startTime: '--',
       duration: '--',
@@ -23,7 +24,7 @@ export function computeRadarSummary(
     };
   }
 
-  const currentFrame = radarData.frames[currentFrameIndex];
+  const currentFrame = playbackFrames[currentFrameIndex];
   const now = Date.now() / 1000;
   
   // Calculate start time
@@ -40,15 +41,15 @@ export function computeRadarSummary(
   }
 
   // Estimate duration (based on number of frames)
-  const duration = `~${Math.round(radarData.frames.length * 5)} min`;
+  const duration = `~${Math.round(playbackFrames.length * 5)} min`;
 
   // Estimate intensity (simple heuristic based on frame count)
   let intensity: TranslationKey = 'radar.intensity.none';
-  if (radarData.frames.length > 20) {
+  if (playbackFrames.length > 20) {
     intensity = 'radar.intensity.heavy';
-  } else if (radarData.frames.length > 10) {
+  } else if (playbackFrames.length > 10) {
     intensity = 'radar.intensity.moderate';
-  } else if (radarData.frames.length > 0) {
+  } else if (playbackFrames.length > 0) {
     intensity = 'radar.intensity.light';
   }
 

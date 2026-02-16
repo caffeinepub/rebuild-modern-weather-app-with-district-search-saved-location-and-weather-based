@@ -1,97 +1,84 @@
 {
   "kind": "build_request",
-  "title": "WeatherVerse branding + imminent weather alerts with optional Android WebView notification bridge",
+  "title": "Show upcoming-hours (nowcast) radar/cloud imagery instead of past frames",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update app branding so the name \"WeatherVerse\" is displayed consistently across the web app (HTML document title and in-app header title) for all locales.",
+      "text": "Update RainViewer radar data parsing so the app can prefer upcoming-hours (nowcast) frames instead of historical (past) frames for radar playback.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-13",
-          "recent-15"
+          "msg-4"
         ],
         "quotes": [
-          "Uygulama ismini WeatherVerse olarak işle uygulama ismi olarak her yerde WeatherVerse ismi gözüksün",
-          "başla"
+          "radarda bulutların geçmiş görüntüsü değil ilerleyen saatlerdeki görüntüsünü istiyorum"
         ]
       },
       "acceptanceCriteria": [
-        "The browser tab/title in `frontend/index.html` is \"WeatherVerse\".",
-        "The in-app header title (currently `t('header.title')` in `frontend/src/App.tsx`) renders \"WeatherVerse\" in both English and Turkish locales.",
-        "No other user-facing title string contradicts the WeatherVerse name."
+        "The RainViewer fetch/parsing layer preserves a distinction between past frames and nowcast (future) frames (e.g., separate arrays or equivalent metadata), rather than only providing a single combined list.",
+        "Radar playback can be configured to use only nowcast frames for the timeline and animation when nowcast frames are available.",
+        "If the RainViewer API response contains no nowcast frames, the app falls back to past frames to avoid an empty radar experience."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Implement an imminent weather event alert system that detects if rain, snow, storm/thunderstorm, or fog is expected within approximately the next 1 hour for the selected location, and displays an in-app alert banner when triggered.",
+      "text": "Change the Radar screen playback behavior so that the default displayed/played frames are future/nowcast frames (upcoming hours) rather than past frames.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-4"
+          "msg-4"
         ],
         "quotes": [
-          "Birşey soracağım mesele kısa şöyle bildirimler vermemiz mümkün mü yağmur başlayacak, kar başlayacak, fırtına başlayacak, sis etkili olacak gib isinden işte 1 saate filan diye"
+          "radarda bulutların geçmiş görüntüsü değil ilerleyen saatlerdeki görüntüsünü istiyorum"
         ]
       },
       "acceptanceCriteria": [
-        "When a location is selected and weather data is available, the app evaluates the next ~1 hour of forecast data and determines whether any of: rain, snow, storm/thunderstorm, fog is imminent.",
-        "If at least one imminent event is detected, an alert banner is shown in the UI (in-app), with a clear title and message in English when locale is EN and in Turkish when locale is TR.",
-        "The alert banner can be dismissed, and dismissal prevents it from immediately reappearing for the same event unless the detected event changes or a reasonable time window has passed (persist the dismissal state in sessionStorage or localStorage).",
-        "The implementation does not require any backend changes; it runs purely in the frontend using the existing Open-Meteo-derived `weatherData` from `useWeather`."
+        "When a location is selected and radar data loads, the timeline/slider range represents upcoming (nowcast) frames by default (not historical frames).",
+        "The initial selected frame is the earliest available nowcast frame at/after the current time (or the closest available upcoming frame), not a past frame.",
+        "The 'Past' vs 'Nowcast/Forecast' indicator shown in the playback controls reflects the new default behavior (i.e., it should show the nowcast/forecast state under normal conditions)."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Add an optional JavaScript-to-Android WebView bridge integration that, when an imminent weather alert is detected, calls an Android-provided bridge function (if present) so the native Android layer can display a system notification.",
+      "text": "Ensure the Radar map overlay uses the same nowcast frame selection used by playback controls, so the visible radar tiles correspond to the chosen upcoming-hours frame index.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-12"
+          "msg-4"
         ],
         "quotes": [
-          "web tarafından çağrı gitse anroid tarafı da bildirimi gösterse olur mu?"
+          "radarda bulutların geçmiş görüntüsü değil ilerleyen saatlerdeki görüntüsünü istiyorum"
         ]
       },
       "acceptanceCriteria": [
-        "The web app checks for the presence of an Android bridge function on `window` (e.g., `window.Android.showNotification`) before calling it; if absent, the app continues without errors.",
-        "When an imminent weather alert is newly triggered (not repeatedly on every re-render/refetch), the app invokes the bridge with enough information for Android to show a notification (at minimum: title and message; optionally include a type/severity).",
-        "Duplicate Android bridge calls are suppressed for the same alert within a short cooldown window (e.g., tracked via sessionStorage/localStorage) so the native side does not spam notifications.",
-        "TypeScript is satisfied (add a safe `declare global` typing for `window.Android` in a non-immutable path)."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Choose and apply a cohesive visual theme for WeatherVerse (colors, typography, and component styling) that fits a modern weather-alert dashboard, and use it consistently for the new alert banner and any new UI controls added for alerts/bridge behavior.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "recent-15"
-        ],
-        "quotes": [
-          "başla"
-        ]
-      },
-      "acceptanceCriteria": [
-        "A single, coherent visual direction is applied (e.g., warm neutrals + high-contrast accent) without introducing new product features.",
-        "New alert UI uses the existing Tailwind + shadcn components and matches existing glass-surface styling conventions.",
-        "No blue/purple-dominant theme is introduced unless it already exists in the project tokens."
+        "Changing the radar frame via the slider/buttons updates the map precipitation tile layer to the corresponding nowcast frame path.",
+        "No past frame is displayed on the map when nowcast frames are available and nowcast mode is active by default.",
+        "Radar alerts logic continues to function with the updated frame list and does not crash when the frame list composition changes (past vs nowcast)."
       ]
     }
   ],
   "constraints": [
-    "Frontend immutable paths must not be edited: `frontend/src/hooks/useInternetIdentity.ts`, `frontend/src/hooks/useInternetIdentity.tsx`, `frontend/src/hooks/useActor.ts`, `frontend/src/main.tsx`, `frontend/src/components/ui`.",
-    "Backend must remain single-actor (`backend/main.mo`); do not introduce additional backend services.",
-    "Do not implement real web push notifications (not supported on this platform); only in-app alerts and an optional WebView bridge call are in scope."
+    "Do not edit any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or anything in frontend/src/components/ui (compose instead).",
+    "Keep the backend as a single Motoko actor; do not introduce additional backend services."
   ],
   "nonGoals": [
-    "Building or configuring the native Android notification system in Android Studio (assumed to be handled by the user).",
-    "Implementing APNs/FCM, service workers, or any true push notification delivery from the Internet Computer.",
-    "Adding external databases or third-party auth providers beyond Internet Identity."
+    "Adding a brand-new radar provider or switching away from the RainViewer API.",
+    "Implementing real-time radar streaming beyond the existing periodic refresh behavior.",
+    "Adding a backend persistence layer for radar frames or user preferences."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

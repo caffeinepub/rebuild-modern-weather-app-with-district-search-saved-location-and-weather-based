@@ -1,19 +1,20 @@
 import { Clock, Droplets, Navigation, Gauge } from 'lucide-react';
 import { useI18n } from '../../i18n/useI18n';
 import type { SavedLocation } from '../../hooks/usePersistedLocation';
-import type { RainViewerData } from '../../lib/rainviewer';
+import type { RainViewerData, RadarFrame } from '../../lib/rainviewer';
 import { computeRadarSummary } from '../../lib/radarNowcastSummary';
 
 interface RadarInfoPanelProps {
   location: SavedLocation;
   radarData: RainViewerData | null | undefined;
+  playbackFrames: RadarFrame[];
   currentFrameIndex: number;
 }
 
-export function RadarInfoPanel({ location, radarData, currentFrameIndex }: RadarInfoPanelProps) {
+export function RadarInfoPanel({ location, radarData, playbackFrames, currentFrameIndex }: RadarInfoPanelProps) {
   const { t } = useI18n();
 
-  const summary = computeRadarSummary(radarData, currentFrameIndex, location);
+  const summary = computeRadarSummary(radarData, playbackFrames, currentFrameIndex, location);
 
   return (
     <div className="p-4">

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Card } from '@/components/ui/card';
 
 interface FloatingAutocompleteDropdownProps {
   anchorRef: React.RefObject<HTMLElement | null>;
@@ -112,11 +111,11 @@ export function FloatingAutocompleteDropdown({
       }}
       className="animate-in fade-in-0 zoom-in-95"
     >
-      <Card className={`glass-surface-strong shadow-xl overflow-hidden ${className}`}>
+      <div className={`glass-surface-strong shadow-xl overflow-hidden rounded-xl border-2 ${className}`}>
         <div className="overflow-y-auto" style={{ maxHeight: `${position.maxHeight}px` }}>
           {children}
         </div>
-      </Card>
+      </div>
     </div>,
     document.body
   );

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { RadarEmptyState } from './radar/RadarEmptyState';
 import { RadarMap } from './radar/RadarMap';
 import { RadarPlaybackControls } from './radar/RadarPlaybackControls';
@@ -11,6 +11,7 @@ import { useRainViewer } from '../hooks/useRainViewer';
 import { useRadarPlayback } from '../hooks/useRadarPlayback';
 import { useRadarAlerts } from '../hooks/useRadarAlerts';
 import { useRadarOverlayData } from '../hooks/useRadarOverlayData';
+import { getPreferredPlaybackFrames, getInitialFrameIndex } from '../lib/rainviewer';
 import { LocationSearch } from './LocationSearch';
 import type { SavedLocation } from '../hooks/usePersistedLocation';
 import { useI18n } from '../i18n/useI18n';
@@ -37,6 +38,12 @@ export function RadarScreen({ location, onLocationSelect, onClearLocation }: Rad
     isError: isOverlayError 
   } = useRadarOverlayData(location);
 
+  // Compute preferred playback frames (nowcast-only when available; otherwise past)
+  const playbackFrames = useMemo(() => getPreferredPlaybackFrames(radarData), [radarData]);
+  
+  // Compute initial frame index (earliest upcoming nowcast frame)
+  const initialFrameIndex = useMemo(() => getInitialFrameIndex(playbackFrames), [playbackFrames]);
+
   // Playback state
   const {
     currentFrameIndex,
@@ -47,12 +54,13 @@ export function RadarScreen({ location, onLocationSelect, onClearLocation }: Rad
     getCurrentFrame,
     getFrameLabel,
     isPastFrame,
-  } = useRadarPlayback(radarData?.frames || []);
+  } = useRadarPlayback(playbackFrames, initialFrameIndex);
 
   // Alert system
   const { alertSettings, updateAlertSettings, activeAlert, dismissAlert } = useRadarAlerts(
     location,
     radarData,
+    playbackFrames,
     currentFrameIndex
   );
 
@@ -153,7 +161,7 @@ export function RadarScreen({ location, onLocationSelect, onClearLocation }: Rad
         <div className="border-t border-border/40 bg-background/30 backdrop-blur-sm p-4">
           <RadarPlaybackControls
             currentFrameIndex={currentFrameIndex}
-            totalFrames={radarData?.frames.length || 0}
+            totalFrames={playbackFrames.length}
             isPlaying={isPlaying}
             onPlay={play}
             onPause={pause}
@@ -168,6 +176,7 @@ export function RadarScreen({ location, onLocationSelect, onClearLocation }: Rad
           <RadarInfoPanel
             location={location}
             radarData={radarData}
+            playbackFrames={playbackFrames}
             currentFrameIndex={currentFrameIndex}
           />
         </div>

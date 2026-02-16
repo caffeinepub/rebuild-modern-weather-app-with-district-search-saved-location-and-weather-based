@@ -1,11 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { searchLocations, type GeocodingResult } from '../lib/openMeteo';
 import { useDebounce } from 'react-use';
+import { useState } from 'react';
 
 export function useGeocodingSearch(query: string) {
-  const [results, setResults] = useState<GeocodingResult[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
   // Debounce the query to avoid too many API calls
@@ -17,46 +15,22 @@ export function useGeocodingSearch(query: string) {
     [query]
   );
 
-  useEffect(() => {
-    if (!debouncedQuery || debouncedQuery.length < 2) {
-      setResults([]);
-      setError(null);
-      return;
-    }
-
-    let cancelled = false;
-
-    const fetchResults = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const data = await searchLocations(debouncedQuery);
-        if (!cancelled) {
-          setResults(data);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err : new Error('Search failed'));
-          setResults([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
+  const { data: results = [], isLoading, error } = useQuery<GeocodingResult[]>({
+    queryKey: ['geocoding', debouncedQuery],
+    queryFn: async () => {
+      if (!debouncedQuery || debouncedQuery.length < 2) {
+        return [];
       }
-    };
-
-    void fetchResults();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [debouncedQuery]);
+      return searchLocations(debouncedQuery);
+    },
+    enabled: debouncedQuery.length >= 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+  });
 
   return {
     results,
     isLoading,
-    error,
+    error: error instanceof Error ? error : null,
   };
 }

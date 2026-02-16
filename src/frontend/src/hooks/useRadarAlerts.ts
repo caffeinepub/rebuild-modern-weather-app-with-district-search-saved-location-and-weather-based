@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { SavedLocation } from './usePersistedLocation';
-import type { RainViewerData } from '../lib/rainviewer';
+import type { RainViewerData, RadarFrame } from '../lib/rainviewer';
 import { useSessionState } from './useSessionState';
 
 export interface RadarAlertSettings {
@@ -24,6 +24,7 @@ const DEFAULT_SETTINGS: RadarAlertSettings = {
 export function useRadarAlerts(
   location: SavedLocation | null,
   radarData: RainViewerData | null | undefined,
+  playbackFrames: RadarFrame[],
   currentFrameIndex: number
 ) {
   const [alertSettings, setAlertSettings] = useSessionState<RadarAlertSettings>(
@@ -35,15 +36,15 @@ export function useRadarAlerts(
 
   // Check for severe conditions
   useEffect(() => {
-    if (!alertSettings.enabled || !location || !radarData) {
+    if (!alertSettings.enabled || !location || !radarData || playbackFrames.length === 0) {
       setActiveAlert(null);
       return;
     }
 
     // Simple heuristic: check if there are many frames (indicating heavy precipitation)
-    const hasHeavyPrecipitation = radarData.frames.length > 15;
+    const hasHeavyPrecipitation = playbackFrames.length > 15;
     
-    if (hasHeavyPrecipitation && currentFrameIndex > radarData.frames.length - 5) {
+    if (hasHeavyPrecipitation && currentFrameIndex > playbackFrames.length - 5) {
       const alertId = `heavy-precip-${Date.now()}`;
       
       if (!dismissedAlerts.has(alertId)) {
@@ -56,7 +57,7 @@ export function useRadarAlerts(
         });
       }
     }
-  }, [alertSettings, location, radarData, currentFrameIndex, dismissedAlerts]);
+  }, [alertSettings, location, radarData, playbackFrames, currentFrameIndex, dismissedAlerts]);
 
   const updateAlertSettings = useCallback((settings: RadarAlertSettings) => {
     setAlertSettings(settings);

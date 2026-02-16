@@ -1,73 +1,55 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-13T13:36:42.867Z",
+  "generatedAt": "2026-02-16T14:59:16.434Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 4,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Update app branding so the name \"WeatherVerse\" is displayed consistently across the web app (HTML document title and in-app header title) for all locales.",
+        "summary": "Update RainViewer radar data parsing so the app can prefer upcoming-hours (nowcast) frames instead of historical (past) frames for radar playback.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/index.html",
-          "frontend/src/i18n/translations.ts",
-          "frontend/src/App.tsx"
+          "frontend/src/lib/rainviewer.ts",
+          "frontend/src/hooks/useRainViewer.ts"
         ],
         "matchedFiles": [
-          "frontend/index.html",
-          "frontend/src/i18n/translations.ts",
-          "frontend/src/App.tsx"
+          "frontend/src/lib/rainviewer.ts"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Implement an imminent weather event alert system that detects if rain, snow, storm/thunderstorm, or fog is expected within approximately the next 1 hour for the selected location, and displays an in-app alert banner when triggered.",
+        "summary": "Change the Radar screen playback behavior so that the default displayed/played frames are future/nowcast frames (upcoming hours) rather than past frames.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/lib/imminentWeatherAlerts.ts",
-          "frontend/src/hooks/useImminentWeatherAlerts.ts",
-          "frontend/src/components/ImminentWeatherAlertBanner.tsx",
-          "frontend/src/i18n/translations.ts",
-          "frontend/src/App.tsx"
+          "frontend/src/hooks/useRadarPlayback.ts",
+          "frontend/src/components/RadarScreen.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/lib/imminentWeatherAlerts.ts",
-          "frontend/src/hooks/useImminentWeatherAlerts.ts",
-          "frontend/src/components/ImminentWeatherAlertBanner.tsx",
-          "frontend/src/i18n/translations.ts",
-          "frontend/src/App.tsx"
+          "frontend/src/hooks/useRadarPlayback.ts",
+          "frontend/src/components/RadarScreen.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Add an optional JavaScript-to-Android WebView bridge integration that, when an imminent weather alert is detected, calls an Android-provided bridge function (if present) so the native Android layer can display a system notification.",
+        "summary": "Ensure the Radar map overlay uses the same nowcast frame selection used by playback controls, so the visible radar tiles correspond to the chosen upcoming-hours frame index.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/types/androidBridge.d.ts",
-          "frontend/src/hooks/useImminentWeatherAlerts.ts"
+          "frontend/src/components/RadarScreen.tsx",
+          "frontend/src/hooks/useRadarAlerts.ts",
+          "frontend/src/lib/radarNowcastSummary.ts",
+          "frontend/src/components/radar/RadarInfoPanel.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/types/androidBridge.d.ts",
-          "frontend/src/hooks/useImminentWeatherAlerts.ts"
-        ]
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Choose and apply a cohesive visual theme for WeatherVerse (colors, typography, and component styling) that fits a modern weather-alert dashboard, and use it consistently for the new alert banner and any new UI controls added for alerts/bridge behavior.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/index.css",
-          "frontend/src/components/ImminentWeatherAlertBanner.tsx",
-          "frontend/tailwind.config.js"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/ImminentWeatherAlertBanner.tsx"
+          "frontend/src/components/RadarScreen.tsx",
+          "frontend/src/hooks/useRadarAlerts.ts",
+          "frontend/src/lib/radarNowcastSummary.ts",
+          "frontend/src/components/radar/RadarInfoPanel.tsx"
         ]
       }
     ]
@@ -77,13 +59,12 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/index.html",
-    "frontend/src/App.tsx",
-    "frontend/src/components/ImminentWeatherAlertBanner.tsx",
-    "frontend/src/hooks/useImminentWeatherAlerts.ts",
-    "frontend/src/i18n/translations.ts",
-    "frontend/src/lib/imminentWeatherAlerts.ts",
-    "frontend/src/types/androidBridge.d.ts",
+    "frontend/src/components/RadarScreen.tsx",
+    "frontend/src/components/radar/RadarInfoPanel.tsx",
+    "frontend/src/hooks/useRadarAlerts.ts",
+    "frontend/src/hooks/useRadarPlayback.ts",
+    "frontend/src/lib/radarNowcastSummary.ts",
+    "frontend/src/lib/rainviewer.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

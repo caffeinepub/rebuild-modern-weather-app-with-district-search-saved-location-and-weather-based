@@ -1,5 +1,5 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import { isDarkWeatherTheme } from '@/lib/weatherContrast';
+import { isDarkWeatherTheme } from '../lib/weatherContrast';
 
 type WeatherTheme = 'clear' | 'cloudy' | 'rain' | 'snow';
 

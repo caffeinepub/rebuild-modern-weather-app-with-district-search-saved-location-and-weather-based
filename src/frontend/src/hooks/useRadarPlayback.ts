@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { RadarFrame } from '../lib/rainviewer';
 
-export function useRadarPlayback(frames: RadarFrame[]) {
-  const [currentFrameIndex, setCurrentFrameIndex] = useState(0);
+export function useRadarPlayback(frames: RadarFrame[], initialFrameIndex?: number) {
+  const [currentFrameIndex, setCurrentFrameIndex] = useState(initialFrameIndex ?? 0);
   const [isPlaying, setIsPlaying] = useState(false);
 
   // Auto-play animation
@@ -24,9 +24,11 @@ export function useRadarPlayback(frames: RadarFrame[]) {
   // Reset when frames change
   useEffect(() => {
     if (frames.length > 0) {
-      setCurrentFrameIndex(Math.max(0, frames.length - 1)); // Start at latest frame
+      // Use provided initial index or default to 0
+      const targetIndex = initialFrameIndex !== undefined ? initialFrameIndex : 0;
+      setCurrentFrameIndex(Math.min(targetIndex, frames.length - 1));
     }
-  }, [frames]);
+  }, [frames, initialFrameIndex]);
 
   const play = useCallback(() => setIsPlaying(true), []);
   const pause = useCallback(() => setIsPlaying(false), []);

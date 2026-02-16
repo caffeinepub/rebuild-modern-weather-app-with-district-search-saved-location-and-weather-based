@@ -89,10 +89,6 @@ export class ExternalBlob {
         return this;
     }
 }
-/**
- * / This backend does not fetch or store marine/beach conditions.
- * / Marine integration is client-side only. (Open-Meteo queries from the TypeScript frontend)
- */
 export interface backendInterface {
 }
 export class Backend implements backendInterface {

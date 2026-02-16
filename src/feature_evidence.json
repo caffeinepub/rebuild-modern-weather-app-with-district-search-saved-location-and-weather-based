@@ -2,12 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-app-branding-so-the-name-weatherverse-is-displayed-consistently-across-the-web-app-html-document-title-and-in-app-header-title-for-all-locales",
-      "featureTitle": "Update app branding so the name \"WeatherVerse\" is displayed consistently across the web app (HTML document title and in-app header title) for all locales.",
+      "featureId": "feature-update-rainviewer-radar-data-parsing-so-the-app-can-prefer-upcoming-hours-nowcast-frames-instead-of-historical-past-frames-for-radar-playback",
+      "featureTitle": "Update RainViewer radar data parsing so the app can prefer upcoming-hours (nowcast) frames instead of historical (past) frames for radar playback.",
       "files": [
-        "frontend/index.html",
-        "frontend/src/App.tsx",
-        "frontend/src/i18n/translations.ts"
+        "frontend/src/lib/rainviewer.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -22,14 +20,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-an-imminent-weather-event-alert-system-that-detects-if-rain-snow-storm-thunderstorm-or-fog-is-expected-within-approximately-the-next-1-hour-for-the-selected-location-and-displays-an-in-app-alert-banner-when-triggered",
-      "featureTitle": "Implement an imminent weather event alert system that detects if rain, snow, storm/thunderstorm, or fog is expected within approximately the next 1 hour for the selected location, and displays an in-app alert banner when triggered.",
+      "featureId": "feature-change-the-radar-screen-playback-behavior-so-that-the-default-displayed-played-frames-are-future-nowcast-frames-upcoming-hours-rather-than-past-frames",
+      "featureTitle": "Change the Radar screen playback behavior so that the default displayed/played frames are future/nowcast frames (upcoming hours) rather than past frames.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/ImminentWeatherAlertBanner.tsx",
-        "frontend/src/hooks/useImminentWeatherAlerts.ts",
-        "frontend/src/i18n/translations.ts",
-        "frontend/src/lib/imminentWeatherAlerts.ts"
+        "frontend/src/components/RadarScreen.tsx",
+        "frontend/src/hooks/useRadarPlayback.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -44,11 +39,13 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-an-optional-javascript-to-android-webview-bridge-integration-that-when-an-imminent-weather-alert-is-detected-calls-an-android-provided-bridge-function-if-present-so-the-native-android-layer-can-display-a-system-notification",
-      "featureTitle": "Add an optional JavaScript-to-Android WebView bridge integration that, when an imminent weather alert is detected, calls an Android-provided bridge function (if present) so the native Android layer can display a system notification.",
+      "featureId": "feature-ensure-the-radar-map-overlay-uses-the-same-nowcast-frame-selection-used-by-playback-controls-so-the-visible-radar-tiles-correspond-to-the-chosen-upcoming-hours-frame-index",
+      "featureTitle": "Ensure the Radar map overlay uses the same nowcast frame selection used by playback controls, so the visible radar tiles correspond to the chosen upcoming-hours frame index.",
       "files": [
-        "frontend/src/hooks/useImminentWeatherAlerts.ts",
-        "frontend/src/types/androidBridge.d.ts"
+        "frontend/src/components/RadarScreen.tsx",
+        "frontend/src/components/radar/RadarInfoPanel.tsx",
+        "frontend/src/hooks/useRadarAlerts.ts",
+        "frontend/src/lib/radarNowcastSummary.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -59,24 +56,6 @@
       ],
       "testIds": [
         "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-choose-and-apply-a-cohesive-visual-theme-for-weatherverse-colors-typography-and-component-styling-that-fits-a-modern-weather-alert-dashboard-and-use-it-consistently-for-the-new-alert-banner-and-any-new-ui-controls-added-for-alerts-bridge-behavior",
-      "featureTitle": "Choose and apply a cohesive visual theme for WeatherVerse (colors, typography, and component styling) that fits a modern weather-alert dashboard, and use it consistently for the new alert banner and any new UI controls added for alerts/bridge behavior.",
-      "files": [
-        "frontend/src/components/ImminentWeatherAlertBanner.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
       ],
       "confidence": "high"
     }

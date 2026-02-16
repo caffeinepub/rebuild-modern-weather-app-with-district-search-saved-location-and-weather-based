@@ -1,8 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, MapPin, X, Loader2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { FloatingAutocompleteDropdown } from './FloatingAutocompleteDropdown';
 import { useGeocodingSearch } from '../hooks/useGeocodingSearch';
 import { useI18n } from '../i18n/useI18n';
@@ -36,93 +33,76 @@ export function LocationSearch({
   };
 
   return (
-    <Card className="glass-surface-strong rounded-2xl">
-      <CardContent className="p-6">
-        <div className="space-y-4">
-          {/* Current Location Display */}
-          {currentLocation && (
-            <div className="flex items-center justify-between rounded-xl border-2 border-primary/20 bg-primary/5 p-5 shadow-soft">
-              <div className="flex items-center gap-4">
-                <div className="rounded-lg bg-primary/15 p-2.5">
-                  <MapPin className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <p className="font-bold text-lg text-foreground">{currentLocation.name}</p>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {currentLocation.country}
-                    {currentLocation.admin1 && ` · ${currentLocation.admin1}`}
-                  </p>
-                </div>
+    <div className="glass-surface-strong rounded-2xl p-6 border-2">
+      <div className="space-y-4">
+        {/* Current Location Display */}
+        {currentLocation && (
+          <div className="flex items-center justify-between rounded-xl border-2 border-primary/20 bg-primary/5 p-5 shadow-soft">
+            <div className="flex items-center gap-4">
+              <div className="rounded-lg bg-primary/15 p-2.5">
+                <MapPin className="h-6 w-6 text-primary" />
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onClearLocation}
-                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg focus-ring-strong"
-              >
-                <X className="h-5 w-5" />
-              </Button>
+              <div>
+                <p className="font-bold text-lg text-foreground">{currentLocation.name}</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  {currentLocation.country}
+                  {currentLocation.admin1 && ` · ${currentLocation.admin1}`}
+                </p>
+              </div>
             </div>
-          )}
-
-          {/* Search Input */}
-          <div ref={inputContainerRef} className="relative">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder={t('location.search.placeholder')}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="pl-12 pr-12 h-12 text-base font-medium border-2 focus:border-primary/50 rounded-xl"
-              />
-              {isLoading && (
-                <Loader2 className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin text-primary" />
-              )}
-            </div>
-
-            {/* Floating Results Dropdown */}
-            <FloatingAutocompleteDropdown
-              anchorRef={inputContainerRef}
-              isOpen={showResults}
-              onClose={() => setShowResults(false)}
+            <button
+              onClick={onClearLocation}
+              className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
             >
-              <div className="p-2">
-                {results.map((result, index) => (
-                  <button
-                    key={`${result.latitude}-${result.longitude}-${index}`}
-                    onClick={() => handleSelect(result)}
-                    className="flex w-full items-start gap-3 rounded-lg p-4 text-left transition-all hover:bg-accent/40 hover:scale-[1.02] active:scale-[0.98] focus-ring-strong"
-                  >
-                    <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
-                    <div className="flex-1 space-y-1">
-                      <p className="font-semibold text-foreground">{result.name}</p>
-                      <div className="flex flex-wrap gap-2 text-sm font-medium text-muted-foreground">
-                        {result.admin1 && <span>{result.admin1}</span>}
-                        <span>{result.country}</span>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </FloatingAutocompleteDropdown>
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        )}
 
-            {/* Error State */}
-            {error && query.length > 0 && (
-              <p className="mt-2 text-sm font-medium text-destructive">
-                {t('location.search.error')}
-              </p>
-            )}
-
-            {/* No Results */}
-            {!isLoading && query.length > 0 && results.length === 0 && !error && (
-              <p className="mt-2 text-sm font-medium text-muted-foreground">
-                {t('location.search.noResults')}
-              </p>
+        {/* Search Input */}
+        <div ref={inputContainerRef} className="relative">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t('location.search.placeholder')}
+              className="w-full rounded-xl border-2 border-border bg-background/50 pl-12 pr-12 py-4 text-lg font-medium text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+            />
+            {isLoading && (
+              <Loader2 className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin text-primary" />
             )}
           </div>
+
+          {/* Floating Results Dropdown */}
+          <FloatingAutocompleteDropdown
+            anchorRef={inputContainerRef}
+            isOpen={showResults}
+            onClose={() => setShowResults(false)}
+          >
+            <div className="py-2">
+              {results.map((result, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleSelect(result)}
+                  className="w-full px-4 py-3 text-left hover:bg-accent/50 transition-colors border-l-4 border-transparent hover:border-primary focus:outline-none focus:bg-accent/50 focus:border-primary"
+                >
+                  <div className="font-semibold text-base text-foreground">{result.name}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {result.country}
+                    {result.admin1 && ` · ${result.admin1}`}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </FloatingAutocompleteDropdown>
+
+          {error && (
+            <p className="mt-2 text-sm text-destructive">{t('location.search.error')}</p>
+          )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

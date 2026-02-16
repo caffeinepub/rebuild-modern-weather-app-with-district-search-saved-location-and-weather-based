@@ -1,35 +1,52 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-13T13:36:42.864Z",
-  "summary": "Diff implements WeatherVerse branding (document title + localized header title), adds imminent 1-hour weather alert detection (rain/snow/storm/fog) with an in-app dismissible banner and sessionStorage-based cooldown, and includes an optional Android WebView JS bridge with TypeScript typings and cooldown suppression. Also applies a new cohesive warm theme via CSS/Tailwind and broad UI styling updates.",
-  "missing_requirements": [],
-  "hallucinated_features": [
+  "generatedAt": "2026-02-16T14:59:16.432Z",
+  "summary": "REQ-1 and core parts of REQ-2 appear implemented: RainViewer parsing now distinguishes past vs nowcast frames and RadarScreen defaults playback to nowcast frames with an initial index at/after current time. However, there is insufficient evidence that the playback controls indicator was updated (REQ-2 AC) or that the map overlay is definitively driven by the same nowcast frame selection (REQ-3). Some additional UI/logic (RadarInfoPanel/summary and alert heuristic) was added that was not requested.",
+  "missing_requirements": [
     {
-      "description": "Non-requested functional UI behavior change: location search results rendered via a portal-based FloatingAutocompleteDropdown for stacking/viewport-aware positioning.",
-      "reason": "REQ-4 asks for cohesive visual theming and styling consistency; it does not explicitly request changing the interaction/DOM rendering strategy of the location search dropdown.",
+      "id": "REQ-2",
+      "requirement": "Update the 'Past' vs 'Nowcast/Forecast' indicator in the playback controls to reflect the new default nowcast behavior.",
+      "reason": "The diff shows RadarScreen now selects nowcast frames by default, but there are no changes shown for the playback controls component to update the indicator/labeling state. Without changes in RadarPlaybackControls (or equivalent), this acceptance criterion is not evidenced.",
       "evidence": [
-        "frontend-file-summaries.txt (LocationSearch: \"rendered via FloatingAutocompleteDropdown portal\")"
+        "frontend/src/components/RadarScreen.tsx (imports RadarPlaybackControls but no shown changes to it)"
       ]
     },
     {
-      "description": "Project metadata/tracking updates via project_state.json",
-      "reason": "BuildRequest does not request adding/updating project tracking metadata files.",
+      "id": "REQ-3",
+      "requirement": "Ensure the Radar map overlay uses the same nowcast frame selection used by playback controls so the visible precipitation tiles correspond to the chosen upcoming-hours frame index (and no past frame is displayed when nowcast is available).",
+      "reason": "The diff does not include changes to RadarMap (or map tile-layer construction) demonstrating that the tile path is derived from the selected nowcast playback frame (e.g., using playbackFrames[currentFrameIndex].path). RadarScreen computes playbackFrames/currentFrameIndex, but there is no visible evidence that RadarMap consumes these in a way that guarantees correct overlay frame selection.",
       "evidence": [
-        "project_state.json"
+        "frontend/src/components/RadarScreen.tsx (truncated; does not show RadarMap props usage)"
       ]
     }
   ],
-  "confidence": 0.72,
+  "hallucinated_features": [
+    {
+      "description": "Added a RadarInfoPanel and radar nowcast summary computation (start time/duration/intensity/direction) unrelated to switching playback to nowcast frames.",
+      "reason": "The BuildRequest focuses on nowcast vs past frame selection and map/playback alignment; it does not request a new info panel or heuristic summary metrics.",
+      "evidence": [
+        "frontend/src/components/radar/RadarInfoPanel.tsx",
+        "frontend/src/lib/radarNowcastSummary.ts"
+      ]
+    },
+    {
+      "description": "Introduced/changed radar alert logic to trigger a 'heavy precipitation' alert based on frame count and being near the end of the frame list.",
+      "reason": "Radar alert behavior changes are not part of the requested requirements; only a non-crash constraint for existing alert logic was specified.",
+      "evidence": [
+        "frontend/src/hooks/useRadarAlerts.ts"
+      ]
+    }
+  ],
+  "confidence": 0.66,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/index.html",
-    "frontend/src/App.tsx",
-    "frontend/src/components/ImminentWeatherAlertBanner.tsx",
-    "frontend/src/hooks/useImminentWeatherAlerts.ts",
-    "frontend/src/i18n/translations.ts",
-    "frontend/src/lib/imminentWeatherAlerts.ts",
-    "frontend/src/types/androidBridge.d.ts",
+    "frontend/src/components/RadarScreen.tsx",
+    "frontend/src/components/radar/RadarInfoPanel.tsx",
+    "frontend/src/hooks/useRadarAlerts.ts",
+    "frontend/src/hooks/useRadarPlayback.ts",
+    "frontend/src/lib/radarNowcastSummary.ts",
+    "frontend/src/lib/rainviewer.ts",
     "project_state.json"
   ]
 }

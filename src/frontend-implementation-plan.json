@@ -1,116 +1,78 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "WeatherVerse branding + imminent in-app alerts + optional Android WebView bridge",
+  "title": "Prefer RainViewer nowcast (future) frames for radar playback and map overlay",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Apply WeatherVerse branding consistently in the HTML document title and in-app header title across locales.",
+      "summary": "Preserve separate RainViewer past vs nowcast frame lists and enable selecting nowcast-only playback when available.",
       "acceptanceCriteria": [
-        "The browser tab/title in `frontend/index.html` is \"WeatherVerse\".",
-        "The in-app header title (currently `t('header.title')` in `frontend/src/App.tsx`) renders \"WeatherVerse\" in both English and Turkish locales.",
-        "No other user-facing title string contradicts the WeatherVerse name."
+        "The RainViewer fetch/parsing layer preserves a distinction between past frames and nowcast (future) frames (e.g., separate arrays or equivalent metadata), rather than only providing a single combined list.",
+        "Radar playback can be configured to use only nowcast frames for the timeline and animation when nowcast frames are available.",
+        "If the RainViewer API response contains no nowcast frames, the app falls back to past frames to avoid an empty radar experience."
       ],
       "file_operations": [
         {
-          "path": "frontend/index.html",
+          "path": "frontend/src/lib/rainviewer.ts",
           "operation": "modify",
-          "description": "Update the HTML <title> to exactly \"WeatherVerse\" to ensure the browser tab title matches the new branding."
+          "description": "Update RainViewer data model to retain separate past and nowcast frame collections (in addition to any combined list needed for compatibility), and add a small helper to choose preferred playback frames (prefer nowcast; fallback to past)."
         },
         {
-          "path": "frontend/src/i18n/translations.ts",
+          "path": "frontend/src/hooks/useRainViewer.ts",
           "operation": "modify",
-          "description": "Update the `header.title` translation in both `tr` and `en` locales to exactly \"WeatherVerse\" (so `t('header.title')` renders the same brand name for all locales)."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Audit any other user-facing header/title text usage and ensure the header continues to render `t('header.title')` (now \"WeatherVerse\" for all locales), with no contradictory app-name strings introduced elsewhere in the app shell."
+          "description": "Adjust hook typings/returns to reflect the updated RainViewer data shape (including distinct past vs nowcast frames) while keeping existing caching behavior intact."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Detect imminent rain/snow/storm/fog within ~1 hour using existing `useWeather` data and show a dismissible in-app alert banner with persistence.",
+      "summary": "Default Radar playback timeline to nowcast (upcoming-hours) frames and start at the earliest upcoming frame.",
       "acceptanceCriteria": [
-        "When a location is selected and weather data is available, the app evaluates the next ~1 hour of forecast data and determines whether any of: rain, snow, storm/thunderstorm, fog is imminent.",
-        "If at least one imminent event is detected, an alert banner is shown in the UI (in-app), with a clear title and message in English when locale is EN and in Turkish when locale is TR.",
-        "The alert banner can be dismissed, and dismissal prevents it from immediately reappearing for the same event unless the detected event changes or a reasonable time window has passed (persist the dismissal state in sessionStorage or localStorage).",
-        "The implementation does not require any backend changes; it runs purely in the frontend using the existing Open-Meteo-derived `weatherData` from `useWeather`."
+        "When a location is selected and radar data loads, the timeline/slider range represents upcoming (nowcast) frames by default (not historical frames).",
+        "The initial selected frame is the earliest available nowcast frame at/after the current time (or the closest available upcoming frame), not a past frame.",
+        "The 'Past' vs 'Nowcast/Forecast' indicator shown in the playback controls reflects the new default behavior (i.e., it should show the nowcast/forecast state under normal conditions)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/lib/imminentWeatherAlerts.ts",
-          "operation": "create",
-          "description": "Add a small frontend-only alert evaluation helper that inspects the next ~60 minutes of `WeatherData.hourly` (timestamps, weather codes, precipitation, humidity as needed) and returns a normalized imminent-alert result (event type, stable dedupe key, title/message translation keys, and optional severity)."
-        },
-        {
-          "path": "frontend/src/hooks/useImminentWeatherAlerts.ts",
-          "operation": "create",
-          "description": "Create a React hook that (1) runs imminent-alert evaluation when `weatherData` changes, (2) manages a dismiss state persisted to sessionStorage/localStorage (including a cooldown window), and (3) exposes the current active imminent alert plus `dismiss()` (ensuring dismissed alerts do not instantly reappear unless the alert key changes or cooldown expires)."
-        },
-        {
-          "path": "frontend/src/components/ImminentWeatherAlertBanner.tsx",
-          "operation": "create",
-          "description": "Implement the in-app imminent alert banner UI using shadcn-ui Alert + Button building blocks for consistent styling. Verify the component's usage instructions before implementing. The banner should render localized title/message via i18n keys, show an appropriate icon, and provide a dismiss action."
-        },
-        {
-          "path": "frontend/src/i18n/translations.ts",
+          "path": "frontend/src/hooks/useRadarPlayback.ts",
           "operation": "modify",
-          "description": "Add translation strings (EN + TR) for imminent alert titles/messages for rain, snow, storm/thunderstorm, and fog (plus a shared dismiss label if needed), ensuring the banner content is fully localized."
+          "description": "Update playback initialization/reset logic so the starting frame index can be set to the earliest available upcoming frame (or a computed initial index) instead of always defaulting to the latest frame."
         },
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/components/RadarScreen.tsx",
           "operation": "modify",
-          "description": "Wire the imminent alert system into the app shell: call `useImminentWeatherAlerts(weatherData, activeLocation, locale)` (as designed) and render `ImminentWeatherAlertBanner` near the top of main content when an alert is active, passing `dismiss()` to persist dismissal. Ensure the banner appears only when a location is selected and weather data is available."
+          "description": "Compute a preferred playback frame list (nowcast-only when available; otherwise past) from RainViewer data, pass that list into useRadarPlayback, and ensure the initial frame index is set to the earliest upcoming nowcast frame (or closest upcoming) by default."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Optionally notify an Android WebView host when a new imminent alert triggers, with safe window checks, cooldown suppression, and TypeScript typings.",
+      "summary": "Keep the Radar map precipitation tiles and alerts aligned with the same nowcast frame selection used by playback controls.",
       "acceptanceCriteria": [
-        "The web app checks for the presence of an Android bridge function on `window` (e.g., `window.Android.showNotification`) before calling it; if absent, the app continues without errors.",
-        "When an imminent weather alert is newly triggered (not repeatedly on every re-render/refetch), the app invokes the bridge with enough information for Android to show a notification (at minimum: title and message; optionally include a type/severity).",
-        "Duplicate Android bridge calls are suppressed for the same alert within a short cooldown window (e.g., tracked via sessionStorage/localStorage) so the native side does not spam notifications.",
-        "TypeScript is satisfied (add a safe `declare global` typing for `window.Android` in a non-immutable path)."
+        "Changing the radar frame via the slider/buttons updates the map precipitation tile layer to the corresponding nowcast frame path.",
+        "No past frame is displayed on the map when nowcast frames are available and nowcast mode is active by default.",
+        "Radar alerts logic continues to function with the updated frame list and does not crash when the frame list composition changes (past vs nowcast)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/types/androidBridge.d.ts",
-          "operation": "create",
-          "description": "Add a global TypeScript declaration for the optional Android WebView bridge on `window` (e.g., `window.Android?.showNotification(title, message, type?)`) so TS compiles cleanly while keeping calls guarded at runtime."
+          "path": "frontend/src/components/RadarScreen.tsx",
+          "operation": "modify",
+          "description": "Ensure the currentFrame supplied to RadarMap is derived from the same preferred playback frame array used by the controls, so precipitation tiles always match the selected nowcast frame index."
         },
         {
-          "path": "frontend/src/hooks/useImminentWeatherAlerts.ts",
+          "path": "frontend/src/hooks/useRadarAlerts.ts",
           "operation": "modify",
-          "description": "Enhance the hook to (a) detect when an imminent alert is newly triggered (transition from none/other-key to a new alert key), (b) check for `window.Android?.showNotification` before calling, and (c) suppress duplicate calls for the same alert within a short cooldown using sessionStorage/localStorage (separate from the banner dismissal cooldown as needed). Ensure the app continues without errors when the bridge is absent."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Apply a cohesive modern WeatherVerse theme for alert-related UI, ensuring new banner/controls match existing Tailwind + shadcn glass styling and avoid introducing a new blue/purple-dominant direction.",
-      "acceptanceCriteria": [
-        "A single, coherent visual direction is applied (e.g., warm neutrals + high-contrast accent) without introducing new product features.",
-        "New alert UI uses the existing Tailwind + shadcn components and matches existing glass-surface styling conventions.",
-        "No blue/purple-dominant theme is introduced unless it already exists in the project tokens."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Add/adjust minimal theme-safe utility styling for the imminent alert banner container (e.g., spacing, border emphasis, glass-surface harmony) using existing warm/citrus token variables—without changing immutable shadcn component files. Ensure the banner reads well across light/dark weather themes."
+          "description": "Update the alerts hook to evaluate conditions using the active playback frame list (nowcast-only when available; otherwise past) and the current playback index, avoiding assumptions about a single combined frame array."
         },
         {
-          "path": "frontend/src/components/ImminentWeatherAlertBanner.tsx",
+          "path": "frontend/src/lib/radarNowcastSummary.ts",
           "operation": "modify",
-          "description": "Refine the banner styling to align with existing glass-surface conventions and the current warm palette, using shadcn-ui components for consistent typography and spacing. Verify the component's usage instructions before implementing."
+          "description": "Adjust radar summary computation to use the active playback frame list (nowcast-only when available; otherwise past) so summary timing/intensity stays consistent with the displayed frame selection."
         },
         {
-          "path": "frontend/tailwind.config.js",
+          "path": "frontend/src/components/radar/RadarInfoPanel.tsx",
           "operation": "modify",
-          "description": "If required to keep alert styling consistent, extend Tailwind theme tokens in a minimal way (e.g., semantic colors for warning/info/success mapped to existing CSS variables), ensuring no new blue/purple-dominant theme is introduced."
+          "description": "Wire RadarInfoPanel to compute and display summary info based on the same preferred playback frames used by the slider/animation, keeping the info panel consistent with map and controls."
         }
       ]
     }

@@ -1,13 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Rebrand the app as “WeatherVerse” and add imminent (next ~1 hour) in-app weather alert banners, with an optional Android WebView bridge call for native notifications.
+**Goal:** Default the radar/cloud playback experience to show upcoming-hours (nowcast) frames instead of historical (past) frames, with a safe fallback to past when nowcast is unavailable.
 
 **Planned changes:**
-- Update branding so “WeatherVerse” appears consistently (HTML document title and in-app header title) across English and Turkish locales.
-- Add frontend-only detection of imminent rain, snow, storm/thunderstorm, and fog from the existing forecast (`useWeather` / Open-Meteo-derived `weatherData`) and display a dismissible in-app alert banner when triggered.
-- Persist alert dismissal state (sessionStorage/localStorage) to avoid immediate reappearance for the same alert unless the event changes or enough time has passed.
-- Add an optional Android WebView bridge integration that safely calls `window.Android.showNotification` (if present) when a newly-triggered imminent alert occurs, with suppression/cooldown to prevent duplicate calls and TypeScript-safe window typing.
-- Apply a cohesive, modern WeatherVerse visual theme (colors/typography/component styling) consistent with existing Tailwind + shadcn glass-surface styling, including the new alert banner and any new alert/bridge-related UI.
+- Update the RainViewer response parsing layer to keep past frames and nowcast (future) frames distinct, rather than returning only a single combined list.
+- Change the Radar screen playback to use nowcast frames by default when available, selecting the earliest upcoming frame as the initial frame.
+- Ensure the map’s radar tile overlay is driven by the same selected nowcast frame index as the playback controls, and keep existing radar alerts logic working when frame composition changes.
 
-**User-visible outcome:** The app consistently shows the “WeatherVerse” name, warns users in-app when rain/snow/storm/fog is expected within about the next hour for the selected location (in EN/TR), and can optionally trigger an Android-native notification via a WebView bridge when available.
+**User-visible outcome:** On the Radar screen, the timeline and animation show upcoming (forecast/nowcast) radar/cloud imagery by default; if no nowcast frames exist, the app automatically falls back to past frames.

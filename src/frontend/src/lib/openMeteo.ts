@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from './fetchWithTimeout';
+
 export interface WeatherData {
   current: {
     temperature: number;
@@ -34,6 +36,8 @@ export interface WeatherResponse {
     relative_humidity_2m: number;
     surface_pressure: number;
     cloud_cover: number;
+    uv_index?: number;
+    visibility?: number;
   };
   hourly: {
     time: string[];
@@ -44,6 +48,9 @@ export interface WeatherResponse {
     wind_direction_10m: number[];
     soil_moisture_0_to_1cm: number[];
     relative_humidity_2m: number[];
+    surface_pressure: number[];
+    uv_index?: number[];
+    visibility?: number[];
   };
   daily: {
     time: string[];
@@ -51,6 +58,12 @@ export interface WeatherResponse {
     temperature_2m_min: number[];
     weather_code: number[];
     precipitation_sum: number[];
+  };
+}
+
+export interface AirQualityResponse {
+  current?: {
+    european_aqi?: number;
   };
 }
 
@@ -78,10 +91,10 @@ export async function fetchWeatherData(
     forecast_days: '7',
   });
 
-  const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`);
+  const response = await fetchWithTimeout(`https://api.open-meteo.com/v1/forecast?${params}`);
   
   if (!response.ok) {
-    throw new Error('Failed to fetch weather data');
+    throw new Error('Failed to fetch weather data from Open-Meteo');
   }
 
   const data = await response.json();
@@ -120,21 +133,47 @@ export async function fetchWeather(
   const params = new URLSearchParams({
     latitude: latitude.toString(),
     longitude: longitude.toString(),
-    current: 'temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,relative_humidity_2m,surface_pressure,cloud_cover',
-    hourly: 'temperature_2m,weather_code,precipitation,wind_speed_10m,wind_direction_10m,soil_moisture_0_to_1cm,relative_humidity_2m',
+    current: 'temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,relative_humidity_2m,surface_pressure,cloud_cover,uv_index,visibility',
+    hourly: 'temperature_2m,weather_code,precipitation,wind_speed_10m,wind_direction_10m,soil_moisture_0_to_1cm,relative_humidity_2m,surface_pressure,uv_index,visibility',
     daily: 'temperature_2m_max,temperature_2m_min,weather_code,precipitation_sum',
     timezone: 'auto',
     forecast_days: '7',
   });
 
-  const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`);
+  const response = await fetchWithTimeout(`https://api.open-meteo.com/v1/forecast?${params}`);
   
   if (!response.ok) {
-    throw new Error('Failed to fetch weather data');
+    throw new Error('Failed to fetch weather data from Open-Meteo');
   }
 
   const data = await response.json();
   return data;
+}
+
+export async function fetchAirQuality(
+  latitude: number,
+  longitude: number
+): Promise<AirQualityResponse> {
+  const params = new URLSearchParams({
+    latitude: latitude.toString(),
+    longitude: longitude.toString(),
+    current: 'european_aqi',
+    timezone: 'auto',
+  });
+
+  try {
+    const response = await fetchWithTimeout(`https://air-quality-api.open-meteo.com/v1/air-quality?${params}`);
+    
+    if (!response.ok) {
+      return {};
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    // Air quality data may not be available for all locations
+    return {};
+  }
 }
 
 export async function searchLocations(query: string): Promise<GeocodingResult[]> {
@@ -145,7 +184,7 @@ export async function searchLocations(query: string): Promise<GeocodingResult[]>
     format: 'json',
   });
 
-  const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?${params}`);
+  const response = await fetchWithTimeout(`https://geocoding-api.open-meteo.com/v1/search?${params}`);
   
   if (!response.ok) {
     throw new Error('Failed to search locations');
@@ -203,71 +242,29 @@ export async function fetchTemperatureGrid(
     timezone: 'auto',
   });
 
-  try {
-    const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`);
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch temperature grid');
-    }
-
-    const data = await response.json();
-
-    // Handle both single and multiple location responses
-    if (Array.isArray(data)) {
-      // Multiple locations response
-      return gridPoints.map((point, index) => ({
-        lat: point.lat,
-        lon: point.lon,
-        temp: data[index]?.current?.temperature_2m || 0,
-      }));
-    } else {
-      // Single location response - use center temperature for all points
-      const centerTemp = data.current?.temperature_2m || 0;
-      return gridPoints.map((point, index) => {
-        // Add small variation based on distance from center
-        const distanceFromCenter = Math.sqrt(
-          Math.pow(point.lat - centerLat, 2) + Math.pow(point.lon - centerLon, 2)
-        );
-        const tempVariation = distanceFromCenter * 10; // ~1°C per 0.1 degree distance
-        return {
-          lat: point.lat,
-          lon: point.lon,
-          temp: centerTemp + (Math.random() - 0.5) * tempVariation,
-        };
-      });
-    }
-  } catch (error) {
-    console.warn('Failed to fetch temperature grid, using fallback:', error);
-    // Fallback: use center point temperature with variations
-    const centerTemp = await fetchSingleTemperature(centerLat, centerLon);
-    return gridPoints.map((point) => {
-      const distanceFromCenter = Math.sqrt(
-        Math.pow(point.lat - centerLat, 2) + Math.pow(point.lon - centerLon, 2)
-      );
-      const tempVariation = distanceFromCenter * 10;
-      return {
-        lat: point.lat,
-        lon: point.lon,
-        temp: centerTemp + (Math.random() - 0.5) * tempVariation,
-      };
-    });
-  }
-}
-
-async function fetchSingleTemperature(lat: number, lon: number): Promise<number> {
-  const params = new URLSearchParams({
-    latitude: lat.toString(),
-    longitude: lon.toString(),
-    current: 'temperature_2m',
-    timezone: 'auto',
-  });
-
-  const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`);
+  const response = await fetchWithTimeout(`https://api.open-meteo.com/v1/forecast?${params}`);
   
   if (!response.ok) {
-    return 15; // Fallback temperature
+    throw new Error('Failed to fetch temperature grid from Open-Meteo');
   }
 
   const data = await response.json();
-  return data.current?.temperature_2m || 15;
+
+  // Handle both single and multiple location responses
+  if (Array.isArray(data)) {
+    // Multiple locations response
+    return gridPoints.map((point, index) => ({
+      lat: point.lat,
+      lon: point.lon,
+      temp: data[index]?.current?.temperature_2m ?? 0,
+    }));
+  } else {
+    // Single location response - use center temperature for all points
+    const centerTemp = data.current?.temperature_2m ?? 0;
+    return gridPoints.map((point) => ({
+      lat: point.lat,
+      lon: point.lon,
+      temp: centerTemp,
+    }));
+  }
 }

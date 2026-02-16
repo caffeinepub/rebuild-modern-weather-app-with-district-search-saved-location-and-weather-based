@@ -22,6 +22,23 @@ export interface LaundryDryingRecommendation {
 }
 
 /**
+ * Check if a weather code indicates rain or snow
+ */
+function isRainOrSnowCode(weatherCode: number): boolean {
+  // WMO codes:
+  // 51-67: Drizzle and rain
+  // 71-77, 85-86: Snow
+  // 80-82: Rain showers
+  // 95-99: Thunderstorm
+  return (
+    (weatherCode >= 51 && weatherCode <= 67) ||
+    (weatherCode >= 71 && weatherCode <= 77) ||
+    (weatherCode >= 80 && weatherCode <= 86) ||
+    (weatherCode >= 95 && weatherCode <= 99)
+  );
+}
+
+/**
  * Compute DryScore for a single hour with improved realistic model
  * Returns null if precipitation > 0.2mm
  */
@@ -29,10 +46,16 @@ function computeHourlyDryScore(
   temperature: number,
   humidity: number,
   windSpeed: number,
-  precipitation: number
+  precipitation: number,
+  weatherCode: number
 ): number | null {
   // Precipitation cutoff - no score if raining
   if (precipitation > 0.2) {
+    return null;
+  }
+
+  // If weather code indicates rain/snow, mark as not suitable
+  if (isRainOrSnowCode(weatherCode)) {
     return null;
   }
 
@@ -62,29 +85,32 @@ function computeHourlyDryScore(
     tempScore = 100; // Cap at 100
   }
 
-  // Apply stronger penalties for marginal conditions
-  // High humidity (>70%) significantly reduces effectiveness of wind and temp
+  // Apply more realistic penalties for marginal conditions
+  // When there's no precipitation and clear/cloudy weather, be less strict with humidity
   let humidityPenalty = 1.0;
-  if (humidity > 70) {
-    humidityPenalty = 0.6; // 40% penalty
+  if (humidity > 80) {
+    humidityPenalty = 0.6; // 40% penalty for very high humidity
+  } else if (humidity > 70) {
+    humidityPenalty = 0.8; // 20% penalty for high humidity
   } else if (humidity > 60) {
-    humidityPenalty = 0.8; // 20% penalty
+    humidityPenalty = 0.9; // 10% penalty for moderate humidity
   }
+  // Below 60% humidity with no rain: no humidity penalty
 
   // Low temperature (<15°C) reduces effectiveness
   let tempPenalty = 1.0;
   if (temperature < 10) {
-    tempPenalty = 0.5; // 50% penalty
+    tempPenalty = 0.6; // 40% penalty for cold
   } else if (temperature < 15) {
-    tempPenalty = 0.75; // 25% penalty
+    tempPenalty = 0.85; // 15% penalty for cool
   }
 
   // Combined penalty
   const combinedPenalty = Math.min(humidityPenalty, tempPenalty);
 
   // Weighted DryScore with adjusted weights
-  // Humidity is most important (60%), wind helps (25%), temperature matters (15%)
-  const baseScore = humidityScore * 0.6 + windScore * 0.25 + tempScore * 0.15;
+  // Humidity is most important (50%), wind helps (30%), temperature matters (20%)
+  const baseScore = humidityScore * 0.5 + windScore * 0.3 + tempScore * 0.2;
 
   // Apply penalty and clamp to 0-100
   const finalScore = Math.max(0, Math.min(100, baseScore * combinedPenalty));
@@ -99,13 +125,13 @@ function classifyDryScore(score: number | null): DryingClassification {
   if (score === null) {
     return 'not-suitable';
   }
-  if (score >= 75) {
+  if (score >= 70) {
     return 'ideal';
   }
   if (score >= 50) {
     return 'suitable';
   }
-  if (score >= 30) {
+  if (score >= 35) {
     return 'limited';
   }
   return 'not-suitable';
@@ -139,7 +165,8 @@ function computeHourlyScores(weatherData: WeatherData): HourlyDryScore[] {
       hour.temperature,
       hour.humidity,
       hour.windSpeed,
-      hour.precipitation
+      hour.precipitation,
+      hour.weatherCode
     );
 
     return {

@@ -1,42 +1,32 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "WeatherVerse: weather app with imminent weather event alerts (rain/snow/storm/fog) and optional Android WebView bridge to trigger native notifications from web-detected events.",
-  "architectural_notes": [
-    "Target deployment includes Android Studio native wrapper using WebView; Android side may handle real notification display via JS-Android bridge invoked from the web app."
-  ],
+  "summary": "Weather radar app: user wants to view upcoming-hours (forecast/nowcast) cloud/radar imagery rather than past imagery.",
+  "architectural_notes": [],
   "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-update-app-branding-so-the-name-weatherverse-is-displayed-consistently-across-the-web-app-html-document-title-and-in-app-header-title-for-all-locales",
-      "title": "Update app branding so the name \"WeatherVerse\" is displayed consistently across the web app (HTML document title and in-app header title) for all locales.",
+      "id": "feature-update-rainviewer-radar-data-parsing-so-the-app-can-prefer-upcoming-hours-nowcast-frames-instead-of-historical-past-frames-for-radar-playback",
+      "title": "Update RainViewer radar data parsing so the app can prefer upcoming-hours (nowcast) frames instead of historical (past) frames for radar playback.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-an-imminent-weather-event-alert-system-that-detects-if-rain-snow-storm-thunderstorm-or-fog-is-expected-within-approximately-the-next-1-hour-for-the-selected-location-and-displays-an-in-app-alert-banner-when-triggered",
-      "title": "Implement an imminent weather event alert system that detects if rain, snow, storm/thunderstorm, or fog is expected within approximately the next 1 hour for the selected location, and displays an in-app alert banner when triggered.",
+      "id": "feature-change-the-radar-screen-playback-behavior-so-that-the-default-displayed-played-frames-are-future-nowcast-frames-upcoming-hours-rather-than-past-frames",
+      "title": "Change the Radar screen playback behavior so that the default displayed/played frames are future/nowcast frames (upcoming hours) rather than past frames.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-an-optional-javascript-to-android-webview-bridge-integration-that-when-an-imminent-weather-alert-is-detected-calls-an-android-provided-bridge-function-if-present-so-the-native-android-layer-can-display-a-system-notification",
-      "title": "Add an optional JavaScript-to-Android WebView bridge integration that, when an imminent weather alert is detected, calls an Android-provided bridge function (if present) so the native Android layer can display a system notification.",
+      "id": "feature-ensure-the-radar-map-overlay-uses-the-same-nowcast-frame-selection-used-by-playback-controls-so-the-visible-radar-tiles-correspond-to-the-chosen-upcoming-hours-frame-index",
+      "title": "Ensure the Radar map overlay uses the same nowcast frame selection used by playback controls, so the visible radar tiles correspond to the chosen upcoming-hours frame index.",
       "reqIds": [
         "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-choose-and-apply-a-cohesive-visual-theme-for-weatherverse-colors-typography-and-component-styling-that-fits-a-modern-weather-alert-dashboard-and-use-it-consistently-for-the-new-alert-banner-and-any-new-ui-controls-added-for-alerts-bridge-behavior",
-      "title": "Choose and apply a cohesive visual theme for WeatherVerse (colors, typography, and component styling) that fits a modern weather-alert dashboard, and use it consistently for the new alert banner and any new UI controls added for alerts/bridge behavior.",
-      "reqIds": [
-        "REQ-4"
       ],
       "version": 1
     }
@@ -44,25 +34,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Implement weather event alert system (e.g., rain/snow/storm/fog expected within ~1 hour) in the web app.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Add WebView JS-to-Android bridge hook so the web app can trigger Android-side native notifications when a weather alert is detected.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Set and display the app name as \"WeatherVerse\" everywhere in the app/UI branding.",
+      "summary": "Show forecast/nowcast radar/cloud imagery for the coming hours (future frames) instead of historical/past radar imagery.",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "gameProjectType": "none",
-  "projectName": "WeatherVerse",
+  "projectName": "Show upcoming-hours (nowcast) radar/cloud imagery instead of past frames",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
