@@ -2,10 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-rainviewer-radar-data-parsing-so-the-app-can-prefer-upcoming-hours-nowcast-frames-instead-of-historical-past-frames-for-radar-playback",
-      "featureTitle": "Update RainViewer radar data parsing so the app can prefer upcoming-hours (nowcast) frames instead of historical (past) frames for radar playback.",
+      "featureId": "feature-update-the-react-frontend-to-publish-the-currently-displayed-weather-data-to-the-backend-whenever-new-weather-data-is-fetched-for-a-selected-location-so-the-backend-s-url-based-json-endpoint-stays-fresh-for-android-widgets",
+      "featureTitle": "Update the React frontend to publish the currently displayed weather data to the backend whenever new weather data is fetched for a selected location, so the backend’s URL-based JSON endpoint stays fresh for Android widgets.",
       "files": [
-        "frontend/src/lib/rainviewer.ts"
+        "frontend/src/App.tsx",
+        "frontend/src/hooks/usePublishWidgetWeather.ts",
+        "frontend/src/lib/widgetWeatherPayload.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -15,47 +17,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-change-the-radar-screen-playback-behavior-so-that-the-default-displayed-played-frames-are-future-nowcast-frames-upcoming-hours-rather-than-past-frames",
-      "featureTitle": "Change the Radar screen playback behavior so that the default displayed/played frames are future/nowcast frames (upcoming hours) rather than past frames.",
-      "files": [
-        "frontend/src/components/RadarScreen.tsx",
-        "frontend/src/hooks/useRadarPlayback.ts"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-ensure-the-radar-map-overlay-uses-the-same-nowcast-frame-selection-used-by-playback-controls-so-the-visible-radar-tiles-correspond-to-the-chosen-upcoming-hours-frame-index",
-      "featureTitle": "Ensure the Radar map overlay uses the same nowcast frame selection used by playback controls, so the visible radar tiles correspond to the chosen upcoming-hours frame index.",
-      "files": [
-        "frontend/src/components/RadarScreen.tsx",
-        "frontend/src/components/radar/RadarInfoPanel.tsx",
-        "frontend/src/hooks/useRadarAlerts.ts",
-        "frontend/src/lib/radarNowcastSummary.ts"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
+        "REQ-7"
       ],
       "confidence": "high"
     }

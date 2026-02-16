@@ -1,84 +1,115 @@
 {
   "kind": "build_request",
-  "title": "Show upcoming-hours (nowcast) radar/cloud imagery instead of past frames",
+  "title": "Add JSON API endpoint for Android widgets on WeatherVerse URL",
+  "projectName": "WeatherVerse API",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-1",
-      "text": "Update RainViewer radar data parsing so the app can prefer upcoming-hours (nowcast) frames instead of historical (past) frames for radar playback.",
-      "target": "frontend",
+      "id": "REQ-4",
+      "text": "Implement an HTTP JSON API in the Motoko backend so that the deployed domain https://weatherverse-gy1.caffeine.xyz/ can be used as a URL-based JSON endpoint for Android widgets (i.e., a GET request returns JSON, not HTML).",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "radarda bulutların geçmiş görüntüsü değil ilerleyen saatlerdeki görüntüsünü istiyorum"
+          "https://weatherverse-gy1.caffeine.xyz/  bu URL",
+          "sen kurabilir misin bunu?"
         ]
       },
       "acceptanceCriteria": [
-        "The RainViewer fetch/parsing layer preserves a distinction between past frames and nowcast (future) frames (e.g., separate arrays or equivalent metadata), rather than only providing a single combined list.",
-        "Radar playback can be configured to use only nowcast frames for the timeline and animation when nowcast frames are available.",
-        "If the RainViewer API response contains no nowcast frames, the app falls back to past frames to avoid an empty radar experience."
+        "A GET request to an API path (e.g., /api/weather) returns a valid JSON response body (not HTML).",
+        "The backend exposes an HTTP interface (http_request) so non-browser clients (Android widgets) can fetch JSON directly via URL.",
+        "Responses include appropriate Content-Type: application/json; charset=utf-8.",
+        "Responses include CORS headers so the API is usable from web clients as well (e.g., Access-Control-Allow-Origin: *)."
       ]
     },
     {
-      "id": "REQ-2",
-      "text": "Change the Radar screen playback behavior so that the default displayed/played frames are future/nowcast frames (upcoming hours) rather than past frames.",
-      "target": "frontend",
+      "id": "REQ-5",
+      "text": "Define and serve a stable JSON schema for widget consumption that includes fields for current, daily, and weekly forecasts (matching the earlier discussed structure), and ensure the backend always returns these keys even when data is missing (using null/empty arrays rather than omitting keys).",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "radarda bulutların geçmiş görüntüsü değil ilerleyen saatlerdeki görüntüsünü istiyorum"
+          "Backend’imden gelen JSON verisini parse edip widget’lere aktarmak istiyorum."
         ]
       },
       "acceptanceCriteria": [
-        "When a location is selected and radar data loads, the timeline/slider range represents upcoming (nowcast) frames by default (not historical frames).",
-        "The initial selected frame is the earliest available nowcast frame at/after the current time (or the closest available upcoming frame), not a past frame.",
-        "The 'Past' vs 'Nowcast/Forecast' indicator shown in the playback controls reflects the new default behavior (i.e., it should show the nowcast/forecast state under normal conditions)."
+        "The JSON response includes: city (string), current (object), daily (array), weekly (array).",
+        "When no data is available, the API still returns valid JSON with empty arrays for daily/weekly and nulls or safe defaults inside current.",
+        "The JSON output is deterministic and does not depend on frontend rendering."
       ]
     },
     {
-      "id": "REQ-3",
-      "text": "Ensure the Radar map overlay uses the same nowcast frame selection used by playback controls, so the visible radar tiles correspond to the chosen upcoming-hours frame index.",
-      "target": "frontend",
+      "id": "REQ-6",
+      "text": "Add backend methods and storage to allow the frontend to publish (upsert) the latest weather payload that the public JSON endpoint will serve, so the API can work without relying on direct external HTTP calls from the canister.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "radarda bulutların geçmiş görüntüsü değil ilerleyen saatlerdeki görüntüsünü istiyorum"
+          "Backend’im aktif, ama ... widget’ler arka planda güncellenmiyor gibi görünüyor."
         ]
       },
       "acceptanceCriteria": [
-        "Changing the radar frame via the slider/buttons updates the map precipitation tile layer to the corresponding nowcast frame path.",
-        "No past frame is displayed on the map when nowcast frames are available and nowcast mode is active by default.",
-        "Radar alerts logic continues to function with the updated frame list and does not crash when the frame list composition changes (past vs nowcast)."
+        "Backend stores the latest published weather payload in canister state (so it persists across calls).",
+        "Frontend-accessible update method exists to publish the latest weather payload (including city and forecast arrays).",
+        "Public GET endpoint returns the most recently published payload.",
+        "No external database is introduced."
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Update the React frontend to publish the currently displayed weather data to the backend whenever new weather data is fetched for a selected location, so the backend’s URL-based JSON endpoint stays fresh for Android widgets.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Şu anda hepsi ‘Veri yok’ placeholder’larını gösteriyor."
+        ]
+      },
+      "acceptanceCriteria": [
+        "When a location is selected and weather data loads successfully, the app calls the backend publish method with a payload derived from the existing useWeather() data shape.",
+        "Publishing failures do not crash the UI; errors are handled gracefully (e.g., logged or shown as non-blocking status).",
+        "No changes are made to files listed as immutable in SYSTEM_CONTEXT."
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "text": "Provide a simple health/version endpoint under /api (e.g., /api/health) that returns JSON indicating the service is running, for easy widget/network debugging.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "bu URL üzerinden json olarak kullanabilir miyiz"
+        ]
+      },
+      "acceptanceCriteria": [
+        "GET /api/health returns HTTP 200 with a small JSON body (e.g., {\"ok\": true, \"service\": \"WeatherVerse\"}).",
+        "Content-Type is application/json; charset=utf-8.",
+        "CORS headers are present."
       ]
     }
   ],
   "constraints": [
-    "Do not edit any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or anything in frontend/src/components/ui (compose instead).",
-    "Keep the backend as a single Motoko actor; do not introduce additional backend services."
+    "Keep all backend logic in the single Motoko actor at backend/main.mo (single-actor architecture).",
+    "Do not edit any frontend paths listed in SYSTEM_CONTEXT.frontend.immutablePaths.",
+    "Do not add external databases or non-Motoko backend services."
   ],
   "nonGoals": [
-    "Adding a brand-new radar provider or switching away from the RainViewer API.",
-    "Implementing real-time radar streaming beyond the existing periodic refresh behavior.",
-    "Adding a backend persistence layer for radar frames or user preferences."
+    "Implementing the Android WorkManager/AppWidgetProvider code (this project only provides the JSON endpoint).",
+    "Adding third-party authentication providers (only Internet Identity is supported, and this API should remain usable by widgets via URL).",
+    "Fetching Open-Meteo directly from the canister via external HTTP outcalls (the API should work via frontend-published data instead)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

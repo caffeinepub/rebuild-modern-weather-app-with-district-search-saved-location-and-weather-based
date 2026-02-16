@@ -1,78 +1,31 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Prefer RainViewer nowcast (future) frames for radar playback and map overlay",
+  "title": "Publish fetched weather data from React frontend to backend for widget JSON freshness",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Preserve separate RainViewer past vs nowcast frame lists and enable selecting nowcast-only playback when available.",
+      "id": "REQ-7",
+      "summary": "Publish the latest successfully fetched weather data for the selected location to the backend so the public URL-based JSON stays fresh for Android widgets.",
       "acceptanceCriteria": [
-        "The RainViewer fetch/parsing layer preserves a distinction between past frames and nowcast (future) frames (e.g., separate arrays or equivalent metadata), rather than only providing a single combined list.",
-        "Radar playback can be configured to use only nowcast frames for the timeline and animation when nowcast frames are available.",
-        "If the RainViewer API response contains no nowcast frames, the app falls back to past frames to avoid an empty radar experience."
+        "When a location is selected and weather data loads successfully, the app calls the backend publish method with a payload derived from the existing useWeather() data shape.",
+        "Publishing failures do not crash the UI; errors are handled gracefully (e.g., logged or shown as non-blocking status).",
+        "No changes are made to files listed as immutable in SYSTEM_CONTEXT."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/lib/rainviewer.ts",
-          "operation": "modify",
-          "description": "Update RainViewer data model to retain separate past and nowcast frame collections (in addition to any combined list needed for compatibility), and add a small helper to choose preferred playback frames (prefer nowcast; fallback to past)."
+          "path": "frontend/src/lib/widgetWeatherPayload.ts",
+          "operation": "create",
+          "description": "Create a small transformation utility that converts the existing useWeather() result plus the selected SavedLocation into the backend-compatible publish payload and a stable publish key (e.g., derived from city/country). Keep the output deterministic and ensure the produced object is safe to send even when some values are missing (use safe defaults)."
         },
         {
-          "path": "frontend/src/hooks/useRainViewer.ts",
-          "operation": "modify",
-          "description": "Adjust hook typings/returns to reflect the updated RainViewer data shape (including distinct past vs nowcast frames) while keeping existing caching behavior intact."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Default Radar playback timeline to nowcast (upcoming-hours) frames and start at the earliest upcoming frame.",
-      "acceptanceCriteria": [
-        "When a location is selected and radar data loads, the timeline/slider range represents upcoming (nowcast) frames by default (not historical frames).",
-        "The initial selected frame is the earliest available nowcast frame at/after the current time (or the closest available upcoming frame), not a past frame.",
-        "The 'Past' vs 'Nowcast/Forecast' indicator shown in the playback controls reflects the new default behavior (i.e., it should show the nowcast/forecast state under normal conditions)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useRadarPlayback.ts",
-          "operation": "modify",
-          "description": "Update playback initialization/reset logic so the starting frame index can be set to the earliest available upcoming frame (or a computed initial index) instead of always defaulting to the latest frame."
+          "path": "frontend/src/hooks/usePublishWidgetWeather.ts",
+          "operation": "create",
+          "description": "Add a dedicated hook that uses the core-infrastructure backend connection pattern (useActor / actor calls) to publish (upsert) the transformed payload to the backend, exposing a non-throwing publish function and lightweight status for optional UI/debug use. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/RadarScreen.tsx",
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Compute a preferred playback frame list (nowcast-only when available; otherwise past) from RainViewer data, pass that list into useRadarPlayback, and ensure the initial frame index is set to the earliest upcoming nowcast frame (or closest upcoming) by default."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Keep the Radar map precipitation tiles and alerts aligned with the same nowcast frame selection used by playback controls.",
-      "acceptanceCriteria": [
-        "Changing the radar frame via the slider/buttons updates the map precipitation tile layer to the corresponding nowcast frame path.",
-        "No past frame is displayed on the map when nowcast frames are available and nowcast mode is active by default.",
-        "Radar alerts logic continues to function with the updated frame list and does not crash when the frame list composition changes (past vs nowcast)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/RadarScreen.tsx",
-          "operation": "modify",
-          "description": "Ensure the currentFrame supplied to RadarMap is derived from the same preferred playback frame array used by the controls, so precipitation tiles always match the selected nowcast frame index."
-        },
-        {
-          "path": "frontend/src/hooks/useRadarAlerts.ts",
-          "operation": "modify",
-          "description": "Update the alerts hook to evaluate conditions using the active playback frame list (nowcast-only when available; otherwise past) and the current playback index, avoiding assumptions about a single combined frame array."
-        },
-        {
-          "path": "frontend/src/lib/radarNowcastSummary.ts",
-          "operation": "modify",
-          "description": "Adjust radar summary computation to use the active playback frame list (nowcast-only when available; otherwise past) so summary timing/intensity stays consistent with the displayed frame selection."
-        },
-        {
-          "path": "frontend/src/components/radar/RadarInfoPanel.tsx",
-          "operation": "modify",
-          "description": "Wire RadarInfoPanel to compute and display summary info based on the same preferred playback frames used by the slider/animation, keeping the info panel consistent with map and controls."
+          "description": "Wire publishing into the main data flow: when activeLocation is set and useWeather() returns a successful new weatherData value, call the publish hook to send the latest payload to the backend. Ensure failures are handled gracefully (no crash; log and/or show a non-blocking status) and avoid repeated publishes for identical data where reasonable."
         }
       ]
     }

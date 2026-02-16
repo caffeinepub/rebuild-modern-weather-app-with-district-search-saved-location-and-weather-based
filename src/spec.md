@@ -1,11 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Default the radar/cloud playback experience to show upcoming-hours (nowcast) frames instead of historical (past) frames, with a safe fallback to past when nowcast is unavailable.
+**Goal:** Expose a stable, URL-based JSON API on the WeatherVerse deployment so Android widgets (and other non-browser clients) can fetch weather data as JSON instead of HTML.
 
 **Planned changes:**
-- Update the RainViewer response parsing layer to keep past frames and nowcast (future) frames distinct, rather than returning only a single combined list.
-- Change the Radar screen playback to use nowcast frames by default when available, selecting the earliest upcoming frame as the initial frame.
-- Ensure the map’s radar tile overlay is driven by the same selected nowcast frame index as the playback controls, and keep existing radar alerts logic working when frame composition changes.
+- Add Motoko `http_request` handling for `/api/weather` to return the latest stored weather payload as deterministic JSON with the required keys (`city`, `current`, `daily`, `weekly`), using nulls/empty arrays when data is missing.
+- Add a Motoko `http_request` route `/api/health` returning a small JSON health/version-style response with proper `Content-Type` and CORS headers.
+- Add Motoko storage and an update method to upsert/publish the latest weather payload into canister state (no external DB; single-actor in `backend/main.mo`).
+- Update the React frontend to call the backend publish method whenever fresh weather data is successfully fetched for the selected location, handling publish failures gracefully.
 
-**User-visible outcome:** On the Radar screen, the timeline and animation show upcoming (forecast/nowcast) radar/cloud imagery by default; if no nowcast frames exist, the app automatically falls back to past frames.
+**User-visible outcome:** Visiting an API URL (e.g., `https://weatherverse-gy1.caffeine.xyz/api/weather` and `/api/health`) returns JSON with correct headers, and the JSON stays up-to-date based on what the frontend most recently published.

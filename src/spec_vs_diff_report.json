@@ -1,52 +1,78 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-16T14:59:16.432Z",
-  "summary": "REQ-1 and core parts of REQ-2 appear implemented: RainViewer parsing now distinguishes past vs nowcast frames and RadarScreen defaults playback to nowcast frames with an initial index at/after current time. However, there is insufficient evidence that the playback controls indicator was updated (REQ-2 AC) or that the map overlay is definitively driven by the same nowcast frame selection (REQ-3). Some additional UI/logic (RadarInfoPanel/summary and alert heuristic) was added that was not requested.",
+  "generatedAt": "2026-02-16T15:50:26.225Z",
+  "summary": "Diff adds frontend-side publishing utilities/hooks, but does not show implementation of the required HTTP JSON API endpoints (/api/weather, /api/health) or the required stable JSON schema (city/current/daily/weekly) being served from the Motoko backend. Backend changes shown introduce new types/cache and stub query methods that don’t match the requested widget schema.",
   "missing_requirements": [
     {
-      "id": "REQ-2",
-      "requirement": "Update the 'Past' vs 'Nowcast/Forecast' indicator in the playback controls to reflect the new default nowcast behavior.",
-      "reason": "The diff shows RadarScreen now selects nowcast frames by default, but there are no changes shown for the playback controls component to update the indicator/labeling state. Without changes in RadarPlaybackControls (or equivalent), this acceptance criterion is not evidenced.",
+      "id": "REQ-4",
+      "requirement": "Implement an HTTP JSON API in the Motoko backend via http_request so GET to an /api path returns JSON (not HTML) with application/json content-type and CORS headers.",
+      "reason": "The diff for backend/main.mo does not show any http_request implementation or any routing for /api/weather, nor evidence of setting Content-Type/CORS headers.",
       "evidence": [
-        "frontend/src/components/RadarScreen.tsx (imports RadarPlaybackControls but no shown changes to it)"
+        "backend/main.mo (truncated)"
       ]
     },
     {
-      "id": "REQ-3",
-      "requirement": "Ensure the Radar map overlay uses the same nowcast frame selection used by playback controls so the visible precipitation tiles correspond to the chosen upcoming-hours frame index (and no past frame is displayed when nowcast is available).",
-      "reason": "The diff does not include changes to RadarMap (or map tile-layer construction) demonstrating that the tile path is derived from the selected nowcast playback frame (e.g., using playbackFrames[currentFrameIndex].path). RadarScreen computes playbackFrames/currentFrameIndex, but there is no visible evidence that RadarMap consumes these in a way that guarantees correct overlay frame selection.",
+      "id": "REQ-5",
+      "requirement": "Serve a stable JSON schema for widgets including keys: city (string), current (object), daily (array), weekly (array), always present even when data missing (nulls/empty arrays).",
+      "reason": "The backend WeatherResponse type shown is {city, country, daily: object, weekly: [..]} and does not include current, does not include daily as an array, and adds an unrequested country field. No evidence shown of always-returned keys with null/empty arrays.",
       "evidence": [
-        "frontend/src/components/RadarScreen.tsx (truncated; does not show RadarMap props usage)"
+        "backend/main.mo (truncated)",
+        "backend/migration.mo"
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "requirement": "Add backend storage and a frontend-accessible update method to publish (upsert) the latest weather payload; public GET endpoint returns the most recently published payload.",
+      "reason": "Frontend calls actor.upsertWeather(...), but the diff does not show the backend implementing an upsert/publish method, any persisted canister state for the latest published payload, or an HTTP GET endpoint that returns that stored payload.",
+      "evidence": [
+        "frontend/src/hooks/usePublishWidgetWeather.ts",
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "requirement": "Provide /api/health JSON endpoint returning HTTP 200 with JSON body and CORS headers.",
+      "reason": "No evidence in backend/main.mo diff of an /api/health handler, http_request routing, or JSON response headers.",
+      "evidence": [
+        "backend/main.mo (truncated)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added a RadarInfoPanel and radar nowcast summary computation (start time/duration/intensity/direction) unrelated to switching playback to nowcast frames.",
-      "reason": "The BuildRequest focuses on nowcast vs past frame selection and map/playback alignment; it does not request a new info panel or heuristic summary metrics.",
+      "description": "Added a migration module and migration wiring with oracleCache/lastCacheClear state.",
+      "reason": "BuildRequest constraints call for single-actor architecture and do not request a migration system or an oracleCache/lastCacheClear mechanism; this appears unrelated to the requested widget JSON endpoint + publish flow.",
       "evidence": [
-        "frontend/src/components/radar/RadarInfoPanel.tsx",
-        "frontend/src/lib/radarNowcastSummary.ts"
+        "backend/migration.mo",
+        "backend/main.mo (truncated)"
       ]
     },
     {
-      "description": "Introduced/changed radar alert logic to trigger a 'heavy precipitation' alert based on frame count and being near the end of the frame list.",
-      "reason": "Radar alert behavior changes are not part of the requested requirements; only a non-crash constraint for existing alert logic was specified.",
+      "description": "Introduced/changed backend query methods returning hardcoded weather data (getWeather/getWeeklyForecast/getDailyForecast/getCurrentWeather).",
+      "reason": "BuildRequest focuses on an HTTP JSON endpoint backed by frontend-published payloads (no direct external outcalls). The diff shows query APIs with stubbed static values and no connection to the publish/store-and-serve requirement.",
       "evidence": [
-        "frontend/src/hooks/useRadarAlerts.ts"
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
+      "description": "Backend/Frontend payload schema includes a 'country' field and uses 'daily' as an object rather than the required keys (city, current, daily[], weekly[]).",
+      "reason": "REQ-5 explicitly requires city/current/daily(array)/weekly(array). Adding 'country' and altering daily/current structure is not requested and risks violating the stable schema requirement.",
+      "evidence": [
+        "backend/main.mo (truncated)",
+        "backend/migration.mo",
+        "frontend/src/lib/widgetWeatherPayload.ts"
       ]
     }
   ],
-  "confidence": 0.66,
+  "confidence": 0.74,
   "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/RadarScreen.tsx",
-    "frontend/src/components/radar/RadarInfoPanel.tsx",
-    "frontend/src/hooks/useRadarAlerts.ts",
-    "frontend/src/hooks/useRadarPlayback.ts",
-    "frontend/src/lib/radarNowcastSummary.ts",
-    "frontend/src/lib/rainviewer.ts",
+    "frontend/src/App.tsx",
+    "frontend/src/hooks/usePublishWidgetWeather.ts",
+    "frontend/src/lib/widgetWeatherPayload.ts",
     "project_state.json"
   ]
 }

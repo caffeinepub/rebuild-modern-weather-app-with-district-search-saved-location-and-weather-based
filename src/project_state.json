@@ -1,32 +1,20 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Weather radar app: user wants to view upcoming-hours (forecast/nowcast) cloud/radar imagery rather than past imagery.",
-  "architectural_notes": [],
-  "known_issues": [],
+  "summary": "WeatherVerse: Android widget'lerin (anlık/günlük/haftalık) veri alabilmesi için web URL'den ayrı bir JSON API endpoint'i kurma/sağlama ihtiyacı konuşuldu.",
+  "architectural_notes": [
+    "Ana site URL'si (/) web arayüzü; widget'ler için ayrı JSON üreten endpoint(ler) (örn. /api/weather) sağlanmalı."
+  ],
+  "known_issues": [
+    "Widget'ler şu anda 'Veri yok' placeholder gösteriyor; mevcut URL bir JSON endpoint değil."
+  ],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-update-rainviewer-radar-data-parsing-so-the-app-can-prefer-upcoming-hours-nowcast-frames-instead-of-historical-past-frames-for-radar-playback",
-      "title": "Update RainViewer radar data parsing so the app can prefer upcoming-hours (nowcast) frames instead of historical (past) frames for radar playback.",
+      "id": "feature-update-the-react-frontend-to-publish-the-currently-displayed-weather-data-to-the-backend-whenever-new-weather-data-is-fetched-for-a-selected-location-so-the-backend-s-url-based-json-endpoint-stays-fresh-for-android-widgets",
+      "title": "Update the React frontend to publish the currently displayed weather data to the backend whenever new weather data is fetched for a selected location, so the backend’s URL-based JSON endpoint stays fresh for Android widgets.",
       "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-change-the-radar-screen-playback-behavior-so-that-the-default-displayed-played-frames-are-future-nowcast-frames-upcoming-hours-rather-than-past-frames",
-      "title": "Change the Radar screen playback behavior so that the default displayed/played frames are future/nowcast frames (upcoming hours) rather than past frames.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-the-radar-map-overlay-uses-the-same-nowcast-frame-selection-used-by-playback-controls-so-the-visible-radar-tiles-correspond-to-the-chosen-upcoming-hours-frame-index",
-      "title": "Ensure the Radar map overlay uses the same nowcast frame selection used by playback controls, so the visible radar tiles correspond to the chosen upcoming-hours frame index.",
-      "reqIds": [
-        "REQ-3"
+        "REQ-7"
       ],
       "version": 1
     }
@@ -34,12 +22,44 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Show forecast/nowcast radar/cloud imagery for the coming hours (future frames) instead of historical/past radar imagery.",
+      "summary": "weatherverse-gy1.caffeine.xyz üzerinde widget'lerin tüketebileceği JSON döndüren bir API endpoint (ör. /api/weather) kurma",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Implement an HTTP JSON API in the Motoko backend so that the deployed domain https://weatherverse-gy1.caffeine.xyz/ can be used as a URL-based JSON endpoint for Android widgets (i.e., a GET request returns JSON, not HTML).",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Define and serve a stable JSON schema for widget consumption that includes fields for current, daily, and weekly forecasts (matching the earlier discussed structure), and ensure the backend always returns these keys even when data is missing (using null/empty arrays rather than omitting keys).",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Add backend methods and storage to allow the frontend to publish (upsert) the latest weather payload that the public JSON endpoint will serve, so the API can work without relying on direct external HTTP calls from the canister.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Provide a simple health/version endpoint under /api (e.g., /api/health) that returns JSON indicating the service is running, for easy widget/network debugging.",
+      "reqIds": [
+        "REQ-8"
+      ],
       "status": "pending"
     }
   ],
-  "projectName": "Show upcoming-hours (nowcast) radar/cloud imagery instead of past frames",
+  "projectName": "WeatherVerse",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

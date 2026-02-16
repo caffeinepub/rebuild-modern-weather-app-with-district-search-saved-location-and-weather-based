@@ -15,7 +15,9 @@ import { I18nProvider } from './i18n/I18nProvider';
 import { usePersistedLocation } from './hooks/usePersistedLocation';
 import { useWeather } from './hooks/useWeather';
 import { useImminentWeatherAlerts } from './hooks/useImminentWeatherAlerts';
+import { usePublishWidgetWeather } from './hooks/usePublishWidgetWeather';
 import { getWeatherTheme } from './lib/weatherTheme';
+import { generatePublishKey, transformToWidgetPayload } from './lib/widgetWeatherPayload';
 import { useI18n } from './i18n/useI18n';
 import type { SavedLocation } from './hooks/usePersistedLocation';
 import type { TranslationKey } from './i18n/translations';
@@ -28,6 +30,7 @@ function AppContent() {
   const { locale, t } = useI18n();
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langButtonRef = useRef<HTMLButtonElement>(null);
+  const lastPublishedDataRef = useRef<string | null>(null);
 
   // Initialize active location from persisted data
   useEffect(() => {
@@ -45,17 +48,50 @@ function AppContent() {
   // Imminent weather alerts
   const { activeAlert, dismiss } = useImminentWeatherAlerts(weatherData, activeLocation, locale);
 
+  // Backend publishing hook
+  const { publish } = usePublishWidgetWeather();
+
+  // Publish weather data to backend when successfully fetched
+  useEffect(() => {
+    if (weatherData && activeLocation) {
+      try {
+        // Generate a stable key for this location
+        const publishKey = generatePublishKey(activeLocation);
+        
+        // Create a deterministic hash of the data to avoid redundant publishes
+        const dataHash = JSON.stringify({
+          temp: weatherData.current.temperature,
+          code: weatherData.current.weatherCode,
+          time: weatherData.hourly[0]?.timestamp,
+        });
+
+        // Only publish if data has changed
+        if (lastPublishedDataRef.current !== dataHash) {
+          const payload = transformToWidgetPayload(weatherData, activeLocation);
+          publish({ key: publishKey, payload });
+          lastPublishedDataRef.current = dataHash;
+        }
+      } catch (err) {
+        // Log but don't crash - publishing is non-critical
+        console.warn('Failed to prepare weather data for publishing:', err);
+      }
+    }
+  }, [weatherData, activeLocation, publish]);
+
   // Determine current theme based on weather
   const currentTheme = weatherData ? getWeatherTheme(weatherData.current.weatherCode) : 'clear';
 
   const handleLocationSelect = (newLocation: SavedLocation) => {
     setLocation(newLocation);
     setActiveLocation(newLocation);
+    // Reset publish tracking when location changes
+    lastPublishedDataRef.current = null;
   };
 
   const handleClearLocation = () => {
     clearLocation();
     setActiveLocation(null);
+    lastPublishedDataRef.current = null;
   };
 
   const getEmptyStateKey = (): { title: TranslationKey; description: TranslationKey } => {

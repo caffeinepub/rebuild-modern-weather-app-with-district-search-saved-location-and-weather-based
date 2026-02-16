@@ -89,10 +89,605 @@ export class ExternalBlob {
         return this;
     }
 }
-export interface backendInterface {
+export interface Precipitation {
+    probability: number;
+    amount: number;
 }
+export interface WeatherResponse {
+    country: string;
+    city: string;
+    daily: {
+        precipitation: Precipitation;
+        temperature?: number;
+        windSpeed: number;
+        windDir: number;
+        condition: string;
+    };
+    weekly: Array<WeeklyForecast>;
+}
+export interface WeeklyForecast {
+    precipitation: Precipitation;
+    temperature?: number;
+    windSpeed: number;
+    timestamp: bigint;
+    windDir: number;
+    condition: string;
+}
+export interface DBWeather {
+    cloudCover?: number;
+    temperatureMax?: number;
+    temperatureMin?: number;
+    country: string;
+    precipitation?: number;
+    temperature?: number;
+    city: string;
+    windSpeed?: number;
+    solar?: number;
+    windDirection?: number;
+    temperatureDaily?: number;
+    precipitationProbability?: number;
+    condition: string;
+}
+export interface backendInterface {
+    conditionForWeather(weather: DBWeather): Promise<string>;
+    getCachedWeather(key: string): Promise<WeatherResponse | null>;
+    getCurrentWeather(city: string, country: string): Promise<WeatherResponse | null>;
+    getDailyForecast(city: string, country: string, timestamp: bigint): Promise<WeeklyForecast | null>;
+    getHealthCheck(): Promise<{
+        status: string;
+        version: string;
+        timestamp: bigint;
+    }>;
+    getWeather(city: string, country: string): Promise<WeatherResponse | null>;
+    getWeatherData(city: string, country: string): Promise<{
+        country: string;
+        city: string;
+        daily: {
+            precipitation: {
+                probability: number;
+                amount: number;
+            };
+            temperature?: number;
+            windSpeed: number;
+            windDir: number;
+            condition: string;
+        };
+        weekly: Array<{
+            precipitation: {
+                probability: number;
+                amount: number;
+            };
+            temperature?: number;
+            windSpeed: number;
+            timestamp: bigint;
+            windDir: number;
+            condition: string;
+        }>;
+    }>;
+    getWeeklyForecast(city: string, country: string): Promise<Array<WeeklyForecast> | null>;
+    upsertWeather(key: string, weatherData: WeatherResponse): Promise<boolean>;
+}
+import type { DBWeather as _DBWeather, Precipitation as _Precipitation, WeatherResponse as _WeatherResponse, WeeklyForecast as _WeeklyForecast } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
+    async conditionForWeather(arg0: DBWeather): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.conditionForWeather(to_candid_DBWeather_n1(this._uploadFile, this._downloadFile, arg0));
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.conditionForWeather(to_candid_DBWeather_n1(this._uploadFile, this._downloadFile, arg0));
+            return result;
+        }
+    }
+    async getCachedWeather(arg0: string): Promise<WeatherResponse | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getCachedWeather(arg0);
+                return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getCachedWeather(arg0);
+            return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getCurrentWeather(arg0: string, arg1: string): Promise<WeatherResponse | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getCurrentWeather(arg0, arg1);
+                return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getCurrentWeather(arg0, arg1);
+            return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getDailyForecast(arg0: string, arg1: string, arg2: bigint): Promise<WeeklyForecast | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getDailyForecast(arg0, arg1, arg2);
+                return from_candid_opt_n11(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getDailyForecast(arg0, arg1, arg2);
+            return from_candid_opt_n11(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getHealthCheck(): Promise<{
+        status: string;
+        version: string;
+        timestamp: bigint;
+    }> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getHealthCheck();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getHealthCheck();
+            return result;
+        }
+    }
+    async getWeather(arg0: string, arg1: string): Promise<WeatherResponse | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getWeather(arg0, arg1);
+                return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getWeather(arg0, arg1);
+            return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getWeatherData(arg0: string, arg1: string): Promise<{
+        country: string;
+        city: string;
+        daily: {
+            precipitation: {
+                probability: number;
+                amount: number;
+            };
+            temperature?: number;
+            windSpeed: number;
+            windDir: number;
+            condition: string;
+        };
+        weekly: Array<{
+            precipitation: {
+                probability: number;
+                amount: number;
+            };
+            temperature?: number;
+            windSpeed: number;
+            timestamp: bigint;
+            windDir: number;
+            condition: string;
+        }>;
+    }> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getWeatherData(arg0, arg1);
+                return from_candid_record_n12(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getWeatherData(arg0, arg1);
+            return from_candid_record_n12(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getWeeklyForecast(arg0: string, arg1: string): Promise<Array<WeeklyForecast> | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getWeeklyForecast(arg0, arg1);
+                return from_candid_opt_n16(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getWeeklyForecast(arg0, arg1);
+            return from_candid_opt_n16(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async upsertWeather(arg0: string, arg1: WeatherResponse): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.upsertWeather(arg0, to_candid_WeatherResponse_n17(this._uploadFile, this._downloadFile, arg1));
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.upsertWeather(arg0, to_candid_WeatherResponse_n17(this._uploadFile, this._downloadFile, arg1));
+            return result;
+        }
+    }
+}
+function from_candid_WeatherResponse_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _WeatherResponse): WeatherResponse {
+    return from_candid_record_n5(_uploadFile, _downloadFile, value);
+}
+function from_candid_WeeklyForecast_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _WeeklyForecast): WeeklyForecast {
+    return from_candid_record_n10(_uploadFile, _downloadFile, value);
+}
+function from_candid_opt_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_WeeklyForecast]): WeeklyForecast | null {
+    return value.length === 0 ? null : from_candid_WeeklyForecast_n9(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [Array<_WeeklyForecast>]): Array<WeeklyForecast> | null {
+    return value.length === 0 ? null : from_candid_vec_n8(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_WeatherResponse]): WeatherResponse | null {
+    return value.length === 0 ? null : from_candid_WeatherResponse_n4(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [number]): number | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_record_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    precipitation: _Precipitation;
+    temperature: [] | [number];
+    windSpeed: number;
+    timestamp: bigint;
+    windDir: number;
+    condition: string;
+}): {
+    precipitation: Precipitation;
+    temperature?: number;
+    windSpeed: number;
+    timestamp: bigint;
+    windDir: number;
+    condition: string;
+} {
+    return {
+        precipitation: value.precipitation,
+        temperature: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.temperature)),
+        windSpeed: value.windSpeed,
+        timestamp: value.timestamp,
+        windDir: value.windDir,
+        condition: value.condition
+    };
+}
+function from_candid_record_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    country: string;
+    city: string;
+    daily: {
+        precipitation: {
+            probability: number;
+            amount: number;
+        };
+        temperature: [] | [number];
+        windSpeed: number;
+        windDir: number;
+        condition: string;
+    };
+    weekly: Array<{
+        precipitation: {
+            probability: number;
+            amount: number;
+        };
+        temperature: [] | [number];
+        windSpeed: number;
+        timestamp: bigint;
+        windDir: number;
+        condition: string;
+    }>;
+}): {
+    country: string;
+    city: string;
+    daily: {
+        precipitation: {
+            probability: number;
+            amount: number;
+        };
+        temperature?: number;
+        windSpeed: number;
+        windDir: number;
+        condition: string;
+    };
+    weekly: Array<{
+        precipitation: {
+            probability: number;
+            amount: number;
+        };
+        temperature?: number;
+        windSpeed: number;
+        timestamp: bigint;
+        windDir: number;
+        condition: string;
+    }>;
+} {
+    return {
+        country: value.country,
+        city: value.city,
+        daily: from_candid_record_n13(_uploadFile, _downloadFile, value.daily),
+        weekly: from_candid_vec_n14(_uploadFile, _downloadFile, value.weekly)
+    };
+}
+function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    precipitation: {
+        probability: number;
+        amount: number;
+    };
+    temperature: [] | [number];
+    windSpeed: number;
+    windDir: number;
+    condition: string;
+}): {
+    precipitation: {
+        probability: number;
+        amount: number;
+    };
+    temperature?: number;
+    windSpeed: number;
+    windDir: number;
+    condition: string;
+} {
+    return {
+        precipitation: value.precipitation,
+        temperature: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.temperature)),
+        windSpeed: value.windSpeed,
+        windDir: value.windDir,
+        condition: value.condition
+    };
+}
+function from_candid_record_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    precipitation: {
+        probability: number;
+        amount: number;
+    };
+    temperature: [] | [number];
+    windSpeed: number;
+    timestamp: bigint;
+    windDir: number;
+    condition: string;
+}): {
+    precipitation: {
+        probability: number;
+        amount: number;
+    };
+    temperature?: number;
+    windSpeed: number;
+    timestamp: bigint;
+    windDir: number;
+    condition: string;
+} {
+    return {
+        precipitation: value.precipitation,
+        temperature: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.temperature)),
+        windSpeed: value.windSpeed,
+        timestamp: value.timestamp,
+        windDir: value.windDir,
+        condition: value.condition
+    };
+}
+function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    country: string;
+    city: string;
+    daily: {
+        precipitation: _Precipitation;
+        temperature: [] | [number];
+        windSpeed: number;
+        windDir: number;
+        condition: string;
+    };
+    weekly: Array<_WeeklyForecast>;
+}): {
+    country: string;
+    city: string;
+    daily: {
+        precipitation: Precipitation;
+        temperature?: number;
+        windSpeed: number;
+        windDir: number;
+        condition: string;
+    };
+    weekly: Array<WeeklyForecast>;
+} {
+    return {
+        country: value.country,
+        city: value.city,
+        daily: from_candid_record_n6(_uploadFile, _downloadFile, value.daily),
+        weekly: from_candid_vec_n8(_uploadFile, _downloadFile, value.weekly)
+    };
+}
+function from_candid_record_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    precipitation: _Precipitation;
+    temperature: [] | [number];
+    windSpeed: number;
+    windDir: number;
+    condition: string;
+}): {
+    precipitation: Precipitation;
+    temperature?: number;
+    windSpeed: number;
+    windDir: number;
+    condition: string;
+} {
+    return {
+        precipitation: value.precipitation,
+        temperature: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.temperature)),
+        windSpeed: value.windSpeed,
+        windDir: value.windDir,
+        condition: value.condition
+    };
+}
+function from_candid_vec_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<{
+    precipitation: {
+        probability: number;
+        amount: number;
+    };
+    temperature: [] | [number];
+    windSpeed: number;
+    timestamp: bigint;
+    windDir: number;
+    condition: string;
+}>): Array<{
+    precipitation: {
+        probability: number;
+        amount: number;
+    };
+    temperature?: number;
+    windSpeed: number;
+    timestamp: bigint;
+    windDir: number;
+    condition: string;
+}> {
+    return value.map((x)=>from_candid_record_n15(_uploadFile, _downloadFile, x));
+}
+function from_candid_vec_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_WeeklyForecast>): Array<WeeklyForecast> {
+    return value.map((x)=>from_candid_WeeklyForecast_n9(_uploadFile, _downloadFile, x));
+}
+function to_candid_DBWeather_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: DBWeather): _DBWeather {
+    return to_candid_record_n2(_uploadFile, _downloadFile, value);
+}
+function to_candid_WeatherResponse_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: WeatherResponse): _WeatherResponse {
+    return to_candid_record_n18(_uploadFile, _downloadFile, value);
+}
+function to_candid_WeeklyForecast_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: WeeklyForecast): _WeeklyForecast {
+    return to_candid_record_n22(_uploadFile, _downloadFile, value);
+}
+function to_candid_record_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    country: string;
+    city: string;
+    daily: {
+        precipitation: Precipitation;
+        temperature?: number;
+        windSpeed: number;
+        windDir: number;
+        condition: string;
+    };
+    weekly: Array<WeeklyForecast>;
+}): {
+    country: string;
+    city: string;
+    daily: {
+        precipitation: _Precipitation;
+        temperature: [] | [number];
+        windSpeed: number;
+        windDir: number;
+        condition: string;
+    };
+    weekly: Array<_WeeklyForecast>;
+} {
+    return {
+        country: value.country,
+        city: value.city,
+        daily: to_candid_record_n19(_uploadFile, _downloadFile, value.daily),
+        weekly: to_candid_vec_n20(_uploadFile, _downloadFile, value.weekly)
+    };
+}
+function to_candid_record_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    precipitation: Precipitation;
+    temperature?: number;
+    windSpeed: number;
+    windDir: number;
+    condition: string;
+}): {
+    precipitation: _Precipitation;
+    temperature: [] | [number];
+    windSpeed: number;
+    windDir: number;
+    condition: string;
+} {
+    return {
+        precipitation: value.precipitation,
+        temperature: value.temperature ? candid_some(value.temperature) : candid_none(),
+        windSpeed: value.windSpeed,
+        windDir: value.windDir,
+        condition: value.condition
+    };
+}
+function to_candid_record_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    cloudCover?: number;
+    temperatureMax?: number;
+    temperatureMin?: number;
+    country: string;
+    precipitation?: number;
+    temperature?: number;
+    city: string;
+    windSpeed?: number;
+    solar?: number;
+    windDirection?: number;
+    temperatureDaily?: number;
+    precipitationProbability?: number;
+    condition: string;
+}): {
+    cloudCover: [] | [number];
+    temperatureMax: [] | [number];
+    temperatureMin: [] | [number];
+    country: string;
+    precipitation: [] | [number];
+    temperature: [] | [number];
+    city: string;
+    windSpeed: [] | [number];
+    solar: [] | [number];
+    windDirection: [] | [number];
+    temperatureDaily: [] | [number];
+    precipitationProbability: [] | [number];
+    condition: string;
+} {
+    return {
+        cloudCover: value.cloudCover ? candid_some(value.cloudCover) : candid_none(),
+        temperatureMax: value.temperatureMax ? candid_some(value.temperatureMax) : candid_none(),
+        temperatureMin: value.temperatureMin ? candid_some(value.temperatureMin) : candid_none(),
+        country: value.country,
+        precipitation: value.precipitation ? candid_some(value.precipitation) : candid_none(),
+        temperature: value.temperature ? candid_some(value.temperature) : candid_none(),
+        city: value.city,
+        windSpeed: value.windSpeed ? candid_some(value.windSpeed) : candid_none(),
+        solar: value.solar ? candid_some(value.solar) : candid_none(),
+        windDirection: value.windDirection ? candid_some(value.windDirection) : candid_none(),
+        temperatureDaily: value.temperatureDaily ? candid_some(value.temperatureDaily) : candid_none(),
+        precipitationProbability: value.precipitationProbability ? candid_some(value.precipitationProbability) : candid_none(),
+        condition: value.condition
+    };
+}
+function to_candid_record_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    precipitation: Precipitation;
+    temperature?: number;
+    windSpeed: number;
+    timestamp: bigint;
+    windDir: number;
+    condition: string;
+}): {
+    precipitation: _Precipitation;
+    temperature: [] | [number];
+    windSpeed: number;
+    timestamp: bigint;
+    windDir: number;
+    condition: string;
+} {
+    return {
+        precipitation: value.precipitation,
+        temperature: value.temperature ? candid_some(value.temperature) : candid_none(),
+        windSpeed: value.windSpeed,
+        timestamp: value.timestamp,
+        windDir: value.windDir,
+        condition: value.condition
+    };
+}
+function to_candid_vec_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<WeeklyForecast>): Array<_WeeklyForecast> {
+    return value.map((x)=>to_candid_WeeklyForecast_n21(_uploadFile, _downloadFile, x));
 }
 export interface CreateActorOptions {
     agent?: Agent;

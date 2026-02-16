@@ -1,5 +1,5 @@
 {
-  "frontend/src/App.tsx": "Main application component with WeatherVerse branding, portal-based language switcher dropdown using LanguageDropdownOverlay component with ref-based trigger positioning, imminent weather alert banner, location search, tab navigation, and footer with Open-Meteo attribution and caffeine.ai link.",
+  "frontend/src/App.tsx": "Main application component with WeatherVerse branding, portal-based language switcher, imminent weather alert banner, location search, tab navigation, footer with Open-Meteo attribution and caffeine.ai link, and automatic weather data publishing to backend when location is selected and weather data loads successfully.",
   "frontend/src/components/ThemeProvider.tsx": "Context provider that manages weather-based themes and automatically applies dark mode class, using relative import for weatherContrast utility.",
   "frontend/src/components/BackgroundIllustration.tsx": "Component that displays weather-themed background images with enhanced overlay gradients, using relative import for weatherContrast utility.",
   "frontend/src/components/LocationSearch.tsx": "Search interface with native HTML elements, stronger glass surfaces, enhanced current location display, improved input styling with correct translation keys (location.search.placeholder, location.search.error), and FloatingAutocompleteDropdown with proper isOpen prop for results.",
@@ -64,5 +64,7 @@
   "frontend/tsconfig.node.json": "TypeScript configuration for Vite config file with ESNext module resolution.",
   "frontend/src/vite-env.d.ts": "Vite client type declarations for TypeScript environment.",
   "frontend/src/lib/fetchWithTimeout.ts": "Fetch wrapper utility that applies a configurable timeout using AbortController and returns consistent error messages for timeout failures.",
-  "frontend/src/components/LanguageDropdownOverlay.tsx": "Portal-based language dropdown overlay component that renders to document.body with fixed positioning computed from trigger button rect, handles scroll/resize repositioning, outside-click/escape closing, and uses z-[100] to stay above all other UI elements with proper nullable ref type support."
+  "frontend/src/components/LanguageDropdownOverlay.tsx": "Portal-based language dropdown overlay component that renders to document.body with fixed positioning computed from trigger button rect, handles scroll/resize repositioning, outside-click/escape closing, and uses z-[100] to stay above all other UI elements with proper nullable ref type support.",
+  "frontend/src/lib/widgetWeatherPayload.ts": "Utility functions that generate stable publish keys from location data and transform frontend WeatherData into backend-compatible WeatherResponse format with safe defaults and WMO weather code mapping.",
+  "frontend/src/hooks/usePublishWidgetWeather.ts": "React Query mutation hook that publishes weather data to the backend via the upsertWeather method, handling errors gracefully without crashing the UI."
 }

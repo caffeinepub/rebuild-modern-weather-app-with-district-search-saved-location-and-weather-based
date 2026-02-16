@@ -1,70 +1,76 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-16T14:59:16.434Z",
+  "generatedAt": "2026-02-16T15:50:26.228Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 5,
+    "implemented": 1,
     "items": [
       {
-        "id": "REQ-1",
-        "summary": "Update RainViewer radar data parsing so the app can prefer upcoming-hours (nowcast) frames instead of historical (past) frames for radar playback.",
+        "id": "REQ-4",
+        "summary": "Implement an HTTP JSON API in the Motoko backend so that the deployed domain https://weatherverse-gy1.caffeine.xyz/ can be used as a URL-based JSON endpoint for Android widgets (i.e., a GET request returns JSON, not HTML).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Define and serve a stable JSON schema for widget consumption that includes fields for current, daily, and weekly forecasts (matching the earlier discussed structure), and ensure the backend always returns these keys even when data is missing (using null/empty arrays rather than omitting keys).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-6",
+        "summary": "Add backend methods and storage to allow the frontend to publish (upsert) the latest weather payload that the public JSON endpoint will serve, so the API can work without relying on direct external HTTP calls from the canister.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-7",
+        "summary": "Update the React frontend to publish the currently displayed weather data to the backend whenever new weather data is fetched for a selected location, so the backend’s URL-based JSON endpoint stays fresh for Android widgets.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/lib/rainviewer.ts",
-          "frontend/src/hooks/useRainViewer.ts"
+          "frontend/src/lib/widgetWeatherPayload.ts",
+          "frontend/src/hooks/usePublishWidgetWeather.ts",
+          "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/lib/rainviewer.ts"
+          "frontend/src/lib/widgetWeatherPayload.ts",
+          "frontend/src/hooks/usePublishWidgetWeather.ts",
+          "frontend/src/App.tsx"
         ]
       },
       {
-        "id": "REQ-2",
-        "summary": "Change the Radar screen playback behavior so that the default displayed/played frames are future/nowcast frames (upcoming hours) rather than past frames.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/useRadarPlayback.ts",
-          "frontend/src/components/RadarScreen.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/useRadarPlayback.ts",
-          "frontend/src/components/RadarScreen.tsx"
-        ]
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Ensure the Radar map overlay uses the same nowcast frame selection used by playback controls, so the visible radar tiles correspond to the chosen upcoming-hours frame index.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/RadarScreen.tsx",
-          "frontend/src/hooks/useRadarAlerts.ts",
-          "frontend/src/lib/radarNowcastSummary.ts",
-          "frontend/src/components/radar/RadarInfoPanel.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/RadarScreen.tsx",
-          "frontend/src/hooks/useRadarAlerts.ts",
-          "frontend/src/lib/radarNowcastSummary.ts",
-          "frontend/src/components/radar/RadarInfoPanel.tsx"
-        ]
+        "id": "REQ-8",
+        "summary": "Provide a simple health/version endpoint under /api (e.g., /api/health) that returns JSON indicating the service is running, for easy widget/network debugging.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
+    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/RadarScreen.tsx",
-    "frontend/src/components/radar/RadarInfoPanel.tsx",
-    "frontend/src/hooks/useRadarAlerts.ts",
-    "frontend/src/hooks/useRadarPlayback.ts",
-    "frontend/src/lib/radarNowcastSummary.ts",
-    "frontend/src/lib/rainviewer.ts",
+    "frontend/src/App.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/config.ts",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/usePublishWidgetWeather.ts",
+    "frontend/src/lib/widgetWeatherPayload.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

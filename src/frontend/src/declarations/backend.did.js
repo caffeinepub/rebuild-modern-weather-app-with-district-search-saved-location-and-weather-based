@@ -8,10 +8,236 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
-export const idlService = IDL.Service({});
+export const DBWeather = IDL.Record({
+  'cloudCover' : IDL.Opt(IDL.Float64),
+  'temperatureMax' : IDL.Opt(IDL.Float64),
+  'temperatureMin' : IDL.Opt(IDL.Float64),
+  'country' : IDL.Text,
+  'precipitation' : IDL.Opt(IDL.Float64),
+  'temperature' : IDL.Opt(IDL.Float64),
+  'city' : IDL.Text,
+  'windSpeed' : IDL.Opt(IDL.Float64),
+  'solar' : IDL.Opt(IDL.Float64),
+  'windDirection' : IDL.Opt(IDL.Float64),
+  'temperatureDaily' : IDL.Opt(IDL.Float64),
+  'precipitationProbability' : IDL.Opt(IDL.Float64),
+  'condition' : IDL.Text,
+});
+export const Precipitation = IDL.Record({
+  'probability' : IDL.Float64,
+  'amount' : IDL.Float64,
+});
+export const WeeklyForecast = IDL.Record({
+  'precipitation' : Precipitation,
+  'temperature' : IDL.Opt(IDL.Float64),
+  'windSpeed' : IDL.Float64,
+  'timestamp' : IDL.Int,
+  'windDir' : IDL.Float64,
+  'condition' : IDL.Text,
+});
+export const WeatherResponse = IDL.Record({
+  'country' : IDL.Text,
+  'city' : IDL.Text,
+  'daily' : IDL.Record({
+    'precipitation' : Precipitation,
+    'temperature' : IDL.Opt(IDL.Float64),
+    'windSpeed' : IDL.Float64,
+    'windDir' : IDL.Float64,
+    'condition' : IDL.Text,
+  }),
+  'weekly' : IDL.Vec(WeeklyForecast),
+});
+
+export const idlService = IDL.Service({
+  'conditionForWeather' : IDL.Func([DBWeather], [IDL.Text], ['query']),
+  'getCachedWeather' : IDL.Func(
+      [IDL.Text],
+      [IDL.Opt(WeatherResponse)],
+      ['query'],
+    ),
+  'getCurrentWeather' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Opt(WeatherResponse)],
+      ['query'],
+    ),
+  'getDailyForecast' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Int],
+      [IDL.Opt(WeeklyForecast)],
+      ['query'],
+    ),
+  'getHealthCheck' : IDL.Func(
+      [],
+      [
+        IDL.Record({
+          'status' : IDL.Text,
+          'version' : IDL.Text,
+          'timestamp' : IDL.Int,
+        }),
+      ],
+      ['query'],
+    ),
+  'getWeather' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Opt(WeatherResponse)],
+      ['query'],
+    ),
+  'getWeatherData' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [
+        IDL.Record({
+          'country' : IDL.Text,
+          'city' : IDL.Text,
+          'daily' : IDL.Record({
+            'precipitation' : IDL.Record({
+              'probability' : IDL.Float64,
+              'amount' : IDL.Float64,
+            }),
+            'temperature' : IDL.Opt(IDL.Float64),
+            'windSpeed' : IDL.Float64,
+            'windDir' : IDL.Float64,
+            'condition' : IDL.Text,
+          }),
+          'weekly' : IDL.Vec(
+            IDL.Record({
+              'precipitation' : IDL.Record({
+                'probability' : IDL.Float64,
+                'amount' : IDL.Float64,
+              }),
+              'temperature' : IDL.Opt(IDL.Float64),
+              'windSpeed' : IDL.Float64,
+              'timestamp' : IDL.Int,
+              'windDir' : IDL.Float64,
+              'condition' : IDL.Text,
+            })
+          ),
+        }),
+      ],
+      ['query'],
+    ),
+  'getWeeklyForecast' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Opt(IDL.Vec(WeeklyForecast))],
+      ['query'],
+    ),
+  'upsertWeather' : IDL.Func([IDL.Text, WeatherResponse], [IDL.Bool], []),
+});
 
 export const idlInitArgs = [];
 
-export const idlFactory = ({ IDL }) => { return IDL.Service({}); };
+export const idlFactory = ({ IDL }) => {
+  const DBWeather = IDL.Record({
+    'cloudCover' : IDL.Opt(IDL.Float64),
+    'temperatureMax' : IDL.Opt(IDL.Float64),
+    'temperatureMin' : IDL.Opt(IDL.Float64),
+    'country' : IDL.Text,
+    'precipitation' : IDL.Opt(IDL.Float64),
+    'temperature' : IDL.Opt(IDL.Float64),
+    'city' : IDL.Text,
+    'windSpeed' : IDL.Opt(IDL.Float64),
+    'solar' : IDL.Opt(IDL.Float64),
+    'windDirection' : IDL.Opt(IDL.Float64),
+    'temperatureDaily' : IDL.Opt(IDL.Float64),
+    'precipitationProbability' : IDL.Opt(IDL.Float64),
+    'condition' : IDL.Text,
+  });
+  const Precipitation = IDL.Record({
+    'probability' : IDL.Float64,
+    'amount' : IDL.Float64,
+  });
+  const WeeklyForecast = IDL.Record({
+    'precipitation' : Precipitation,
+    'temperature' : IDL.Opt(IDL.Float64),
+    'windSpeed' : IDL.Float64,
+    'timestamp' : IDL.Int,
+    'windDir' : IDL.Float64,
+    'condition' : IDL.Text,
+  });
+  const WeatherResponse = IDL.Record({
+    'country' : IDL.Text,
+    'city' : IDL.Text,
+    'daily' : IDL.Record({
+      'precipitation' : Precipitation,
+      'temperature' : IDL.Opt(IDL.Float64),
+      'windSpeed' : IDL.Float64,
+      'windDir' : IDL.Float64,
+      'condition' : IDL.Text,
+    }),
+    'weekly' : IDL.Vec(WeeklyForecast),
+  });
+  
+  return IDL.Service({
+    'conditionForWeather' : IDL.Func([DBWeather], [IDL.Text], ['query']),
+    'getCachedWeather' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(WeatherResponse)],
+        ['query'],
+      ),
+    'getCurrentWeather' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Opt(WeatherResponse)],
+        ['query'],
+      ),
+    'getDailyForecast' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Int],
+        [IDL.Opt(WeeklyForecast)],
+        ['query'],
+      ),
+    'getHealthCheck' : IDL.Func(
+        [],
+        [
+          IDL.Record({
+            'status' : IDL.Text,
+            'version' : IDL.Text,
+            'timestamp' : IDL.Int,
+          }),
+        ],
+        ['query'],
+      ),
+    'getWeather' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Opt(WeatherResponse)],
+        ['query'],
+      ),
+    'getWeatherData' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [
+          IDL.Record({
+            'country' : IDL.Text,
+            'city' : IDL.Text,
+            'daily' : IDL.Record({
+              'precipitation' : IDL.Record({
+                'probability' : IDL.Float64,
+                'amount' : IDL.Float64,
+              }),
+              'temperature' : IDL.Opt(IDL.Float64),
+              'windSpeed' : IDL.Float64,
+              'windDir' : IDL.Float64,
+              'condition' : IDL.Text,
+            }),
+            'weekly' : IDL.Vec(
+              IDL.Record({
+                'precipitation' : IDL.Record({
+                  'probability' : IDL.Float64,
+                  'amount' : IDL.Float64,
+                }),
+                'temperature' : IDL.Opt(IDL.Float64),
+                'windSpeed' : IDL.Float64,
+                'timestamp' : IDL.Int,
+                'windDir' : IDL.Float64,
+                'condition' : IDL.Text,
+              })
+            ),
+          }),
+        ],
+        ['query'],
+      ),
+    'getWeeklyForecast' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Opt(IDL.Vec(WeeklyForecast))],
+        ['query'],
+      ),
+    'upsertWeather' : IDL.Func([IDL.Text, WeatherResponse], [IDL.Bool], []),
+  });
+};
 
 export const init = ({ IDL }) => { return []; };

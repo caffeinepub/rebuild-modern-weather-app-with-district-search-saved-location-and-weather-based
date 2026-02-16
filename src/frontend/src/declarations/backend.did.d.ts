@@ -10,7 +10,85 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
-export interface _SERVICE {}
+export interface DBWeather {
+  'cloudCover' : [] | [number],
+  'temperatureMax' : [] | [number],
+  'temperatureMin' : [] | [number],
+  'country' : string,
+  'precipitation' : [] | [number],
+  'temperature' : [] | [number],
+  'city' : string,
+  'windSpeed' : [] | [number],
+  'solar' : [] | [number],
+  'windDirection' : [] | [number],
+  'temperatureDaily' : [] | [number],
+  'precipitationProbability' : [] | [number],
+  'condition' : string,
+}
+export interface Precipitation { 'probability' : number, 'amount' : number }
+export interface WeatherResponse {
+  'country' : string,
+  'city' : string,
+  'daily' : {
+    'precipitation' : Precipitation,
+    'temperature' : [] | [number],
+    'windSpeed' : number,
+    'windDir' : number,
+    'condition' : string,
+  },
+  'weekly' : Array<WeeklyForecast>,
+}
+export interface WeeklyForecast {
+  'precipitation' : Precipitation,
+  'temperature' : [] | [number],
+  'windSpeed' : number,
+  'timestamp' : bigint,
+  'windDir' : number,
+  'condition' : string,
+}
+export interface _SERVICE {
+  'conditionForWeather' : ActorMethod<[DBWeather], string>,
+  'getCachedWeather' : ActorMethod<[string], [] | [WeatherResponse]>,
+  'getCurrentWeather' : ActorMethod<[string, string], [] | [WeatherResponse]>,
+  'getDailyForecast' : ActorMethod<
+    [string, string, bigint],
+    [] | [WeeklyForecast]
+  >,
+  'getHealthCheck' : ActorMethod<
+    [],
+    { 'status' : string, 'version' : string, 'timestamp' : bigint }
+  >,
+  'getWeather' : ActorMethod<[string, string], [] | [WeatherResponse]>,
+  'getWeatherData' : ActorMethod<
+    [string, string],
+    {
+      'country' : string,
+      'city' : string,
+      'daily' : {
+        'precipitation' : { 'probability' : number, 'amount' : number },
+        'temperature' : [] | [number],
+        'windSpeed' : number,
+        'windDir' : number,
+        'condition' : string,
+      },
+      'weekly' : Array<
+        {
+          'precipitation' : { 'probability' : number, 'amount' : number },
+          'temperature' : [] | [number],
+          'windSpeed' : number,
+          'timestamp' : bigint,
+          'windDir' : number,
+          'condition' : string,
+        }
+      >,
+    }
+  >,
+  'getWeeklyForecast' : ActorMethod<
+    [string, string],
+    [] | [Array<WeeklyForecast>]
+  >,
+  'upsertWeather' : ActorMethod<[string, WeatherResponse], boolean>,
+}
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];
 export declare const idlFactory: IDL.InterfaceFactory;
