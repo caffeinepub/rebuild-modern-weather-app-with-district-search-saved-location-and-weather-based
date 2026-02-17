@@ -11,6 +11,8 @@ interface RadarPlaybackControlsProps {
   isPlaying: boolean;
   onPlay: () => void;
   onPause: () => void;
+  onPrevious: () => void;
+  onNext: () => void;
   onSeek: (index: number) => void;
   frameLabel: string;
   mode: RadarFrameMode;
@@ -22,6 +24,8 @@ export function RadarPlaybackControls({
   isPlaying,
   onPlay,
   onPause,
+  onPrevious,
+  onNext,
   onSeek,
   frameLabel,
   mode,
@@ -53,21 +57,9 @@ export function RadarPlaybackControls({
     }, 50);
   };
 
-  const handlePrevious = () => {
-    if (currentFrameIndex > 0) {
-      onSeek(currentFrameIndex - 1);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentFrameIndex < totalFrames - 1) {
-      onSeek(currentFrameIndex + 1);
-    }
-  };
-
   const modeLabel = mode === 'forecast' ? t('radar.playback.forecast') : t('radar.playback.past');
 
-  // Disable controls when there are insufficient frames
+  // Disable controls when there are insufficient frames (0 or 1)
   const hasInsufficientFrames = totalFrames <= 1;
   const noFramesMessage = totalFrames === 0 
     ? t('radar.playback.noFrames') 
@@ -75,58 +67,65 @@ export function RadarPlaybackControls({
     ? t('radar.playback.singleFrame')
     : '';
 
+  // Only disable play/pause when there are insufficient frames
+  const isPlayPauseDisabled = hasInsufficientFrames;
+
   return (
     <div className="space-y-4">
       {/* Timeline Slider */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">
-            {modeLabel}
-          </span>
-          <span className="font-medium">{frameLabel || noFramesMessage}</span>
+          <span className="text-muted-foreground">{modeLabel}</span>
+          <span className="font-medium">{frameLabel || '—'}</span>
         </div>
         <Slider
           value={[currentFrameIndex]}
-          min={0}
+          onValueChange={handleSliderChange}
+          onValueCommit={handleSliderCommit}
           max={Math.max(0, totalFrames - 1)}
           step={1}
-          onValueChange={handleSliderChange}
-          onPointerDown={() => { isUserInteractingRef.current = true; }}
-          onPointerUp={handleSliderCommit}
-          onKeyDown={() => { isUserInteractingRef.current = true; }}
-          onKeyUp={handleSliderCommit}
           disabled={hasInsufficientFrames}
           className="w-full"
         />
       </div>
 
-      {/* Playback Controls */}
+      {/* Playback Buttons */}
       <div className="flex items-center justify-center gap-2">
         <Button
           variant="outline"
           size="icon"
-          onClick={handlePrevious}
-          disabled={currentFrameIndex === 0 || hasInsufficientFrames}
+          onClick={onPrevious}
+          disabled={hasInsufficientFrames || currentFrameIndex === 0}
+          aria-label="Previous frame"
         >
           <SkipBack className="h-4 w-4" />
         </Button>
-        <Button
-          variant="default"
-          size="icon"
-          onClick={isPlaying ? onPause : onPlay}
-          disabled={hasInsufficientFrames}
-        >
-          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-        </Button>
+
         <Button
           variant="outline"
           size="icon"
-          onClick={handleNext}
-          disabled={currentFrameIndex === totalFrames - 1 || hasInsufficientFrames}
+          onClick={isPlaying ? onPause : onPlay}
+          disabled={isPlayPauseDisabled}
+          aria-label={isPlaying ? 'Pause' : 'Play'}
+        >
+          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        </Button>
+
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={onNext}
+          disabled={hasInsufficientFrames || currentFrameIndex === totalFrames - 1}
+          aria-label="Next frame"
         >
           <SkipForward className="h-4 w-4" />
         </Button>
       </div>
+
+      {/* Empty State Message */}
+      {noFramesMessage && (
+        <p className="text-center text-sm text-muted-foreground">{noFramesMessage}</p>
+      )}
     </div>
   );
 }

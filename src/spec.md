@@ -1,13 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Add 90-minute RainViewer nowcast playback with clear forecast labeling, enforce radar map zoom/tile constraints, and route RainViewer data through a backend cache.
+**Goal:** Fix Radar “Forecast” mode so it plays a real RainViewer nowcast animation for the next +90 minutes, starts automatically when frames exist, and stays up to date via refreshed backend caching.
 
 **Planned changes:**
-- Combine RainViewer past frames with nowcast frames limited to +90 minutes, and expose a single unified frames list to existing playback/overlay hooks (useRainViewer, useRadarPlayback, useRadarOverlayData) without breaking their APIs.
-- Show a visible label “Short-term radar forecast – uncertainty applies” only when viewing forecast/nowcast frames (hidden on past frames), positioned so it does not block map interaction.
-- Constrain Leaflet radar map zoom to minZoom=5 and maxZoom=9, and ensure precipitation tiles use RainViewer v2 256px tile format; update tile URL per frame without recreating the map.
-- Implement backend caching for RainViewer weather-maps data (TTL 10 minutes) with passive refresh: serve stale cached data immediately when expired (if available) and refresh in the background; fetch fresh data only when no cache exists; retain last good value on refresh failure.
-- Update frontend RainViewer fetching to use the backend-cached endpoint instead of calling https://api.rainviewer.com/public/weather-maps.json directly, while keeping the existing useRainViewer hook as the integration point.
+- Update the Radar Forecast playback logic to animate through RainViewer-provided future nowcast frames (up to +90 minutes) so the precipitation overlay advances frame-by-frame on the map.
+- Start Forecast playback automatically when entering Forecast mode if there are at least 2 nowcast frames; ensure user Pause does not immediately auto-resume unless the mode is switched away and back (or frames re-initialize).
+- Ensure switching between Past and Forecast stops playback cleanly without errors and allows playback again when returning to Forecast.
+- Fix backend RainViewer cache behavior to refresh from the RainViewer API once TTL has expired, falling back to the last cached value on refresh failure (or empty string if none).
+- Move the Forecast uncertainty banner text into the existing i18n system with English and Turkish translations, removing hardcoded UI strings.
 
-**User-visible outcome:** Users can play radar animation through past frames and up to 90 minutes of short-term forecast frames, see a clear uncertainty label when viewing forecast frames, experience consistent zoom limits (5–9), and get reliable radar data loading backed by a 10-minute cache.
+**User-visible outcome:** In Radar Forecast mode, users see an automatically playing, smoothly advancing nowcast precipitation animation for the next 90 minutes when available, with correct messaging and up-to-date frames.

@@ -16,6 +16,8 @@ export interface RainViewerData {
 function normalizeFrame(frame: any): RadarFrame | null {
   if (!frame || typeof frame !== 'object') return null;
   if (typeof frame.time !== 'number' || typeof frame.path !== 'string') return null;
+  if (!isFinite(frame.time) || frame.time <= 0) return null;
+  if (frame.path.trim() === '') return null;
   return { time: frame.time, path: frame.path };
 }
 
@@ -31,12 +33,15 @@ function normalizeFrames(frames: any): RadarFrame[] {
 
 /**
  * Filters nowcast frames to only include those within +90 minutes from current time
+ * and ensures they are future-only and sorted by time
  */
 function filterNowcastFrames(frames: RadarFrame[]): RadarFrame[] {
   const now = Date.now() / 1000;
   const maxTime = now + (90 * 60); // +90 minutes in seconds
   
-  return frames.filter(frame => frame.time <= maxTime);
+  return frames
+    .filter(frame => frame.time > now && frame.time <= maxTime) // Future-only and within 90 minutes
+    .sort((a, b) => a.time - b.time); // Sort by time ascending
 }
 
 /**
@@ -47,10 +52,10 @@ export function parseRainViewerData(jsonString: string): RainViewerData {
     const data = JSON.parse(jsonString);
     
     // Validate and normalize past and nowcast frames
-    const pastFrames = normalizeFrames(data.radar?.past);
+    const pastFrames = normalizeFrames(data.radar?.past).sort((a, b) => a.time - b.time);
     const rawNowcastFrames = normalizeFrames(data.radar?.nowcast);
     
-    // Filter nowcast frames to +90 minutes limit
+    // Filter nowcast frames to +90 minutes limit, future-only, and sorted
     const nowcastFrames = filterNowcastFrames(rawNowcastFrames);
     
     return {

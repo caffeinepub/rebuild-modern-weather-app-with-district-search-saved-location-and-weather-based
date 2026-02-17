@@ -1,80 +1,75 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "WeatherVerse Radar: 90-minute nowcast limit, forecast labeling, tile/zoom constraints, and backend-cached RainViewer fetch",
+  "title": "Fix Radar Forecast (Nowcast) 90-Minute Animation Playback",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Limit nowcast frames to +90 minutes and provide a combined (past + limited nowcast) frames timeline for playback while preserving existing hook integration points.",
+      "summary": "Ensure Forecast mode renders and advances RainViewer nowcast precipitation frames (+90 minutes) as a visible frame-by-frame animation on the map.",
       "acceptanceCriteria": [
-        "When RainViewer returns nowcast frames beyond +90 minutes from the current time, those frames are not included in the forecast playback list.",
-        "The radar animation can play through past frames and forecast frames (up to +90 minutes) without errors.",
-        "useRadarPlayback continues to receive a single frames array for playback (no breaking API changes to the hook)."
+        "When a location is selected and RainViewer nowcast frames exist, the precipitation overlay in Forecast mode updates at a steady cadence (frame-by-frame) and visually animates motion on the map.",
+        "The forecast animation uses only future nowcast frames limited to +90 minutes (as provided by the RainViewer parsing logic), not past frames.",
+        "If there are 0 frames, the UI shows the existing no-frames messaging and no animation runs; if there is 1 frame, playback controls remain disabled as currently designed.",
+        "Switching between Past and Forecast modes stops playback and does not throw errors; returning to Forecast mode allows playback again."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/lib/rainviewer.ts",
-          "operation": "modify",
-          "description": "Add normalization that filters nowcast frames to those within +90 minutes from current time, and ensure RainViewerData.frames is the combined timeline (past + limited nowcast) in correct order while keeping pastFrames/nowcastFrames available."
-        },
-        {
           "path": "frontend/src/components/RadarScreen.tsx",
           "operation": "modify",
-          "description": "Update radar playback to use the combined frames array (past + limited nowcast) as the single input to useRadarPlayback, while still allowing the existing past/forecast mode control to seek within the combined timeline without changing useRadarPlayback’s API."
+          "description": "Ensure Forecast mode playback uses only RainViewer nowcastFrames (future-only) for playbackFrames, and confirm mode switching stops playback cleanly without errors; keep the current no-frames and single-frame behaviors intact."
+        },
+        {
+          "path": "frontend/src/components/radar/RadarMap.tsx",
+          "operation": "modify",
+          "description": "Harden precipitation tile-layer updates so that each frame change reliably updates the Leaflet precipitation layer URL (frame path changes) and visually advances on the map; ensure the layer is added/removed safely when frames become available/unavailable."
+        },
+        {
+          "path": "frontend/src/hooks/useRadarPlayback.ts",
+          "operation": "modify",
+          "description": "Review and adjust playback timing/update mechanics as needed to guarantee steady, frame-by-frame advancement during playback (no stalls), while preserving existing disabled-controls behavior for 0/1 frames."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Show a visible uncertainty label only while viewing forecast/nowcast frames without blocking map interaction.",
+      "summary": "Auto-start Forecast animation when entering Forecast mode and there are at least 2 nowcast frames, while respecting user pause.",
       "acceptanceCriteria": [
-        "In forecast mode, the UI displays the English label \"Short-term radar forecast – uncertainty applies\" in a clearly visible way near the map/playback UI.",
-        "In past mode, the label is not displayed.",
-        "The label does not block map interaction (it may be an overlay/banner)."
+        "On first load of the Radar screen in Forecast mode, if total forecast frames >= 2, playback starts automatically within 1 second.",
+        "When the user presses Pause, auto-play does not immediately restart unless the user switches mode away and back (or frames refresh and re-initialize).",
+        "Auto-play does not start in Past mode."
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/RadarScreen.tsx",
           "operation": "modify",
-          "description": "Add a non-blocking overlay/banner near the radar map/playback area that conditionally renders \"Short-term radar forecast – uncertainty applies\" when the current frame is a forecast/nowcast frame (and hides it for past frames). Use existing shadcn-ui composed components (e.g., Alert) as appropriate; verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Restrict Leaflet interaction to zoom 5–9 and ensure RainViewer v2 256px tile requests update via setUrl without rebuilding the map.",
-      "acceptanceCriteria": [
-        "Leaflet map minZoom is 5 and maxZoom is 9 (user cannot zoom outside this range).",
-        "Radar precipitation tiles continue to use 256px tiles (the tile URL path includes /256/{z}/{x}/{y}/2/1_1.png).",
-        "Changing frames updates the precipitation tile layer URL correctly without recreating the entire map."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/radar/RadarMap.tsx",
-          "operation": "modify",
-          "description": "Set Leaflet map minZoom=5 and maxZoom=9 in map initialization, and align precipitation layer zoom options to this range while continuing to build RainViewer v2 256px tile URLs and updating frame changes via tileLayer.setUrl (no full map recreation)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Route RainViewer data loading through the backend-cached RainViewer method while keeping the useRainViewer hook API unchanged for the rest of the app.",
-      "acceptanceCriteria": [
-        "Frontend RainViewer fetches are routed through a backend method that returns RainViewer data (host + past/nowcast frames).",
-        "useRainViewer continues to be the single hook used by RadarScreen for radar data.",
-        "The app still renders radar tiles correctly using the returned host/path values.",
-        "No direct browser fetch to https://api.rainviewer.com/public/weather-maps.json is required for normal operation."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useRainViewer.ts",
-          "operation": "modify",
-          "description": "Update useRainViewer to obtain RainViewer weather-maps payload via the existing backend actor method (getBackendCachedRainViewer), parse/normalize it, and keep the hook’s return shape compatible with current consumers. Use core-infrastructure actor wiring via the existing useActor hook; verify the component's usage instructions before implementing."
+          "description": "Add Forecast-mode auto-play orchestration: when entering Forecast mode (or when forecast frames refresh/re-initialize) and total forecast frames >= 2, start playback within 1 second; track an explicit user-paused intent so Pause prevents immediate auto-restart until a mode switch away/back or frames refresh triggers re-initialization."
         },
         {
-          "path": "frontend/src/lib/rainviewer.ts",
+          "path": "frontend/src/components/radar/RadarPlaybackControls.tsx",
           "operation": "modify",
-          "description": "Refactor RainViewer parsing/normalization so it can consume the backend-returned JSON string payload (host + radar past/nowcast), producing the same RainViewerData shape as before (including combined frames) and avoiding any required direct browser fetch to the public RainViewer URL."
+          "description": "Wire play/pause callbacks so RadarScreen can distinguish user-initiated Pause from programmatic stops (e.g., mode switch), enabling the required auto-play behavior without changing existing disabled-controls logic for 0/1 frames."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Move Forecast uncertainty banner text to i18n and remove hardcoded user-facing text from the Radar UI.",
+      "acceptanceCriteria": [
+        "RadarForecastLabel displays its message using the existing i18n mechanism (useI18n + translations.ts).",
+        "English text is: \"Short-term radar forecast – uncertainty applies\".",
+        "Turkish equivalent is provided in translations.ts and is displayed when locale is Turkish.",
+        "No user-facing forecast label text remains hardcoded in the component."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/radar/RadarForecastLabel.tsx",
+          "operation": "modify",
+          "description": "Replace the hardcoded Forecast uncertainty banner string with a translation lookup via the existing useI18n mechanism."
+        },
+        {
+          "path": "frontend/src/i18n/translations.ts",
+          "operation": "modify",
+          "description": "Add new translation keys for the Forecast uncertainty banner in both English and Turkish; English must be exactly \"Short-term radar forecast – uncertainty applies\" and Turkish must provide an equivalent meaning."
         }
       ]
     }

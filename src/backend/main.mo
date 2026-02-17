@@ -11,6 +11,7 @@ import Iter "mo:core/Iter";
 import OutCall "http-outcalls/outcall";
 import Migration "migration";
 
+
 (with migration = Migration.run)
 actor {
   type WeatherResponse = {
@@ -337,10 +338,15 @@ actor {
   type CacheEntry = {
     data : Text;
     timestamp : Time.Time;
+    valid : Bool;
   };
 
-  var rainViewerCache : ?CacheEntry = null;
-  let cacheTTL : Time.Time = 10 * 1_000_000_000; // 10 minutes in nanoseconds
+  var rainViewerCache : CacheEntry = {
+    data = "";
+    timestamp = 0;
+    valid = false;
+  };
+  let cacheTTL : Time.Time = 10 * 60 * 1_000_000_000; // 10 minutes in nanoseconds
 
   // equivalent of a "transform" function for HTTP outcalls, needed for the actual GET
   public query ({ caller }) func transform(input : OutCall.TransformationInput) : async OutCall.TransformationOutput {
@@ -348,50 +354,32 @@ actor {
   };
 
   public shared ({ caller }) func getRainViewerCache() : async Text {
-    switch (rainViewerCache) {
-      case (?entry) {
-        let now = Time.now();
-        if (now - entry.timestamp < cacheTTL) {
-          return entry.data; // Cache is still valid, return cached data
-        } else {
-          return entry.data;
-        };
-      };
-      case (null) {
-        // No cache available, fetch data from RainViewer
-        let data = await fetchRainViewerData();
-        return data;
-      };
+    let now = Time.now();
+    if (rainViewerCache.valid and (now - rainViewerCache.timestamp < cacheTTL)) {
+      return rainViewerCache.data; // Cache is still valid, return cached data
     };
-  };
 
-  func refreshCache() : async () {
-    ignore await fetchRainViewerData();
+    // Cache is invalid or expired, fetch new data
+    let data = await fetchRainViewerData();
+    data;
   };
 
   func fetchRainViewerData() : async Text {
-    switch (rainViewerCache) {
-      case (?entry) {
-        // Avoid concurrent refresh if another request just refreshed the cache
-        let now = Time.now();
-        if (now - entry.timestamp < cacheTTL) {
-          return entry.data;
-        };
-      };
-      case (null) {};
-    };
-
     let url = "https://api.rainviewer.com/public/weather-maps.json";
 
     try {
       let data = await OutCall.httpGetRequest(url, [], transform);
-      rainViewerCache := ?{ data; timestamp = Time.now() };
+      rainViewerCache := {
+        data;
+        timestamp = Time.now();
+        valid = true;
+      };
       data;
     } catch (e) {
       // On error, return last cached value if available
-      switch (rainViewerCache) {
-        case (?entry) { entry.data };
-        case (null) { "" };
+      switch (rainViewerCache.valid) {
+        case (true) { rainViewerCache.data };
+        case (false) { "" };
       };
     };
   };

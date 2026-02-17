@@ -1,121 +1,96 @@
 {
   "kind": "build_request",
-  "title": "Add 90-minute RainViewer nowcast playback, labeling, and backend cache",
-  "projectName": "WeatherVerse Radar",
+  "title": "Fix Radar Forecast (Nowcast) 90-Minute Animation Playback",
+  "projectName": "Nowcast Radar",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Limit RainViewer nowcast playback to the next 90 minutes and expose the combined timeline (past + limited nowcast) for animation, while keeping the existing hooks (useRainViewer, useRadarPlayback, useRadarOverlayData) as the integration points.",
+      "text": "Ensure the Radar screen \"Forecast\" mode plays a real RainViewer-based nowcast animation over the available +90 minute precipitation frames, so the precipitation layer visibly advances frame-by-frame on the map.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-2"
+          "msg-1"
         ],
         "quotes": [
-          "Mevcut RainViewer tabanlı radar sistemine 90 dakikalık nowcast animasyonu ekle.",
-          "Frontend’de useRainViewer, useRadarPlayback, useRadarOverlayData hook’ları kullanılacak.",
-          "RadarMap animasyonuna geçmiş + 90 dk ileri nowcast kareleri entegre edilecek."
+          "Hani tahmin kısmında animasyon oluşmadı önümüzdeki 90 dakikalık bulut ve yağış durumu gözükmüyor",
+          "Bu hareketli görüntü gerçek radar verisinden 90 dakikalık tahmini animasyon olarak oynatılacak"
         ]
       },
       "acceptanceCriteria": [
-        "When RainViewer returns nowcast frames beyond +90 minutes from the current time, those frames are not included in the forecast playback list.",
-        "The radar animation can play through past frames and forecast frames (up to +90 minutes) without errors.",
-        "useRadarPlayback continues to receive a single frames array for playback (no breaking API changes to the hook)."
+        "When a location is selected and RainViewer nowcast frames exist, the precipitation overlay in Forecast mode updates at a steady cadence (frame-by-frame) and visually animates motion on the map.",
+        "The forecast animation uses only future nowcast frames limited to +90 minutes (as provided by the RainViewer parsing logic), not past frames.",
+        "If there are 0 frames, the UI shows the existing no-frames messaging and no animation runs; if there is 1 frame, playback controls remain disabled as currently designed.",
+        "Switching between Past and Forecast modes stops playback and does not throw errors; returning to Forecast mode allows playback again."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Add a visible label for forecast/nowcast frames reading \"Short-term radar forecast – uncertainty applies\" and ensure it is shown whenever the user is viewing forecast frames (and not shown for past frames).",
+      "text": "Change Radar Forecast behavior so animation begins automatically (without requiring the user to press Play) when entering Forecast mode and there are at least 2 nowcast frames available.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-2"
+          "msg-1"
         ],
         "quotes": [
-          "Tahmin kareleri “Kısa vadeli tahmini radar – belirsizlik içerir” etiketiyle işaretlenecek."
+          "radar ekranında tahmin kısmında gözükecekti",
+          "bulut yağış hareketi"
         ]
       },
       "acceptanceCriteria": [
-        "In forecast mode, the UI displays the English label \"Short-term radar forecast – uncertainty applies\" in a clearly visible way near the map/playback UI.",
-        "In past mode, the label is not displayed.",
-        "The label does not block map interaction (it may be an overlay/banner)."
+        "On first load of the Radar screen in Forecast mode, if total forecast frames >= 2, playback starts automatically within 1 second.",
+        "When the user presses Pause, auto-play does not immediately restart unless the user switches mode away and back (or frames refresh and re-initialize).",
+        "Auto-play does not start in Past mode."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Constrain radar map interaction to zoom levels 5–9 and ensure radar tiles are requested at 256px tile size using the RainViewer v2 tile format.",
-      "target": "frontend",
+      "text": "Fix backend RainViewer caching so that when the cache TTL has expired, the canister refreshes RainViewer data instead of returning stale cached data, ensuring forecast (nowcast) frames remain available and up to date.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-2"
+          "msg-1"
         ],
         "quotes": [
-          "Zoom seviyeleri 5–9, tile boyutu 256 px.",
-          "Tile formatı örneği:\n\nhttps://tilecache.rainviewer.com/v2/radar/{timestamp}/{z}/{x}/{y}/2/1_1.png"
+          "önümüzdeki 90 dakikalık bulut ve yağış durumu gözükmüyor"
         ]
       },
       "acceptanceCriteria": [
-        "Leaflet map minZoom is 5 and maxZoom is 9 (user cannot zoom outside this range).",
-        "Radar precipitation tiles continue to use 256px tiles (the tile URL path includes /256/{z}/{x}/{y}/2/1_1.png).",
-        "Changing frames updates the precipitation tile layer URL correctly without recreating the entire map."
+        "When the RainViewer cache entry is older than the TTL, the next call to the backend RainViewer method triggers a refresh from https://api.rainviewer.com/public/weather-maps.json and stores the new response in cache.",
+        "If the refresh fails, the backend returns the last cached value if present; otherwise it returns an empty string as it does today.",
+        "No changes are made to the single-actor architecture; RainViewer caching remains inside backend/main.mo."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Implement backend caching for RainViewer weather-maps data with TTL = 10 minutes and passive refresh behavior: if the cache is expired, serve the last cached value immediately (if available) and trigger a background refresh; if no cached value exists, fetch and return fresh data.",
-      "target": "backend",
+      "text": "Move the Forecast uncertainty banner text into i18n and render it via translations (English and Turkish), avoiding hardcoded user-facing strings in the Radar UI.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-2"
+          "msg-1"
         ],
         "quotes": [
-          "Backend cache TTL = 10 dk; cache süresi dolduğunda backend pasif şekilde güncelleme yapacak."
+          "Use English for any user-facing text in the build request."
         ]
       },
       "acceptanceCriteria": [
-        "Backend stores the most recent RainViewer weather-maps payload (or normalized equivalent) along with a timestamp.",
-        "Within 10 minutes of the last successful refresh, requests are served from cache.",
-        "After TTL expiry, requests return cached data immediately (when available) and initiate a refresh without blocking the response.",
-        "If the backend has no cached data yet, the first request fetches from https://api.rainviewer.com/public/weather-maps.json and returns the result.",
-        "Cache refresh failures do not erase the last good cached value."
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Update the RainViewer data-fetching path so the frontend uses the backend-cached RainViewer endpoint (instead of fetching https://api.rainviewer.com/public/weather-maps.json directly), while preserving the current useRainViewer hook API for the rest of the app.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-2"
-        ],
-        "quotes": [
-          "Kullanılacak ana endpoint:\n\nhttps://api.rainviewer.com/public/weather-maps.json",
-          "Backend cache TTL = 10 dk; cache süresi dolduğunda backend pasif şekilde güncelleme yapacak.",
-          "Modül uygulamaya kalıcı ve tekrar kullanılabilir şekilde entegre olacak."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Frontend RainViewer fetches are routed through a backend method that returns RainViewer data (host + past/nowcast frames).",
-        "useRainViewer continues to be the single hook used by RadarScreen for radar data.",
-        "The app still renders radar tiles correctly using the returned host/path values.",
-        "No direct browser fetch to https://api.rainviewer.com/public/weather-maps.json is required for normal operation."
+        "RadarForecastLabel displays its message using the existing i18n mechanism (useI18n + translations.ts).",
+        "English text is: \"Short-term radar forecast – uncertainty applies\".",
+        "Turkish equivalent is provided in translations.ts and is displayed when locale is Turkish.",
+        "No user-facing forecast label text remains hardcoded in the component."
       ]
     }
   ],
   "constraints": [
-    "Use the existing RainViewer endpoint exactly: https://api.rainviewer.com/public/weather-maps.json.",
-    "Use the RainViewer tile URL structure consistent with v2 radar tiles and 256px tiles (…/256/{z}/{x}/{y}/2/1_1.png).",
-    "Keep the existing hooks as the integration surface: useRainViewer, useRadarPlayback, useRadarOverlayData.",
-    "Respect Leaflet zoom constraints: minZoom=5 and maxZoom=9.",
-    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Do not edit files under frontend/src/components/ui or other frontend immutablePaths; compose existing UI components instead."
+    "Do not edit files under frontend/src/components/ui (Shadcn UI components are read-only).",
+    "Do not edit frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx (immutable paths).",
+    "Backend must remain a single Motoko actor in backend/main.mo; add migration.mo only if a state upgrade is required (not expected for this change)."
   ],
   "nonGoals": [
-    "Adding OpenWeatherMap or any other non-RainViewer radar provider integration.",
-    "Building a physical radar module or processing real radar sensor data.",
-    "Implementing real-time streaming/WebSocket-based radar updates.",
-    "Changing unrelated weather screens/panels outside the radar module."
+    "Adding a new radar data provider other than RainViewer.",
+    "Implementing real-time communication (WebSockets) or push notifications.",
+    "Adding third-party authentication beyond Internet Identity.",
+    "Changing the overall navigation structure or adding new tabs/screens unrelated to Radar forecast animation."
   ],
   "imageRequirements": {
     "required": [],

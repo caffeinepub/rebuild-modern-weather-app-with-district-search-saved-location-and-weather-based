@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { RadarEmptyState } from './radar/RadarEmptyState';
 import { RadarMap } from './radar/RadarMap';
 import { RadarPlaybackControls } from './radar/RadarPlaybackControls';
@@ -33,6 +33,7 @@ export function RadarScreen({ location, onLocationSelect, onClearLocation }: Rad
   const { t } = useI18n();
   const [enabledLayers, setEnabledLayers] = useState<Set<string>>(new Set(['precipitation']));
   const [frameMode, setFrameMode] = useState<RadarFrameMode>('forecast');
+  const [userPaused, setUserPaused] = useState(false);
 
   // Fetch radar data
   const { data: radarData, isLoading, error } = useRainViewer(location);
@@ -74,10 +75,40 @@ export function RadarScreen({ location, onLocationSelect, onClearLocation }: Rad
     isPlaying,
     play,
     pause,
+    previous,
+    next,
     seekToFrame,
     getCurrentFrame,
     getFrameLabel,
   } = useRadarPlayback(playbackFrames, initialFrameIndex);
+
+  // Stop playback and reset user-paused flag when mode changes
+  useEffect(() => {
+    pause();
+    setUserPaused(false);
+  }, [frameMode, pause]);
+
+  // Auto-start playback for forecast mode when frames are available
+  useEffect(() => {
+    if (frameMode === 'forecast' && playbackFrames.length >= 2 && !userPaused && !isPlaying) {
+      // Start playback after a short delay to ensure everything is initialized
+      const timer = setTimeout(() => {
+        play();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [frameMode, playbackFrames.length, userPaused, isPlaying, play]);
+
+  // Wrap play/pause handlers to track user intent
+  const handlePlay = () => {
+    setUserPaused(false);
+    play();
+  };
+
+  const handlePause = () => {
+    setUserPaused(true);
+    pause();
+  };
 
   // Alert system
   const { alertSettings, updateAlertSettings, activeAlert, dismissAlert } = useRadarAlerts(
@@ -229,8 +260,10 @@ export function RadarScreen({ location, onLocationSelect, onClearLocation }: Rad
             currentFrameIndex={currentFrameIndex}
             totalFrames={playbackFrames.length}
             isPlaying={isPlaying}
-            onPlay={play}
-            onPause={pause}
+            onPlay={handlePlay}
+            onPause={handlePause}
+            onPrevious={previous}
+            onNext={next}
             onSeek={seekToFrame}
             frameLabel={getFrameLabel(currentFrameIndex)}
             mode={frameMode}

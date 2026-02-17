@@ -1,8 +1,23 @@
 import { useQuery } from '@tanstack/react-query';
 import type { SavedLocation } from './usePersistedLocation';
 import { parseRainViewerData } from '../lib/rainviewer';
+import type { RainViewerData } from '../lib/rainviewer';
 import { getRainViewerCache, setRainViewerCache } from '../lib/rainviewerCache';
 import { useActor } from './useActor';
+
+/**
+ * Validates that RainViewerData has safe array structures
+ */
+function validateRainViewerData(data: any): data is RainViewerData {
+  return (
+    data &&
+    typeof data === 'object' &&
+    typeof data.host === 'string' &&
+    Array.isArray(data.frames) &&
+    Array.isArray(data.pastFrames) &&
+    Array.isArray(data.nowcastFrames)
+  );
+}
 
 export function useRainViewer(location: SavedLocation | null) {
   const { actor, isFetching: isActorFetching } = useActor();
@@ -14,17 +29,8 @@ export function useRainViewer(location: SavedLocation | null) {
 
       // Check cache first
       const cached = getRainViewerCache();
-      if (cached) {
-        // Validate cached data has required structure
-        if (
-          cached.host &&
-          Array.isArray(cached.frames) &&
-          Array.isArray(cached.pastFrames) &&
-          Array.isArray(cached.nowcastFrames)
-        ) {
-          return cached;
-        }
-        // Invalid cache - will fetch fresh data
+      if (cached && validateRainViewerData(cached)) {
+        return cached;
       }
 
       // Fetch from backend-cached RainViewer endpoint
@@ -37,8 +43,8 @@ export function useRainViewer(location: SavedLocation | null) {
       // Parse and normalize the data
       const data = parseRainViewerData(jsonString);
       
-      // Validate parsed data
-      if (!data.host || !Array.isArray(data.frames)) {
+      // Validate parsed data structure
+      if (!validateRainViewerData(data)) {
         throw new Error('Invalid RainViewer data structure');
       }
 

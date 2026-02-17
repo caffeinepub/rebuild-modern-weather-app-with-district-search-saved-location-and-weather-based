@@ -119,30 +119,19 @@ export function RadarMap({ location, currentFrame, enabledLayers, radarData, ove
     layersRef.current.clear();
   }, [location]);
 
-  // Update radar overlays based on enabled layers
+  // Update precipitation layer when currentFrame changes
   useEffect(() => {
     if (!mapRef.current || !mapReadyRef.current) return;
 
     const L = (window as any).L;
     if (!L) return;
 
-    // Remove layers that are no longer enabled
-    layersRef.current.forEach((layer, key) => {
-      if (!enabledLayers.has(key)) {
-        if (Array.isArray(layer)) {
-          // Handle layer groups (like temperature grid)
-          layer.forEach(l => mapRef.current.removeLayer(l));
-        } else {
-          mapRef.current.removeLayer(layer);
-        }
-        layersRef.current.delete(key);
-      }
-    });
-
-    // Add/update precipitation layer if enabled
+    // Handle precipitation layer separately for reliable frame updates
     if (enabledLayers.has('precipitation') && radarData && currentFrame) {
+      const tileUrl = `${radarData.host}${currentFrame.path}/256/{z}/{x}/{y}/2/1_1.png`;
+      
       if (!layersRef.current.has('precipitation')) {
-        const tileUrl = `${radarData.host}${currentFrame.path}/256/{z}/{x}/{y}/2/1_1.png`;
+        // Create new precipitation layer
         const layer = L.tileLayer(tileUrl, {
           opacity: 0.6,
           minZoom: 5,
@@ -153,12 +142,43 @@ export function RadarMap({ location, currentFrame, enabledLayers, radarData, ove
         layer.addTo(mapRef.current);
         layersRef.current.set('precipitation', layer);
       } else {
-        // Update existing precipitation layer via setUrl
+        // Update existing precipitation layer URL to trigger frame change
         const existingLayer = layersRef.current.get('precipitation');
-        const tileUrl = `${radarData.host}${currentFrame.path}/256/{z}/{x}/{y}/2/1_1.png`;
-        existingLayer.setUrl(tileUrl);
+        if (existingLayer) {
+          existingLayer.setUrl(tileUrl);
+          // Force redraw to ensure visual update
+          existingLayer.redraw();
+        }
+      }
+    } else if (layersRef.current.has('precipitation') && (!currentFrame || !radarData || !enabledLayers.has('precipitation'))) {
+      // Remove precipitation layer if currentFrame, radarData becomes unavailable, or layer is disabled
+      const layer = layersRef.current.get('precipitation');
+      if (layer) {
+        mapRef.current.removeLayer(layer);
+        layersRef.current.delete('precipitation');
       }
     }
+  }, [currentFrame, radarData, enabledLayers, mapReadyRef.current]);
+
+  // Update other radar overlays based on enabled layers
+  useEffect(() => {
+    if (!mapRef.current || !mapReadyRef.current) return;
+
+    const L = (window as any).L;
+    if (!L) return;
+
+    // Remove layers that are no longer enabled (except precipitation, handled separately)
+    layersRef.current.forEach((layer, key) => {
+      if (key !== 'precipitation' && !enabledLayers.has(key)) {
+        if (Array.isArray(layer)) {
+          // Handle layer groups (like temperature grid)
+          layer.forEach(l => mapRef.current.removeLayer(l));
+        } else {
+          mapRef.current.removeLayer(layer);
+        }
+        layersRef.current.delete(key);
+      }
+    });
 
     // Add/update other weather overlays if enabled and data is available
     if (overlayData) {
@@ -261,58 +281,43 @@ export function RadarMap({ location, currentFrame, enabledLayers, radarData, ove
         }
       }
 
-      // Temperature overlay (grid or single point)
-      if (enabledLayers.has('temperature')) {
-        const params = getOverlayDisplayParams('temperature', overlayData);
-        if (params) {
-          // Remove existing temperature layers
-          const existingLayers = layersRef.current.get('temperature');
-          if (existingLayers) {
-            if (Array.isArray(existingLayers)) {
-              existingLayers.forEach(l => mapRef.current.removeLayer(l));
-            } else {
-              mapRef.current.removeLayer(existingLayers);
-            }
-          }
-
-          // Check if we have a grid or single point
-          if (Array.isArray(overlayData.temperature) && overlayData.temperature.length > 1) {
-            // Grid of temperature points
-            const tempLayers = overlayData.temperature.map(point => {
-              const color = getTemperatureColor(point.value);
-              const fillColor = getTemperatureFillColor(point.value);
-              return L.circle([point.lat, point.lon], {
-                radius: 5000,
-                color,
-                fillColor,
-                fillOpacity: 0.4,
-                weight: 1,
-                pane: 'weatherOverlayPane',
-              }).addTo(mapRef.current);
-            });
-            layersRef.current.set('temperature', tempLayers);
-          } else {
-            // Single point fallback
-            const layer = L.circle([location.latitude, location.longitude], {
-              radius: params.radius,
-              color: params.color,
-              fillColor: params.fillColor,
-              fillOpacity: params.opacity,
-              pane: 'weatherOverlayPane',
-            });
-            layer.addTo(mapRef.current);
-            layersRef.current.set('temperature', layer);
-          }
-        } else if (layersRef.current.has('temperature')) {
-          // Remove layer if no temperature data
-          const existingLayers = layersRef.current.get('temperature');
-          if (Array.isArray(existingLayers)) {
-            existingLayers.forEach(l => mapRef.current.removeLayer(l));
-          } else {
-            mapRef.current.removeLayer(existingLayers);
-          }
-          layersRef.current.delete('temperature');
+      // Temperature overlay (grid of circles)
+      if (enabledLayers.has('temperature') && overlayData.temperatureGrid) {
+        const existingLayers = layersRef.current.get('temperature');
+        
+        // Remove old temperature layers
+        if (existingLayers && Array.isArray(existingLayers)) {
+          existingLayers.forEach(l => mapRef.current.removeLayer(l));
         }
+
+        // Create new temperature grid
+        const tempLayers: any[] = [];
+        overlayData.temperatureGrid.forEach(point => {
+          const color = getTemperatureColor(point.temp);
+          const fillColor = getTemperatureFillColor(point.temp);
+          
+          const circle = L.circle([point.lat, point.lon], {
+            radius: 15000, // 15km radius for each grid point
+            color: color,
+            fillColor: fillColor,
+            fillOpacity: 0.4,
+            weight: 1,
+            pane: 'weatherOverlayPane',
+          });
+          
+          circle.bindPopup(`${point.temp.toFixed(1)}°C`);
+          circle.addTo(mapRef.current);
+          tempLayers.push(circle);
+        });
+
+        layersRef.current.set('temperature', tempLayers);
+      } else if (layersRef.current.has('temperature')) {
+        // Remove temperature layers if disabled
+        const existingLayers = layersRef.current.get('temperature');
+        if (existingLayers && Array.isArray(existingLayers)) {
+          existingLayers.forEach(l => mapRef.current.removeLayer(l));
+        }
+        layersRef.current.delete('temperature');
       }
 
       // Air Quality overlay
@@ -348,7 +353,7 @@ export function RadarMap({ location, currentFrame, enabledLayers, radarData, ove
         }
       }
     }
-  }, [enabledLayers, currentFrame, radarData, overlayData, location]);
+  }, [enabledLayers, overlayData, location]);
 
-  return <div ref={mapContainerRef} className="h-full w-full" />;
+  return <div ref={mapContainerRef} className="w-full h-full" />;
 }

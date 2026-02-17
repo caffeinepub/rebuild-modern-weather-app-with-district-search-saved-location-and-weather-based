@@ -1,48 +1,36 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Build a RainViewer-based radar module with minimal hooks/components and integrate a 90-minute nowcast animation, including labeling of forecast frames and backend caching/rate-limit protection.",
+  "summary": "Weather radar app: show a real radar-data-based 90-minute cloud & precipitation forecast animation in the Radar screen's forecast section.",
   "architectural_notes": [
-    "Use RainViewer endpoint https://api.rainviewer.com/public/weather-maps.json to obtain frame timestamps/metadata.",
-    "Tile URL format: https://tilecache.rainviewer.com/v2/radar/{timestamp}/{z}/{x}/{y}/2/1_1.png",
-    "Radar playback should include historical frames + up to 90 minutes forward nowcast frames; forecast frames must be labeled: “Kısa vadeli tahmini radar – belirsizlik içerir”.",
-    "Map tile settings: zoom levels 5–9, tile size 256px.",
-    "Backend should proxy/cache RainViewer requests with cache TTL=10 minutes and passive refresh when expired (plus rate-limit protection)."
+    "Radar screen forecast animation requires integrating a radar/nowcast data source that provides ~90 minutes of forecast frames for clouds/precipitation."
   ],
   "known_issues": [
-    "Build/implementation attempts fail when combining full RainViewer foundation + 90-minute nowcast integration in a single step (request too large for the build system)."
+    "Radar screen: forecast section currently does not show the intended 90-minute cloud/precipitation motion animation."
   ],
-  "isFixRequest": false,
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-limit-rainviewer-nowcast-playback-to-the-next-90-minutes-and-expose-the-combined-timeline-past-limited-nowcast-for-animation-while-keeping-the-existing-hooks-userainviewer-useradarplayback-useradaroverlaydata-as-the-integration-points",
-      "title": "Limit RainViewer nowcast playback to the next 90 minutes and expose the combined timeline (past + limited nowcast) for animation, while keeping the existing hooks (useRainViewer, useRadarPlayback, useRadarOverlayData) as the integration points.",
+      "id": "feature-ensure-the-radar-screen-forecast-mode-plays-a-real-rainviewer-based-nowcast-animation-over-the-available-90-minute-precipitation-frames-so-the-precipitation-layer-visibly-advances-frame-by-frame-on-the-map",
+      "title": "Ensure the Radar screen \"Forecast\" mode plays a real RainViewer-based nowcast animation over the available +90 minute precipitation frames, so the precipitation layer visibly advances frame-by-frame on the map.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-a-visible-label-for-forecast-nowcast-frames-reading-short-term-radar-forecast-uncertainty-applies-and-ensure-it-is-shown-whenever-the-user-is-viewing-forecast-frames-and-not-shown-for-past-frames",
-      "title": "Add a visible label for forecast/nowcast frames reading \"Short-term radar forecast – uncertainty applies\" and ensure it is shown whenever the user is viewing forecast frames (and not shown for past frames).",
+      "id": "feature-change-radar-forecast-behavior-so-animation-begins-automatically-without-requiring-the-user-to-press-play-when-entering-forecast-mode-and-there-are-at-least-2-nowcast-frames-available",
+      "title": "Change Radar Forecast behavior so animation begins automatically (without requiring the user to press Play) when entering Forecast mode and there are at least 2 nowcast frames available.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-constrain-radar-map-interaction-to-zoom-levels-5-9-and-ensure-radar-tiles-are-requested-at-256px-tile-size-using-the-rainviewer-v2-tile-format",
-      "title": "Constrain radar map interaction to zoom levels 5–9 and ensure radar tiles are requested at 256px tile size using the RainViewer v2 tile format.",
+      "id": "feature-move-the-forecast-uncertainty-banner-text-into-i18n-and-render-it-via-translations-english-and-turkish-avoiding-hardcoded-user-facing-strings-in-the-radar-ui",
+      "title": "Move the Forecast uncertainty banner text into i18n and render it via translations (English and Turkish), avoiding hardcoded user-facing strings in the Radar UI.",
       "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-rainviewer-data-fetching-path-so-the-frontend-uses-the-backend-cached-rainviewer-endpoint-instead-of-fetching-https-api-rainviewer-com-public-weather-maps-json-directly-while-preserving-the-current-userainviewer-hook-api-for-the-rest-of-the-app",
-      "title": "Update the RainViewer data-fetching path so the frontend uses the backend-cached RainViewer endpoint (instead of fetching https://api.rainviewer.com/public/weather-maps.json directly), while preserving the current useRainViewer hook API for the rest of the app.",
-      "reqIds": [
-        "REQ-5"
+        "REQ-4"
       ],
       "version": 1
     }
@@ -50,32 +38,20 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Create minimal RainViewer radar foundation (useRainViewer, useRadarPlayback, useRadarOverlayData hooks + RadarMap component) using RainViewer weather-maps endpoint and tile URL format",
+      "summary": "Add real radar-data-based 90-minute cloud & precipitation forecast animation in the Radar screen (forecast section).",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-2",
-      "summary": "Integrate past + 90-minute nowcast radar animation into RadarMap playback and label forecast frames as uncertain",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Add backend caching for radar/nowcast data with TTL=10 minutes and passive refresh to avoid API limits",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-7",
-      "summary": "Implement backend caching for RainViewer weather-maps data with TTL = 10 minutes and passive refresh behavior: if the cache is expired, serve the last cached value immediately (if available) and trigger a background refresh; if no cached value exists, fetch and return fresh data.",
+      "id": "AR-4",
+      "summary": "Fix backend RainViewer caching so that when the cache TTL has expired, the canister refreshes RainViewer data instead of returning stale cached data, ensuring forecast (nowcast) frames remain available and up to date.",
       "reqIds": [
-        "REQ-4"
+        "REQ-3"
       ],
       "status": "pending"
     }
   ],
-  "projectName": "WeatherVerse Radar",
+  "projectName": "Nowcast Radar",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

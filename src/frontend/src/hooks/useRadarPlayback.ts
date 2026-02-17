@@ -1,33 +1,43 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { RadarFrame } from '../lib/rainviewer';
 
-export function useRadarPlayback(frames: RadarFrame[], initialFrameIndex?: number) {
+export function useRadarPlayback(
+  frames: RadarFrame[], 
+  initialFrameIndex?: number
+) {
   const [currentFrameIndex, setCurrentFrameIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const isPlayingRef = useRef(isPlaying);
+  const framesRef = useRef(frames);
 
   // Keep ref in sync with state
   useEffect(() => {
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
 
-  // Auto-play animation
+  // Track frames array identity to detect replacements
+  useEffect(() => {
+    framesRef.current = frames;
+  }, [frames]);
+
+  // Auto-play animation with looping and steady frame advancement
   useEffect(() => {
     if (!isPlaying || frames.length === 0) return;
 
     const interval = setInterval(() => {
       setCurrentFrameIndex((prev) => {
+        // Loop back to start after last frame
         if (prev >= frames.length - 1) {
-          return 0; // Loop back to start
+          return 0;
         }
         return prev + 1;
       });
-    }, 500); // 500ms per frame
+    }, 500); // 500ms per frame for steady playback
 
     return () => clearInterval(interval);
   }, [isPlaying, frames.length]);
 
-  // Reset when frames or initialFrameIndex change
+  // Reset and stop playback when frames array changes or initialFrameIndex changes
   useEffect(() => {
     // Stop playing when frames change to avoid confusion
     setIsPlaying(false);
@@ -40,7 +50,7 @@ export function useRadarPlayback(frames: RadarFrame[], initialFrameIndex?: numbe
     
     // Use provided initial index or default to 0
     const targetIndex = initialFrameIndex !== undefined ? initialFrameIndex : 0;
-    // Ensure index is within bounds
+    // Clamp index to valid bounds
     setCurrentFrameIndex(Math.max(0, Math.min(targetIndex, frames.length - 1)));
   }, [frames, initialFrameIndex]);
 
@@ -86,11 +96,25 @@ export function useRadarPlayback(frames: RadarFrame[], initialFrameIndex?: numbe
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }, [frames]);
 
+  const previous = useCallback(() => {
+    if (currentFrameIndex > 0) {
+      seekToFrame(currentFrameIndex - 1);
+    }
+  }, [currentFrameIndex, seekToFrame]);
+
+  const next = useCallback(() => {
+    if (currentFrameIndex < frames.length - 1) {
+      seekToFrame(currentFrameIndex + 1);
+    }
+  }, [currentFrameIndex, frames.length, seekToFrame]);
+
   return {
     currentFrameIndex,
     isPlaying,
     play,
     pause,
+    previous,
+    next,
     seekToFrame,
     setFrameIndexSilent,
     getCurrentFrame,

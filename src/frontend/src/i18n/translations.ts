@@ -272,6 +272,7 @@ export const translations = {
     'radar.mode.past': 'Geçmiş',
     'radar.forecast.unavailable': 'Tahmin verileri şu anda mevcut değil',
     'radar.forecast.switchToPast': 'Geçmiş Verilere Geç',
+    'radar.forecast.uncertaintyLabel': 'Kısa vadeli radar tahmini – belirsizlik geçerlidir',
     'radar.playback.forecast': 'Tahmin',
     'radar.playback.past': 'Geçmiş',
     'radar.playback.nowcast': 'Tahmin',
@@ -438,16 +439,16 @@ export const translations = {
     'weather.whatToWear.note': 'Recommendations based on upcoming hours forecast, not just current conditions.',
     'clothing.light': 'Light clothing is sufficient',
     'clothing.coat': 'Warm clothing needed',
-    'clothing.umbrella': 'Bring an umbrella',
+    'clothing.umbrella': 'Take an umbrella',
     'clothing.wind': 'Windbreaker recommended',
     'clothing.comfortable': 'Comfortable weather conditions',
 
     // Laundry drying
     'laundry.title': 'Laundry Drying',
-    'laundry.note': 'Analysis based on upcoming hourly conditions; may differ from current visible weather.',
+    'laundry.note': 'Analysis based on upcoming hourly conditions; may differ from visible current weather.',
     'laundry.bestTime': 'Best Time',
     'laundry.alternativeTimes': 'Alternative Times',
-    'laundry.noGoodTimes': 'No suitable times for outdoor laundry drying today',
+    'laundry.noGoodTimes': 'No good times for outdoor laundry drying today',
     'laundry.noGoodTimes.desc': 'Due to high humidity, low temperature, or precipitation, it is recommended to dry your laundry indoors.',
 
     // Weather conditions
@@ -628,11 +629,12 @@ export const translations = {
     'radar.mode.past': 'Past',
     'radar.forecast.unavailable': 'Forecast data is currently unavailable',
     'radar.forecast.switchToPast': 'Switch to Past Data',
+    'radar.forecast.uncertaintyLabel': 'Short-term radar forecast – uncertainty applies',
     'radar.playback.forecast': 'Forecast',
     'radar.playback.past': 'Past',
     'radar.playback.nowcast': 'Forecast',
-    'radar.playback.noFrames': 'No forecast frames available',
-    'radar.playback.singleFrame': 'Only one frame available',
+    'radar.playback.noFrames': 'No forecast data',
+    'radar.playback.singleFrame': 'Single frame available',
     'radar.layers.title': 'Layers',
     'radar.layers.precipitation': 'Precipitation',
     'radar.layers.storm': 'Storm',
@@ -658,7 +660,7 @@ export const translations = {
     'radar.intensity.heavy': 'Heavy',
     'radar.overlay.loading': 'Loading...',
     'radar.overlay.error': 'Failed to load data',
-    'radar.overlay.noData': 'Data not available',
+    'radar.overlay.noData': 'No data available',
     'radar.overlay.noStorm': 'No storm data',
     'radar.overlay.noSnow': 'No snow data',
     'radar.overlay.noAirQuality': 'No air quality data',
@@ -713,5 +715,5 @@ export const translations = {
   },
 } as const;
 
-export type TranslationKey = keyof typeof translations.tr;
+export type TranslationKey = keyof typeof translations.en;
 export type Locale = keyof typeof translations;

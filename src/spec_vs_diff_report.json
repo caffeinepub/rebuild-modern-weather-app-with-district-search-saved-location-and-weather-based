@@ -1,72 +1,48 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T02:57:20.521Z",
-  "summary": "Diff adds frontend parsing to limit nowcast frames to +90 minutes, introduces a forecast label component, and changes the frontend to fetch RainViewer data via a backend actor method. However, several requirements cannot be confirmed from the truncated diff (notably RainViewer tile URL format/layer update behavior and backend TTL cache with passive refresh), and the UI behavior for a combined past+forecast playback timeline and conditional label rendering is not evidenced.",
+  "generatedAt": "2026-02-17T12:02:43.842Z",
+  "summary": "Frontend changes add forecast auto-play behavior and a frame-advancing playback hook; Forecast uncertainty label now uses i18n. Backend changes introduce a migration and actor wiring, but the diff summary does not show the required RainViewer cache TTL refresh logic. Some acceptance-criteria details (notably user-initiated pause preventing auto-restart) cannot be verified from the truncated diff.",
   "missing_requirements": [
     {
-      "id": "REQ-1",
-      "requirement": "Expose a combined timeline (past + limited nowcast) for animation playback while keeping hooks unchanged (useRadarPlayback receives a single frames array).",
-      "reason": "Although rainviewer.ts builds a combined `frames` array, RadarScreen selects either `nowcastFrames` or `pastFrames` based on `frameMode` and passes only that subset into `useRadarPlayback`, not a combined past+forecast timeline for animation.",
-      "evidence": [
-        "frontend/src/lib/rainviewer.ts",
-        "frontend/src/components/RadarScreen.tsx"
-      ]
-    },
-    {
       "id": "REQ-2",
-      "requirement": "Show the label \"Short-term radar forecast – uncertainty applies\" whenever the user is viewing forecast frames, and hide it for past frames, without blocking map interaction.",
-      "reason": "A label component is added and imported, and a boolean `isViewingForecast` is computed, but the truncated RadarScreen diff does not show the label being conditionally rendered based on forecast vs past frames.",
+      "requirement": "When the user presses Pause, auto-play does not immediately restart unless the user switches mode away and back (or frames refresh and re-initialize).",
+      "reason": "RadarScreen introduces a `userPaused` flag and an auto-start effect, but the diff is truncated right before the play/pause handler implementations, so there is no evidence that pressing Pause sets `userPaused` in a way that prevents the auto-start effect from restarting playback.",
       "evidence": [
-        "frontend/src/components/radar/RadarForecastLabel.tsx",
-        "frontend/src/components/RadarScreen.tsx"
+        "frontend/src/components/RadarScreen.tsx (truncated at `const handlePlay = () => {`)",
+        "frontend/src/components/RadarScreen.tsx (auto-start effect references `userPaused`)"
       ]
     },
     {
       "id": "REQ-3",
-      "requirement": "Ensure RainViewer v2 256px tile URL format is used (…/256/{z}/{x}/{y}/2/1_1.png) and frame changes update the tile layer URL without recreating the map.",
-      "reason": "RadarMap sets `minZoom: 5` and `maxZoom: 9`, but the diff snippet is truncated before any RainViewer radar tile layer URL construction/update logic is shown, so the required v2/256 URL format and non-recreate URL updates cannot be verified from the provided evidence.",
+      "requirement": "Fix backend RainViewer caching so that when the cache TTL has expired, the next call refreshes from https://api.rainviewer.com/public/weather-maps.json and stores the new response; on refresh failure return last cached value if present else empty string; keep caching inside backend/main.mo single actor.",
+      "reason": "backend/main.mo is heavily truncated and the shown portion does not include any RainViewer fetch method, TTL check, refresh logic, or fallback behavior. The added migration changes cache shape, but does not evidence the required TTL-expiry refresh behavior.",
       "evidence": [
-        "frontend/src/components/radar/RadarMap.tsx"
+        "backend/main.mo (truncated; no RainViewer TTL/refresh logic shown)",
+        "backend/migration.mo (changes cache entry structure but not TTL refresh behavior)"
       ]
     },
     {
       "id": "REQ-4",
-      "requirement": "Backend caching for RainViewer weather-maps data with TTL=10 minutes and passive refresh (serve stale immediately and refresh in background after expiry; keep last good value on refresh failure).",
-      "reason": "A migration introduces a `rainViewerCache` field, but the truncated backend/main.mo snippet does not show any RainViewer fetch, TTL checking, background refresh via Timer, or the passive refresh behavior required.",
+      "requirement": "Provide i18n translations (English and Turkish) for the Forecast uncertainty banner text: \"Short-term radar forecast – uncertainty applies\".",
+      "reason": "RadarForecastLabel now calls `t('radar.forecast.uncertaintyLabel')`, but the diff excerpt of translations.ts is truncated and does not show the presence of this key or the required English/Turkish strings.",
       "evidence": [
-        "backend/migration.mo",
-        "backend/main.mo"
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "requirement": "Frontend uses backend-cached RainViewer endpoint (no direct browser fetch to RainViewer) while preserving useRainViewer API; backend provides a method returning RainViewer data.",
-      "reason": "Frontend is updated to call `actor.getBackendCachedRainViewer()`, but the truncated backend/main.mo diff does not show this method being implemented or exposed, so the end-to-end backend-cached path cannot be fully verified.",
-      "evidence": [
-        "frontend/src/hooks/useRainViewer.ts",
-        "backend/main.mo"
+        "frontend/src/components/radar/RadarForecastLabel.tsx",
+        "frontend/src/i18n/translations.ts (truncated; key not visible)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Frontend client-side RainViewer caching layer (getRainViewerCache/setRainViewerCache) in addition to backend caching.",
-      "reason": "BuildRequest only requires backend caching (TTL=10 minutes, passive refresh) and routing frontend through the backend; an extra frontend cache layer is introduced in useRainViewer and is not explicitly requested.",
-      "evidence": [
-        "frontend/src/hooks/useRainViewer.ts"
-      ]
-    },
-    {
-      "description": "Added backend migration module introducing a `rainViewerCache` stable field.",
-      "reason": "BuildRequest requires backend caching behavior but does not request a migration file/module; this is additional implementation detail beyond explicit requirements.",
+      "description": "Added backend state migration (migration.mo) and enabled actor migration wiring `(with migration = Migration.run)` despite BuildRequest stating migration.mo should be added only if a state upgrade is required (not expected for this change).",
+      "reason": "REQ-3 asks to fix caching behavior within backend/main.mo and keep a single actor; it does not explicitly request a state schema migration. The diff adds a new cache schema with `valid : Bool` plus migration plumbing, which goes beyond the stated expectation.",
       "evidence": [
         "backend/migration.mo",
-        "backend/main.mo"
+        "backend/main.mo (import Migration \"migration\"; `(with migration = Migration.run)`)"
       ]
     }
   ],
-  "confidence": 0.62,
+  "confidence": 0.64,
   "changed_files": [
     "backend/main.mo",
     "backend/migration.mo",
@@ -74,8 +50,8 @@
     "frontend/src/components/RadarScreen.tsx",
     "frontend/src/components/radar/RadarForecastLabel.tsx",
     "frontend/src/components/radar/RadarMap.tsx",
-    "frontend/src/hooks/useRainViewer.ts",
-    "frontend/src/lib/rainviewer.ts",
+    "frontend/src/hooks/useRadarPlayback.ts",
+    "frontend/src/i18n/translations.ts",
     "project_state.json"
   ]
 }
