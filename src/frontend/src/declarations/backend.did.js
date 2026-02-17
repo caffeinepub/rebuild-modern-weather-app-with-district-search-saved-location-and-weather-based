@@ -23,11 +23,6 @@ export const DBWeather = IDL.Record({
   'precipitationProbability' : IDL.Opt(IDL.Float64),
   'condition' : IDL.Text,
 });
-export const RainViewerFrames = IDL.Record({
-  'path' : IDL.Text,
-  'timestamp' : IDL.Nat64,
-});
-export const Time = IDL.Int;
 export const Precipitation = IDL.Record({
   'probability' : IDL.Float64,
   'amount' : IDL.Float64,
@@ -73,32 +68,7 @@ export const TransformationOutput = IDL.Record({
 
 export const idlService = IDL.Service({
   'conditionForWeather' : IDL.Func([DBWeather], [IDL.Text], ['query']),
-  'fetchAndCacheRainViewerMetadata' : IDL.Func(
-      [],
-      [
-        IDL.Record({
-          'combinedFrames' : IDL.Vec(RainViewerFrames),
-          'nowcastFrames' : IDL.Vec(RainViewerFrames),
-          'host' : IDL.Text,
-          'pastFrames' : IDL.Vec(RainViewerFrames),
-          'timestamp' : Time,
-        }),
-      ],
-      [],
-    ),
-  'fetchRainViewerTile' : IDL.Func(
-      [IDL.Text],
-      [
-        IDL.Opt(
-          IDL.Record({
-            'status' : IDL.Nat16,
-            'body' : IDL.Text,
-            'headers' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
-          })
-        ),
-      ],
-      [],
-    ),
+  'getBackendCachedRainViewer' : IDL.Func([], [IDL.Text], []),
   'getCachedWeather' : IDL.Func(
       [IDL.Text],
       [IDL.Opt(WeatherResponse)],
@@ -125,6 +95,7 @@ export const idlService = IDL.Service({
       ],
       ['query'],
     ),
+  'getRainViewerCache' : IDL.Func([], [IDL.Text], []),
   'getWeather' : IDL.Func(
       [IDL.Text, IDL.Text],
       [IDL.Opt(WeatherResponse)],
@@ -194,11 +165,6 @@ export const idlFactory = ({ IDL }) => {
     'precipitationProbability' : IDL.Opt(IDL.Float64),
     'condition' : IDL.Text,
   });
-  const RainViewerFrames = IDL.Record({
-    'path' : IDL.Text,
-    'timestamp' : IDL.Nat64,
-  });
-  const Time = IDL.Int;
   const Precipitation = IDL.Record({
     'probability' : IDL.Float64,
     'amount' : IDL.Float64,
@@ -241,32 +207,7 @@ export const idlFactory = ({ IDL }) => {
   
   return IDL.Service({
     'conditionForWeather' : IDL.Func([DBWeather], [IDL.Text], ['query']),
-    'fetchAndCacheRainViewerMetadata' : IDL.Func(
-        [],
-        [
-          IDL.Record({
-            'combinedFrames' : IDL.Vec(RainViewerFrames),
-            'nowcastFrames' : IDL.Vec(RainViewerFrames),
-            'host' : IDL.Text,
-            'pastFrames' : IDL.Vec(RainViewerFrames),
-            'timestamp' : Time,
-          }),
-        ],
-        [],
-      ),
-    'fetchRainViewerTile' : IDL.Func(
-        [IDL.Text],
-        [
-          IDL.Opt(
-            IDL.Record({
-              'status' : IDL.Nat16,
-              'body' : IDL.Text,
-              'headers' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
-            })
-          ),
-        ],
-        [],
-      ),
+    'getBackendCachedRainViewer' : IDL.Func([], [IDL.Text], []),
     'getCachedWeather' : IDL.Func(
         [IDL.Text],
         [IDL.Opt(WeatherResponse)],
@@ -293,6 +234,7 @@ export const idlFactory = ({ IDL }) => {
         ],
         ['query'],
       ),
+    'getRainViewerCache' : IDL.Func([], [IDL.Text], []),
     'getWeather' : IDL.Func(
         [IDL.Text, IDL.Text],
         [IDL.Opt(WeatherResponse)],

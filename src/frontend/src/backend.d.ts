@@ -7,10 +7,6 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
-export interface RainViewerFrames {
-    path: string;
-    timestamp: bigint;
-}
 export interface WeatherResponse {
     country: string;
     city: string;
@@ -28,7 +24,6 @@ export interface TransformationOutput {
     body: Uint8Array;
     headers: Array<http_header>;
 }
-export type Time = bigint;
 export interface Precipitation {
     probability: number;
     amount: number;
@@ -71,26 +66,16 @@ export interface http_request_result {
 }
 export interface backendInterface {
     conditionForWeather(weather: DBWeather): Promise<string>;
-    fetchAndCacheRainViewerMetadata(): Promise<{
-        combinedFrames: Array<RainViewerFrames>;
-        nowcastFrames: Array<RainViewerFrames>;
-        host: string;
-        pastFrames: Array<RainViewerFrames>;
-        timestamp: Time;
-    }>;
-    fetchRainViewerTile(url: string): Promise<{
-        status: number;
-        body: string;
-        headers: Array<[string, string]>;
-    } | null>;
+    getBackendCachedRainViewer(): Promise<string>;
     getCachedWeather(key: string): Promise<WeatherResponse | null>;
     getCurrentWeather(city: string, country: string): Promise<WeatherResponse | null>;
-    getDailyForecast(city: string, country: string, _timestamp: bigint): Promise<WeeklyForecast | null>;
+    getDailyForecast(city: string, country: string, timestamp: bigint): Promise<WeeklyForecast | null>;
     getHealthCheck(): Promise<{
         status: string;
         version: string;
         timestamp: bigint;
     }>;
+    getRainViewerCache(): Promise<string>;
     getWeather(city: string, country: string): Promise<WeatherResponse | null>;
     getWeatherData(city: string, country: string): Promise<{
         country: string;

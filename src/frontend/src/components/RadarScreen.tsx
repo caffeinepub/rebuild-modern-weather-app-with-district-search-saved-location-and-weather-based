@@ -8,6 +8,7 @@ import { RadarAlertBanner } from './radar/RadarAlertBanner';
 import { RadarAlertControls } from './radar/RadarAlertControls';
 import { RadarOverlayStatus } from './radar/RadarOverlayStatus';
 import { RadarFrameModeToggle } from './radar/RadarFrameModeToggle';
+import { RadarForecastLabel } from './radar/RadarForecastLabel';
 import { useRainViewer } from '../hooks/useRainViewer';
 import { useRadarPlayback } from '../hooks/useRadarPlayback';
 import { useRadarAlerts } from '../hooks/useRadarAlerts';
@@ -48,13 +49,11 @@ export function RadarScreen({ location, onLocationSelect, onClearLocation }: Rad
     if (!radarData) return [];
     
     if (frameMode === 'forecast') {
-      // Use nowcast frames for forecast mode
-      const frames = Array.isArray(radarData.nowcastFrames) ? radarData.nowcastFrames : [];
-      return frames;
+      // Ensure nowcastFrames is always an array (already limited to +90 minutes)
+      return Array.isArray(radarData.nowcastFrames) ? radarData.nowcastFrames : [];
     } else {
-      // Use past frames for past mode
-      const frames = Array.isArray(radarData.pastFrames) ? radarData.pastFrames : [];
-      return frames;
+      // Ensure pastFrames is always an array
+      return Array.isArray(radarData.pastFrames) ? radarData.pastFrames : [];
     }
   }, [radarData, frameMode]);
   
@@ -97,6 +96,13 @@ export function RadarScreen({ location, onLocationSelect, onClearLocation }: Rad
     radarData && 
     Array.isArray(radarData.pastFrames) && 
     radarData.pastFrames.length > 0;
+
+  // Check if current frame is a forecast/nowcast frame
+  const isViewingForecast = useMemo(() => {
+    if (frameMode !== 'forecast' || !currentFrame) return false;
+    const now = Date.now() / 1000;
+    return currentFrame.time > now;
+  }, [frameMode, currentFrame]);
 
   if (!location) {
     return (
@@ -186,6 +192,11 @@ export function RadarScreen({ location, onLocationSelect, onClearLocation }: Rad
             radarData={radarData}
             overlayData={overlayData || null}
           />
+
+          {/* Forecast Uncertainty Label - Non-blocking overlay */}
+          {isViewingForecast && (
+            <RadarForecastLabel />
+          )}
 
           {/* Overlay Status - Non-blocking feedback */}
           <RadarOverlayStatus

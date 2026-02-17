@@ -1,14 +1,15 @@
+import Text "mo:core/Text";
 import Map "mo:core/Map";
-import Time "mo:core/Time";
+import Nat "mo:core/Nat";
 import Timer "mo:core/Timer";
+import Float "mo:core/Float";
+import Order "mo:core/Order";
+import Time "mo:core/Time";
+import List "mo:core/List";
+import Int "mo:core/Int";
+import Iter "mo:core/Iter";
 import OutCall "http-outcalls/outcall";
 import Migration "migration";
-import Text "mo:core/Text";
-import Float "mo:core/Float";
-import Int "mo:core/Int";
-import Order "mo:core/Order";
-import List "mo:core/List";
-import Iter "mo:core/Iter";
 
 (with migration = Migration.run)
 actor {
@@ -39,10 +40,7 @@ actor {
     probability : Float;
   };
 
-  let oracleCache = Map.empty<Text, WeatherResponse>();
-  var lastCacheClear : Time.Time = 0;
-
-  public type Condition = {
+  type Condition = {
     clear : Int;
     cloudy : Int;
     rain : Int;
@@ -52,7 +50,7 @@ actor {
     pClear : Int;
   };
 
-  public type DBWeather = {
+  type DBWeather = {
     city : Text;
     country : Text;
     temperature : ?Float;
@@ -68,7 +66,7 @@ actor {
     solar : ?Float;
   };
 
-  public type WeatherReport = {
+  type WeatherReport = {
     city : Text;
     country : Text;
     timestamp : Int;
@@ -76,13 +74,16 @@ actor {
     weekly : [WeeklyForecast];
   };
 
-  public type Weather = {
+  type Weather = {
     dbWeather : DBWeather;
     hourlyWeather : [DBWeather];
     windSpeed : Float;
     windDirection : Float;
     weeklyForecast : [WeeklyForecast];
   };
+
+  let oracleCache = Map.empty<Text, WeatherResponse>();
+  var lastCacheClear : Time.Time = 0;
 
   func isSnowCondition(condition : Text) : Bool {
     condition.contains(#text "Cloudy") or condition.contains(#text "Snowy");
@@ -128,7 +129,7 @@ actor {
     ?weeklyWeather;
   };
 
-  public query ({ caller }) func getDailyForecast(city : Text, country : Text, _timestamp : Int) : async ?WeeklyForecast {
+  public query ({ caller }) func getDailyForecast(city : Text, country : Text, timestamp : Int) : async ?WeeklyForecast {
     ?{
       timestamp = 42;
       temperature = ?10.0;
@@ -174,7 +175,7 @@ actor {
     oracleCache.get(key);
   };
 
-  func clearWeatherCache<system>() : async () {
+  func timer<system>() : async () {
     let now = Time.now();
     let dailyCheckInterval : Time.Time = 24 * 60 * 60 * 1000;
     if (now - lastCacheClear > dailyCheckInterval) {
@@ -183,8 +184,9 @@ actor {
     };
   };
 
-  let dailyCheckInterval_nanos : Time.Duration = #nanoseconds(24 * 60 * 60 * 1000 * 7 * 1_000_000);
-  let recurringTimer : Timer.TimerId = Timer.recurringTimer<system>(dailyCheckInterval_nanos, clearWeatherCache);
+  let dailyCheckInterval : Nat = 24 * 60 * 60 * 1000 * 7;
+
+  let recurringTimer : Timer.TimerId = Timer.recurringTimer<system>(#seconds(dailyCheckInterval), timer);
 
   func compareHourlyWeather(a : DBWeather, b : DBWeather) : Order.Order {
     let aTemp = switch (a.temperature) {
@@ -330,108 +332,72 @@ actor {
     };
   };
 
-  public type RainViewerFrames = {
-    path : Text;
-    timestamp : Nat64;
-  };
-
-  public type RainViewerData = {
-    past : [RainViewerFrames];
-    nowcast : [RainViewerFrames];
-  };
-
-  public type RainViewerMetadata = {
-    host : Text;
-    pastFrames : [RainViewerFrames];
-    nowcastFrames : [RainViewerFrames];
-    combinedFrames : [RainViewerFrames];
+  // RainViewer Backend Cache Implementation
+  // ========================
+  type CacheEntry = {
+    data : Text;
     timestamp : Time.Time;
   };
 
-  let rainViewerMetadataCache = Map.empty<Text, RainViewerMetadata>();
+  var rainViewerCache : ?CacheEntry = null;
+  let cacheTTL : Time.Time = 10 * 1_000_000_000; // 10 minutes in nanoseconds
 
-  func getCachedRainViewerMetadata() : ?RainViewerMetadata {
-    let currentTime = Time.now();
-    let cacheTTL = 10 * 60 * 1000000000;
-    switch (rainViewerMetadataCache.get("rainviewer-metadata")) {
-      case (?cachedMetadata) {
-        if (currentTime - cachedMetadata.timestamp < cacheTTL) {
-          ?cachedMetadata;
-        } else {
-          null;
-        };
-      };
-      case (null) {
-        null;
-      };
-    };
-  };
-
+  // equivalent of a "transform" function for HTTP outcalls, needed for the actual GET
   public query ({ caller }) func transform(input : OutCall.TransformationInput) : async OutCall.TransformationOutput {
     OutCall.transform(input);
   };
 
-  public shared ({ caller }) func fetchAndCacheRainViewerMetadata() : async {
-    host : Text;
-    pastFrames : [RainViewerFrames];
-    nowcastFrames : [RainViewerFrames];
-    combinedFrames : [RainViewerFrames];
-    timestamp : Time.Time;
-  } {
-    let currentTime = Time.now();
-    let existingCache = getCachedRainViewerMetadata();
-    switch (existingCache) {
-      case (?validMetadata) { return validMetadata };
-      case (null) {};
+  public shared ({ caller }) func getRainViewerCache() : async Text {
+    switch (rainViewerCache) {
+      case (?entry) {
+        let now = Time.now();
+        if (now - entry.timestamp < cacheTTL) {
+          return entry.data; // Cache is still valid, return cached data
+        } else {
+          return entry.data;
+        };
+      };
+      case (null) {
+        // No cache available, fetch data from RainViewer
+        let data = await fetchRainViewerData();
+        return data;
+      };
     };
-    let rainViewerUrl = "https://api.rainviewer.com/public/weather-maps.json";
-    let jsonStr = await OutCall.httpGetRequest(rainViewerUrl, [], transform);
-    let normalizedData : RainViewerMetadata = {
-      host = "https://tilecache.rainviewer.com";
-      pastFrames = [
-        {
-          path = "/v2/satellite/256/{z}/{x}/{y}/7/1_0.png";
-          timestamp = 1624464000;
-        }
-      ];
-      nowcastFrames = [
-        {
-          path = "/v2/satellite/256/{z}/{x}/{y}/7/1_0.png";
-          timestamp = 1624464000;
-        }
-      ];
-      combinedFrames = [
-        {
-          path = "/v2/satellite/256/{z}/{x}/{y}/7/1_0.png";
-          timestamp = 1624464000;
-        }
-      ];
-      timestamp = currentTime;
-    };
-    rainViewerMetadataCache.add("rainviewer-metadata", normalizedData);
-    normalizedData;
   };
 
-  public shared ({ caller }) func fetchRainViewerTile(url : Text) : async ?{
-    headers : [(Text, Text)];
-    body : Text;
-    status : Nat16;
-  } {
-    let isValidTileRequest = url.startsWith(#text "https://tilecache.rainviewer.com");
-    if (not isValidTileRequest) {
-      return null;
+  func refreshCache() : async () {
+    ignore await fetchRainViewerData();
+  };
+
+  func fetchRainViewerData() : async Text {
+    switch (rainViewerCache) {
+      case (?entry) {
+        // Avoid concurrent refresh if another request just refreshed the cache
+        let now = Time.now();
+        if (now - entry.timestamp < cacheTTL) {
+          return entry.data;
+        };
+      };
+      case (null) {};
     };
-    let responseBody = await OutCall.httpGetRequest(url, [], transform);
-    if (responseBody.isEmpty()) { return null };
-    let response : {
-      headers : [(Text, Text)];
-      body : Text;
-      status : Nat16;
-    } = {
-      headers = [("content-type", "image/png")];
-      body = responseBody;
-      status = 200;
+
+    let url = "https://api.rainviewer.com/public/weather-maps.json";
+
+    try {
+      let data = await OutCall.httpGetRequest(url, [], transform);
+      rainViewerCache := ?{ data; timestamp = Time.now() };
+      data;
+    } catch (e) {
+      // On error, return last cached value if available
+      switch (rainViewerCache) {
+        case (?entry) { entry.data };
+        case (null) { "" };
+      };
     };
-    ?response;
+  };
+
+  // Provide the RainViewer data via this endpoint for the frontend
+  public shared ({ caller }) func getBackendCachedRainViewer() : async Text {
+    await getRainViewerCache();
   };
 };

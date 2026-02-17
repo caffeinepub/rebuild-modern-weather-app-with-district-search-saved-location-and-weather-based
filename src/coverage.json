@@ -1,49 +1,69 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-16T23:59:05.162Z",
+  "generatedAt": "2026-02-17T02:57:20.524Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 5,
-    "implemented": 0,
+    "implemented": 4,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Implement a backend RainViewer integration that fetches the RainViewer public JSON metadata from `https://api.rainviewer.com/public/weather-maps.json`, normalizes it into a stable structure (host, past frames, nowcast frames, combined frames), and serves it to the frontend via a canister method so the client does not call RainViewer directly.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Limit RainViewer nowcast playback to the next 90 minutes and expose the combined timeline (past + limited nowcast) for animation, while keeping the existing hooks (useRainViewer, useRadarPlayback, useRadarOverlayData) as the integration points.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/lib/rainviewer.ts",
+          "frontend/src/components/RadarScreen.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/lib/rainviewer.ts",
+          "frontend/src/components/RadarScreen.tsx"
+        ]
       },
       {
         "id": "REQ-2",
-        "summary": "Add a backend cache for the RainViewer JSON metadata with TTL=10 minutes and a lazy-refresh strategy: if cached data is still valid, return it immediately; if TTL has expired, return the last cached value immediately and trigger a single background refresh that updates the cache (avoiding duplicate refreshes).",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Add a visible label for forecast/nowcast frames reading \"Short-term radar forecast – uncertainty applies\" and ensure it is shown whenever the user is viewing forecast frames (and not shown for past frames).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/RadarScreen.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/RadarScreen.tsx"
+        ]
       },
       {
         "id": "REQ-3",
-        "summary": "Implement a backend tile proxy endpoint/method that fetches RainViewer tile PNGs on-demand from RainViewer and returns them to the frontend as bytes, so the browser never calls RainViewer directly. The proxy must support the radar tile pattern used by the client (256x256 tiles; z range 5–9) and should reject/guard invalid z/x/y values.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Constrain radar map interaction to zoom levels 5–9 and ensure radar tiles are requested at 256px tile size using the RainViewer v2 tile format.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/radar/RadarMap.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/radar/RadarMap.tsx"
+        ]
       },
       {
         "id": "REQ-4",
-        "summary": "Ensure the backend minimizes redundant RainViewer requests: do not re-fetch the same JSON metadata or the same tile repeatedly within the effective cache window, and prevent multiple refreshes for the same cache entry from running concurrently.",
+        "summary": "Implement backend caching for RainViewer weather-maps data with TTL = 10 minutes and passive refresh behavior: if the cache is expired, serve the last cached value immediately (if available) and trigger a background refresh; if no cached value exists, fetch and return fresh data.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
         "id": "REQ-5",
-        "summary": "Keep existing backend health check functionality (or provide an equivalent health check method) so the frontend/app can verify the canister is up while the new RainViewer functionality is added.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Update the RainViewer data-fetching path so the frontend uses the backend-cached RainViewer endpoint (instead of fetching https://api.rainviewer.com/public/weather-maps.json directly), while preserving the current useRainViewer hook API for the rest of the app.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useRainViewer.ts",
+          "frontend/src/lib/rainviewer.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useRainViewer.ts",
+          "frontend/src/lib/rainviewer.ts"
+        ]
       }
     ]
   },
@@ -58,9 +78,11 @@
     "frontend-implementation-plan.json",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
+    "frontend/src/components/RadarScreen.tsx",
+    "frontend/src/components/radar/RadarForecastLabel.tsx",
+    "frontend/src/components/radar/RadarMap.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useQueries.ts",
     "frontend/src/hooks/useRainViewer.ts",
     "frontend/src/lib/rainviewer.ts",
     "project_state.json",

@@ -26,8 +26,6 @@ export interface DBWeather {
   'condition' : string,
 }
 export interface Precipitation { 'probability' : number, 'amount' : number }
-export interface RainViewerFrames { 'path' : string, 'timestamp' : bigint }
-export type Time = bigint;
 export interface TransformationInput {
   'context' : Uint8Array,
   'response' : http_request_result,
@@ -65,26 +63,7 @@ export interface http_request_result {
 }
 export interface _SERVICE {
   'conditionForWeather' : ActorMethod<[DBWeather], string>,
-  'fetchAndCacheRainViewerMetadata' : ActorMethod<
-    [],
-    {
-      'combinedFrames' : Array<RainViewerFrames>,
-      'nowcastFrames' : Array<RainViewerFrames>,
-      'host' : string,
-      'pastFrames' : Array<RainViewerFrames>,
-      'timestamp' : Time,
-    }
-  >,
-  'fetchRainViewerTile' : ActorMethod<
-    [string],
-    [] | [
-      {
-        'status' : number,
-        'body' : string,
-        'headers' : Array<[string, string]>,
-      }
-    ]
-  >,
+  'getBackendCachedRainViewer' : ActorMethod<[], string>,
   'getCachedWeather' : ActorMethod<[string], [] | [WeatherResponse]>,
   'getCurrentWeather' : ActorMethod<[string, string], [] | [WeatherResponse]>,
   'getDailyForecast' : ActorMethod<
@@ -95,6 +74,7 @@ export interface _SERVICE {
     [],
     { 'status' : string, 'version' : string, 'timestamp' : bigint }
   >,
+  'getRainViewerCache' : ActorMethod<[], string>,
   'getWeather' : ActorMethod<[string, string], [] | [WeatherResponse]>,
   'getWeatherData' : ActorMethod<
     [string, string],

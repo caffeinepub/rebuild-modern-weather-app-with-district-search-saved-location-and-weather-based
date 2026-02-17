@@ -1,5 +1,3 @@
-import type { backendInterface, RainViewerFrames } from '../backend';
-
 export interface RadarFrame {
   time: number;
   path: string;
@@ -7,61 +5,69 @@ export interface RadarFrame {
 
 export interface RainViewerData {
   host: string;
-  frames: RadarFrame[]; // Combined list for compatibility
+  frames: RadarFrame[]; // Combined list (past + limited nowcast)
   pastFrames: RadarFrame[]; // Separate past frames
-  nowcastFrames: RadarFrame[]; // Separate nowcast (future) frames
+  nowcastFrames: RadarFrame[]; // Separate nowcast (future) frames, limited to +90 minutes
 }
 
 /**
- * Converts backend RainViewerFrames to frontend RadarFrame format
+ * Validates and normalizes a single radar frame entry
  */
-function convertBackendFrame(frame: RainViewerFrames): RadarFrame {
-  return {
-    time: Number(frame.timestamp),
-    path: frame.path,
-  };
+function normalizeFrame(frame: any): RadarFrame | null {
+  if (!frame || typeof frame !== 'object') return null;
+  if (typeof frame.time !== 'number' || typeof frame.path !== 'string') return null;
+  return { time: frame.time, path: frame.path };
 }
 
 /**
- * Splits a combined frames array into past and nowcast based on current time
+ * Validates and normalizes an array of radar frames
  */
-export function splitFramesByTime(frames: RadarFrame[]): {
-  pastFrames: RadarFrame[];
-  nowcastFrames: RadarFrame[];
-} {
+function normalizeFrames(frames: any): RadarFrame[] {
+  if (!Array.isArray(frames)) return [];
+  return frames
+    .map(normalizeFrame)
+    .filter((frame): frame is RadarFrame => frame !== null);
+}
+
+/**
+ * Filters nowcast frames to only include those within +90 minutes from current time
+ */
+function filterNowcastFrames(frames: RadarFrame[]): RadarFrame[] {
   const now = Date.now() / 1000;
+  const maxTime = now + (90 * 60); // +90 minutes in seconds
   
-  const pastFrames: RadarFrame[] = [];
-  const nowcastFrames: RadarFrame[] = [];
-  
-  for (const frame of frames) {
-    if (frame.time < now) {
-      pastFrames.push(frame);
-    } else {
-      nowcastFrames.push(frame);
-    }
-  }
-  
-  return { pastFrames, nowcastFrames };
+  return frames.filter(frame => frame.time <= maxTime);
 }
 
 /**
- * Fetches RainViewer metadata from the backend proxy
+ * Parses and normalizes RainViewer data from backend JSON string
  */
-export async function fetchRainViewerData(actor: backendInterface): Promise<RainViewerData> {
-  const backendData = await actor.fetchAndCacheRainViewerMetadata();
-  
-  // Convert backend format to frontend format
-  const pastFrames = backendData.pastFrames.map(convertBackendFrame);
-  const nowcastFrames = backendData.nowcastFrames.map(convertBackendFrame);
-  const combinedFrames = backendData.combinedFrames.map(convertBackendFrame);
-  
-  return {
-    host: backendData.host,
-    frames: combinedFrames.length > 0 ? combinedFrames : [...pastFrames, ...nowcastFrames],
-    pastFrames,
-    nowcastFrames,
-  };
+export function parseRainViewerData(jsonString: string): RainViewerData {
+  try {
+    const data = JSON.parse(jsonString);
+    
+    // Validate and normalize past and nowcast frames
+    const pastFrames = normalizeFrames(data.radar?.past);
+    const rawNowcastFrames = normalizeFrames(data.radar?.nowcast);
+    
+    // Filter nowcast frames to +90 minutes limit
+    const nowcastFrames = filterNowcastFrames(rawNowcastFrames);
+    
+    return {
+      host: typeof data.host === 'string' ? data.host : '',
+      frames: [...pastFrames, ...nowcastFrames], // Combined timeline
+      pastFrames,
+      nowcastFrames,
+    };
+  } catch (error) {
+    console.error('Failed to parse RainViewer data:', error);
+    return {
+      host: '',
+      frames: [],
+      pastFrames: [],
+      nowcastFrames: [],
+    };
+  }
 }
 
 /**

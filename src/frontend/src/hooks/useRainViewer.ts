@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import type { SavedLocation } from './usePersistedLocation';
-import { fetchRainViewerData } from '../lib/rainviewer';
-import { getRainViewerCache, setRainViewerCache, validateCacheForForecast } from '../lib/rainviewerCache';
+import { parseRainViewerData } from '../lib/rainviewer';
+import { getRainViewerCache, setRainViewerCache } from '../lib/rainviewerCache';
 import { useActor } from './useActor';
 
 export function useRainViewer(location: SavedLocation | null) {
@@ -14,30 +14,35 @@ export function useRainViewer(location: SavedLocation | null) {
 
       // Check cache first
       const cached = getRainViewerCache();
-      
-      // Validate cached data structure
       if (cached) {
-        const hasValidStructure =
+        // Validate cached data has required structure
+        if (
           cached.host &&
           Array.isArray(cached.frames) &&
           Array.isArray(cached.pastFrames) &&
-          Array.isArray(cached.nowcastFrames);
-        
-        // If structure is valid and usable for forecast, return it
-        if (hasValidStructure && validateCacheForForecast(cached)) {
+          Array.isArray(cached.nowcastFrames)
+        ) {
           return cached;
         }
-        
-        // If structure is valid but not usable for forecast (e.g., stale timestamps),
-        // we'll fetch fresh data below
+        // Invalid cache - will fetch fresh data
       }
 
-      // Fetch fresh data from backend proxy
-      const data = await fetchRainViewerData(actor);
+      // Fetch from backend-cached RainViewer endpoint
+      const jsonString = await actor.getBackendCachedRainViewer();
       
-      // Cache the fresh data
+      if (!jsonString || jsonString.trim() === '') {
+        throw new Error('Empty response from backend');
+      }
+
+      // Parse and normalize the data
+      const data = parseRainViewerData(jsonString);
+      
+      // Validate parsed data
+      if (!data.host || !Array.isArray(data.frames)) {
+        throw new Error('Invalid RainViewer data structure');
+      }
+
       setRainViewerCache(data);
-      
       return data;
     },
     enabled: !!location && !!actor && !isActorFetching,

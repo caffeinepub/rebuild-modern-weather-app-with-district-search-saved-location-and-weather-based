@@ -1,73 +1,68 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-16T23:59:05.158Z",
-  "summary": "Diff adds some frontend RainViewer hooks/utilities and a backend migration type/map for RainViewer metadata cache, but the provided diff summary does not show concrete backend RainViewer fetch/proxy implementations (metadata fetch + TTL lazy-refresh + tile PNG proxy) nor a health-check method. Because backend/main.mo is truncated, some items may exist outside the visible excerpt; findings below are based only on what is evidenced in the diff summary.",
+  "generatedAt": "2026-02-17T02:57:20.521Z",
+  "summary": "Diff adds frontend parsing to limit nowcast frames to +90 minutes, introduces a forecast label component, and changes the frontend to fetch RainViewer data via a backend actor method. However, several requirements cannot be confirmed from the truncated diff (notably RainViewer tile URL format/layer update behavior and backend TTL cache with passive refresh), and the UI behavior for a combined past+forecast playback timeline and conditional label rendering is not evidenced.",
   "missing_requirements": [
     {
       "id": "REQ-1",
-      "requirement": "Backend method that fetches RainViewer public JSON metadata from https://api.rainviewer.com/public/weather-maps.json, normalizes to stable structure (host, past/nowcast/combined frames), and returns safe error/empty result on invalid payload.",
-      "reason": "The diff summary does not include any visible backend code that performs an HTTP outcall to RainViewer’s weather-maps.json, parses/validates it, or exposes a public method returning the normalized structure. Frontend expects a backend method, but its backend implementation is not evidenced in the shown backend/main.mo excerpt.",
+      "requirement": "Expose a combined timeline (past + limited nowcast) for animation playback while keeping hooks unchanged (useRadarPlayback receives a single frames array).",
+      "reason": "Although rainviewer.ts builds a combined `frames` array, RadarScreen selects either `nowcastFrames` or `pastFrames` based on `frameMode` and passes only that subset into `useRadarPlayback`, not a combined past+forecast timeline for animation.",
       "evidence": [
-        "backend/main.mo (truncated)",
-        "frontend/src/lib/rainviewer.ts (calls actor.fetchAndCacheRainViewerMetadata())"
+        "frontend/src/lib/rainviewer.ts",
+        "frontend/src/components/RadarScreen.tsx"
       ]
     },
     {
       "id": "REQ-2",
-      "requirement": "Backend cache for RainViewer JSON metadata with TTL=10 minutes and lazy-refresh: serve cached within TTL; after TTL serve last value immediately and trigger at most one background refresh; store fetch timestamp.",
-      "reason": "While a RainViewerMetadata type includes a timestamp and a rainViewerMetadataCache map is added in migration, the diff summary does not show any TTL logic (10 minutes), lazy-refresh behavior, or single in-flight refresh/dedup implementation in backend/main.mo.",
+      "requirement": "Show the label \"Short-term radar forecast – uncertainty applies\" whenever the user is viewing forecast frames, and hide it for past frames, without blocking map interaction.",
+      "reason": "A label component is added and imported, and a boolean `isViewingForecast` is computed, but the truncated RadarScreen diff does not show the label being conditionally rendered based on forecast vs past frames.",
       "evidence": [
-        "backend/migration.mo (adds RainViewerMetadata.timestamp and rainViewerMetadataCache)",
-        "backend/main.mo (truncated)"
+        "frontend/src/components/radar/RadarForecastLabel.tsx",
+        "frontend/src/components/RadarScreen.tsx"
       ]
     },
     {
       "id": "REQ-3",
-      "requirement": "Backend tile proxy method to fetch RainViewer PNG tiles and return bytes; must guard invalid z/x/y and enforce zoom range 5–9.",
-      "reason": "No backend method for tile fetching/proxying (PNG bytes) is shown in the diff summary, and no z/x/y validation or zoom-range guarding is evidenced.",
+      "requirement": "Ensure RainViewer v2 256px tile URL format is used (…/256/{z}/{x}/{y}/2/1_1.png) and frame changes update the tile layer URL without recreating the map.",
+      "reason": "RadarMap sets `minZoom: 5` and `maxZoom: 9`, but the diff snippet is truncated before any RainViewer radar tile layer URL construction/update logic is shown, so the required v2/256 URL format and non-recreate URL updates cannot be verified from the provided evidence.",
       "evidence": [
-        "backend/main.mo (truncated)"
+        "frontend/src/components/radar/RadarMap.tsx"
       ]
     },
     {
       "id": "REQ-4",
-      "requirement": "Minimize redundant RainViewer requests: dedupe concurrent metadata refreshes (single in-flight), and avoid repeated outbound calls for identical tile requests when caching is enabled/feasible.",
-      "reason": "The diff summary does not show any concurrency/in-flight dedup for metadata refreshes, nor any tile request caching/dedup mechanism.",
+      "requirement": "Backend caching for RainViewer weather-maps data with TTL=10 minutes and passive refresh (serve stale immediately and refresh in background after expiry; keep last good value on refresh failure).",
+      "reason": "A migration introduces a `rainViewerCache` field, but the truncated backend/main.mo snippet does not show any RainViewer fetch, TTL checking, background refresh via Timer, or the passive refresh behavior required.",
       "evidence": [
-        "backend/main.mo (truncated)"
+        "backend/migration.mo",
+        "backend/main.mo"
       ]
     },
     {
       "id": "REQ-5",
-      "requirement": "Keep or provide a backend health check method returning status + version + timestamp (or equivalent).",
-      "reason": "The diff summary does not show any health check method in backend/main.mo; the visible portion only shows weather-related query methods.",
+      "requirement": "Frontend uses backend-cached RainViewer endpoint (no direct browser fetch to RainViewer) while preserving useRainViewer API; backend provides a method returning RainViewer data.",
+      "reason": "Frontend is updated to call `actor.getBackendCachedRainViewer()`, but the truncated backend/main.mo diff does not show this method being implemented or exposed, so the end-to-end backend-cached path cannot be fully verified.",
       "evidence": [
-        "backend/main.mo (truncated)"
+        "frontend/src/hooks/useRainViewer.ts",
+        "backend/main.mo"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Client-side RainViewer caching strategy and refresh cadence via React Query (staleTime/refetchInterval 5 minutes; gcTime 10 minutes) plus local cache validation logic.",
-      "reason": "The BuildRequest focuses on backend proxy/cache and does not request implementing client-side RainViewer caching/refresh policies. This is additional behavior beyond the backend cache requirements.",
+      "description": "Frontend client-side RainViewer caching layer (getRainViewerCache/setRainViewerCache) in addition to backend caching.",
+      "reason": "BuildRequest only requires backend caching (TTL=10 minutes, passive refresh) and routing frontend through the backend; an extra frontend cache layer is introduced in useRainViewer and is not explicitly requested.",
       "evidence": [
-        "frontend/src/hooks/useRainViewer.ts",
-        "frontend/src/hooks/useQueries.ts"
+        "frontend/src/hooks/useRainViewer.ts"
       ]
     },
     {
-      "description": "Frontend utilities for splitting frames by current time and choosing initial playback frame index.",
-      "reason": "Frontend radar/timeline/animation work is explicitly listed as a non-goal for this step; these helpers are frontend radar playback-related logic.",
+      "description": "Added backend migration module introducing a `rainViewerCache` stable field.",
+      "reason": "BuildRequest requires backend caching behavior but does not request a migration file/module; this is additional implementation detail beyond explicit requirements.",
       "evidence": [
-        "frontend/src/lib/rainviewer.ts"
-      ]
-    },
-    {
-      "description": "Added backend migration module with extensive weather-related types plus RainViewer metadata cache map initialization.",
-      "reason": "The BuildRequest is about RainViewer proxy/cache; adding/retaining large unrelated weather schema in a new migration module is not requested in the described scope (though it may be incidental to the project).",
-      "evidence": [
-        "backend/migration.mo"
+        "backend/migration.mo",
+        "backend/main.mo"
       ]
     }
   ],
@@ -76,7 +71,9 @@
     "backend/main.mo",
     "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/components/RadarScreen.tsx",
+    "frontend/src/components/radar/RadarForecastLabel.tsx",
+    "frontend/src/components/radar/RadarMap.tsx",
     "frontend/src/hooks/useRainViewer.ts",
     "frontend/src/lib/rainviewer.ts",
     "project_state.json"

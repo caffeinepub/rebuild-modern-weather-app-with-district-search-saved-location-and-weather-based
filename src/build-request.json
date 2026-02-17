@@ -1,114 +1,121 @@
 {
   "kind": "build_request",
-  "title": "Create backend RainViewer proxy + cache layer",
-  "projectName": "WeatherVerse",
+  "title": "Add 90-minute RainViewer nowcast playback, labeling, and backend cache",
+  "projectName": "WeatherVerse Radar",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Implement a backend RainViewer integration that fetches the RainViewer public JSON metadata from `https://api.rainviewer.com/public/weather-maps.json`, normalizes it into a stable structure (host, past frames, nowcast frames, combined frames), and serves it to the frontend via a canister method so the client does not call RainViewer directly.",
-      "target": "backend",
+      "text": "Limit RainViewer nowcast playback to the next 90 minutes and expose the combined timeline (past + limited nowcast) for animation, while keeping the existing hooks (useRainViewer, useRadarPlayback, useRadarOverlayData) as the integration points.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-2"
         ],
         "quotes": [
-          "Tek dış servis: RainViewer",
-          "API key kullanılmayacak, genel public endpoint kullanılacak",
-          "Client doğrudan API’ye bağlanmayacak, tüm istekler backend üzerinden geçecek"
+          "Mevcut RainViewer tabanlı radar sistemine 90 dakikalık nowcast animasyonu ekle.",
+          "Frontend’de useRainViewer, useRadarPlayback, useRadarOverlayData hook’ları kullanılacak.",
+          "RadarMap animasyonuna geçmiş + 90 dk ileri nowcast kareleri entegre edilecek."
         ]
       },
       "acceptanceCriteria": [
-        "Backend exposes a public method that returns RainViewer metadata (including host and frame lists) in a consistent, validated structure.",
-        "Backend uses the RainViewer public endpoint and does not require any API key.",
-        "If RainViewer returns an invalid/partial payload, the backend returns a clear error (or a safe empty result) rather than trapping."
+        "When RainViewer returns nowcast frames beyond +90 minutes from the current time, those frames are not included in the forecast playback list.",
+        "The radar animation can play through past frames and forecast frames (up to +90 minutes) without errors.",
+        "useRadarPlayback continues to receive a single frames array for playback (no breaking API changes to the hook)."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Add a backend cache for the RainViewer JSON metadata with TTL=10 minutes and a lazy-refresh strategy: if cached data is still valid, return it immediately; if TTL has expired, return the last cached value immediately and trigger a single background refresh that updates the cache (avoiding duplicate refreshes).",
-      "target": "backend",
+      "text": "Add a visible label for forecast/nowcast frames reading \"Short-term radar forecast – uncertainty applies\" and ensure it is shown whenever the user is viewing forecast frames (and not shown for past frames).",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-2"
         ],
         "quotes": [
-          "Cache süresi: 10 dakika (TTL)",
-          "Lazy refresh cache stratejisi: Cache geçerliyse servis et; TTL dolduysa backend tek seferlik arka plan güncellemesi yapsın; aynı timestamp için tekrar istek yapılmasın"
+          "Tahmin kareleri “Kısa vadeli tahmini radar – belirsizlik içerir” etiketiyle işaretlenecek."
         ]
       },
       "acceptanceCriteria": [
-        "When called repeatedly within 10 minutes, the backend serves cached metadata without performing additional RainViewer fetches.",
-        "When TTL has expired, the backend still responds quickly using the last cached value (if present) and starts at most one refresh in the background for concurrent callers.",
-        "The cache stores a timestamp of when it was fetched and uses it to enforce the 10-minute TTL."
+        "In forecast mode, the UI displays the English label \"Short-term radar forecast – uncertainty applies\" in a clearly visible way near the map/playback UI.",
+        "In past mode, the label is not displayed.",
+        "The label does not block map interaction (it may be an overlay/banner)."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Implement a backend tile proxy endpoint/method that fetches RainViewer tile PNGs on-demand from RainViewer and returns them to the frontend as bytes, so the browser never calls RainViewer directly. The proxy must support the radar tile pattern used by the client (256x256 tiles; z range 5–9) and should reject/guard invalid z/x/y values.",
-      "target": "backend",
+      "text": "Constrain radar map interaction to zoom levels 5–9 and ensure radar tiles are requested at 256px tile size using the RainViewer v2 tile format.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-2"
         ],
         "quotes": [
-          "Tile tabanlı PNG olarak gösterilecek",
-          "Zoom ve pan desteği (z = 5 → 9)",
-          "Client doğrudan API’ye bağlanmayacak, tüm istekler backend üzerinden geçecek"
+          "Zoom seviyeleri 5–9, tile boyutu 256 px.",
+          "Tile formatı örneği:\n\nhttps://tilecache.rainviewer.com/v2/radar/{timestamp}/{z}/{x}/{y}/2/1_1.png"
         ]
       },
       "acceptanceCriteria": [
-        "Backend provides a method that returns PNG tile bytes for a requested frame path + z/x/y (and any additional RainViewer path segments required).",
-        "Requests outside allowed zoom range (5–9) are rejected (or clamped) with a clear error response.",
-        "The proxy does not embed any API keys and only calls RainViewer public endpoints."
+        "Leaflet map minZoom is 5 and maxZoom is 9 (user cannot zoom outside this range).",
+        "Radar precipitation tiles continue to use 256px tiles (the tile URL path includes /256/{z}/{x}/{y}/2/1_1.png).",
+        "Changing frames updates the precipitation tile layer URL correctly without recreating the entire map."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Ensure the backend minimizes redundant RainViewer requests: do not re-fetch the same JSON metadata or the same tile repeatedly within the effective cache window, and prevent multiple refreshes for the same cache entry from running concurrently.",
+      "text": "Implement backend caching for RainViewer weather-maps data with TTL = 10 minutes and passive refresh behavior: if the cache is expired, serve the last cached value immediately (if available) and trigger a background refresh; if no cached value exists, fetch and return fresh data.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-2"
         ],
         "quotes": [
-          "aynı timestamp için tekrar istek yapılmasın",
-          "zoom/pan/animasyon yeni dış API çağrısı tetiklemesin"
+          "Backend cache TTL = 10 dk; cache süresi dolduğunda backend pasif şekilde güncelleme yapacak."
         ]
       },
       "acceptanceCriteria": [
-        "Backend deduplicates concurrent refreshes of the JSON metadata (single in-flight refresh behavior).",
-        "Backend avoids repeated outbound calls for identical tile requests when caching is enabled/feasible (at minimum, it must not cause repeated metadata calls due to tile requests)."
+        "Backend stores the most recent RainViewer weather-maps payload (or normalized equivalent) along with a timestamp.",
+        "Within 10 minutes of the last successful refresh, requests are served from cache.",
+        "After TTL expiry, requests return cached data immediately (when available) and initiate a refresh without blocking the response.",
+        "If the backend has no cached data yet, the first request fetches from https://api.rainviewer.com/public/weather-maps.json and returns the result.",
+        "Cache refresh failures do not erase the last good cached value."
       ]
     },
     {
       "id": "REQ-5",
-      "text": "Keep existing backend health check functionality (or provide an equivalent health check method) so the frontend/app can verify the canister is up while the new RainViewer functionality is added.",
-      "target": "backend",
+      "text": "Update the RainViewer data-fetching path so the frontend uses the backend-cached RainViewer endpoint (instead of fetching https://api.rainviewer.com/public/weather-maps.json directly), while preserving the current useRainViewer hook API for the rest of the app.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-2"
         ],
         "quotes": [
-          "Backendi oluştur"
+          "Kullanılacak ana endpoint:\n\nhttps://api.rainviewer.com/public/weather-maps.json",
+          "Backend cache TTL = 10 dk; cache süresi dolduğunda backend pasif şekilde güncelleme yapacak.",
+          "Modül uygulamaya kalıcı ve tekrar kullanılabilir şekilde entegre olacak."
         ]
       },
       "acceptanceCriteria": [
-        "A health check method exists that returns status + version + timestamp (or equivalent), and continues to respond successfully after RainViewer features are added."
+        "Frontend RainViewer fetches are routed through a backend method that returns RainViewer data (host + past/nowcast frames).",
+        "useRainViewer continues to be the single hook used by RadarScreen for radar data.",
+        "The app still renders radar tiles correctly using the returned host/path values.",
+        "No direct browser fetch to https://api.rainviewer.com/public/weather-maps.json is required for normal operation."
       ]
     }
   ],
   "constraints": [
-    "Use English for any user-facing text.",
-    "Backend must be a single Motoko actor in `backend/main.mo` (single-actor architecture).",
-    "Do not require any RainViewer API key; use the public endpoint.",
-    "The client must not call RainViewer directly; all RainViewer JSON and PNG tile access must go through the backend.",
-    "Cache TTL for RainViewer JSON metadata must be 10 minutes."
+    "Use the existing RainViewer endpoint exactly: https://api.rainviewer.com/public/weather-maps.json.",
+    "Use the RainViewer tile URL structure consistent with v2 radar tiles and 256px tiles (…/256/{z}/{x}/{y}/2/1_1.png).",
+    "Keep the existing hooks as the integration surface: useRainViewer, useRadarPlayback, useRadarOverlayData.",
+    "Respect Leaflet zoom constraints: minZoom=5 and maxZoom=9.",
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not edit files under frontend/src/components/ui or other frontend immutablePaths; compose existing UI components instead."
   ],
   "nonGoals": [
-    "Implementing the full frontend radar UI (map, timeline, animation) in this step.",
-    "Implementing ML-based nowcasting; only backend proxy/cache is in-scope for this step.",
-    "Adding third-party authentication providers (only Internet Identity is supported)."
+    "Adding OpenWeatherMap or any other non-RainViewer radar provider integration.",
+    "Building a physical radar module or processing real radar sensor data.",
+    "Implementing real-time streaming/WebSocket-based radar updates.",
+    "Changing unrelated weather screens/panels outside the radar module."
   ],
   "imageRequirements": {
     "required": [],

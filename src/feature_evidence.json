@@ -1,4 +1,83 @@
 {
   "kind": "feature_evidence_report",
-  "features": []
+  "features": [
+    {
+      "featureId": "feature-limit-rainviewer-nowcast-playback-to-the-next-90-minutes-and-expose-the-combined-timeline-past-limited-nowcast-for-animation-while-keeping-the-existing-hooks-userainviewer-useradarplayback-useradaroverlaydata-as-the-integration-points",
+      "featureTitle": "Limit RainViewer nowcast playback to the next 90 minutes and expose the combined timeline (past + limited nowcast) for animation, while keeping the existing hooks (useRainViewer, useRadarPlayback, useRadarOverlayData) as the integration points.",
+      "files": [
+        "frontend/src/components/RadarScreen.tsx",
+        "frontend/src/lib/rainviewer.ts"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-visible-label-for-forecast-nowcast-frames-reading-short-term-radar-forecast-uncertainty-applies-and-ensure-it-is-shown-whenever-the-user-is-viewing-forecast-frames-and-not-shown-for-past-frames",
+      "featureTitle": "Add a visible label for forecast/nowcast frames reading \"Short-term radar forecast – uncertainty applies\" and ensure it is shown whenever the user is viewing forecast frames (and not shown for past frames).",
+      "files": [
+        "frontend/src/components/RadarScreen.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-constrain-radar-map-interaction-to-zoom-levels-5-9-and-ensure-radar-tiles-are-requested-at-256px-tile-size-using-the-rainviewer-v2-tile-format",
+      "featureTitle": "Constrain radar map interaction to zoom levels 5–9 and ensure radar tiles are requested at 256px tile size using the RainViewer v2 tile format.",
+      "files": [
+        "frontend/src/components/radar/RadarMap.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-rainviewer-data-fetching-path-so-the-frontend-uses-the-backend-cached-rainviewer-endpoint-instead-of-fetching-https-api-rainviewer-com-public-weather-maps-json-directly-while-preserving-the-current-userainviewer-hook-api-for-the-rest-of-the-app",
+      "featureTitle": "Update the RainViewer data-fetching path so the frontend uses the backend-cached RainViewer endpoint (instead of fetching https://api.rainviewer.com/public/weather-maps.json directly), while preserving the current useRainViewer hook API for the rest of the app.",
+      "files": [
+        "frontend/src/hooks/useRainViewer.ts",
+        "frontend/src/lib/rainviewer.ts"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
+      ],
+      "confidence": "high"
+    }
+  ]
 }

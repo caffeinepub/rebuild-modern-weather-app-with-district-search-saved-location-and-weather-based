@@ -1,6 +1,82 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "WeatherVerse — Frontend implementation plan (no changes required for this backend-only request)",
-  "requirements": []
+  "title": "WeatherVerse Radar: 90-minute nowcast limit, forecast labeling, tile/zoom constraints, and backend-cached RainViewer fetch",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Limit nowcast frames to +90 minutes and provide a combined (past + limited nowcast) frames timeline for playback while preserving existing hook integration points.",
+      "acceptanceCriteria": [
+        "When RainViewer returns nowcast frames beyond +90 minutes from the current time, those frames are not included in the forecast playback list.",
+        "The radar animation can play through past frames and forecast frames (up to +90 minutes) without errors.",
+        "useRadarPlayback continues to receive a single frames array for playback (no breaking API changes to the hook)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/lib/rainviewer.ts",
+          "operation": "modify",
+          "description": "Add normalization that filters nowcast frames to those within +90 minutes from current time, and ensure RainViewerData.frames is the combined timeline (past + limited nowcast) in correct order while keeping pastFrames/nowcastFrames available."
+        },
+        {
+          "path": "frontend/src/components/RadarScreen.tsx",
+          "operation": "modify",
+          "description": "Update radar playback to use the combined frames array (past + limited nowcast) as the single input to useRadarPlayback, while still allowing the existing past/forecast mode control to seek within the combined timeline without changing useRadarPlayback’s API."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Show a visible uncertainty label only while viewing forecast/nowcast frames without blocking map interaction.",
+      "acceptanceCriteria": [
+        "In forecast mode, the UI displays the English label \"Short-term radar forecast – uncertainty applies\" in a clearly visible way near the map/playback UI.",
+        "In past mode, the label is not displayed.",
+        "The label does not block map interaction (it may be an overlay/banner)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/RadarScreen.tsx",
+          "operation": "modify",
+          "description": "Add a non-blocking overlay/banner near the radar map/playback area that conditionally renders \"Short-term radar forecast – uncertainty applies\" when the current frame is a forecast/nowcast frame (and hides it for past frames). Use existing shadcn-ui composed components (e.g., Alert) as appropriate; verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Restrict Leaflet interaction to zoom 5–9 and ensure RainViewer v2 256px tile requests update via setUrl without rebuilding the map.",
+      "acceptanceCriteria": [
+        "Leaflet map minZoom is 5 and maxZoom is 9 (user cannot zoom outside this range).",
+        "Radar precipitation tiles continue to use 256px tiles (the tile URL path includes /256/{z}/{x}/{y}/2/1_1.png).",
+        "Changing frames updates the precipitation tile layer URL correctly without recreating the entire map."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/radar/RadarMap.tsx",
+          "operation": "modify",
+          "description": "Set Leaflet map minZoom=5 and maxZoom=9 in map initialization, and align precipitation layer zoom options to this range while continuing to build RainViewer v2 256px tile URLs and updating frame changes via tileLayer.setUrl (no full map recreation)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Route RainViewer data loading through the backend-cached RainViewer method while keeping the useRainViewer hook API unchanged for the rest of the app.",
+      "acceptanceCriteria": [
+        "Frontend RainViewer fetches are routed through a backend method that returns RainViewer data (host + past/nowcast frames).",
+        "useRainViewer continues to be the single hook used by RadarScreen for radar data.",
+        "The app still renders radar tiles correctly using the returned host/path values.",
+        "No direct browser fetch to https://api.rainviewer.com/public/weather-maps.json is required for normal operation."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useRainViewer.ts",
+          "operation": "modify",
+          "description": "Update useRainViewer to obtain RainViewer weather-maps payload via the existing backend actor method (getBackendCachedRainViewer), parse/normalize it, and keep the hook’s return shape compatible with current consumers. Use core-infrastructure actor wiring via the existing useActor hook; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/lib/rainviewer.ts",
+          "operation": "modify",
+          "description": "Refactor RainViewer parsing/normalization so it can consume the backend-returned JSON string payload (host + radar past/nowcast), producing the same RainViewerData shape as before (including combined frames) and avoiding any required direct browser fetch to the public RainViewer URL."
+        }
+      ]
+    }
+  ]
 }
