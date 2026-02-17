@@ -1,64 +1,86 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "WeatherVerse: Android widget'lerin (anlık/günlük/haftalık) veri alabilmesi için web URL'den ayrı bir JSON API endpoint'i kurma/sağlama ihtiyacı konuşuldu.",
+  "summary": "RainViewer public endpoint’lerinden tile tabanlı radar verisi alıp backend üzerinden cache’leyerek servis eden; son 6 kareden optik akış benzeri vektör tahminiyle +10/+20/+30/+60/+90 dk extrapolation nowcast üreten; istemcide tek zaman çizelgesi ve animasyonla gösterilen limit-dostu radar+nowcast uygulaması.",
   "architectural_notes": [
-    "Ana site URL'si (/) web arayüzü; widget'ler için ayrı JSON üreten endpoint(ler) (örn. /api/weather) sağlanmalı."
+    "Tek radar kaynağı RainViewer; yalnızca public endpoint’ler, API key kullanılmayacak.",
+    "Client (mobil/web) RainViewer dahil hiçbir dış hava API’sine doğrudan istek atmayacak; tüm veri backend üzerinden yönetilecek.",
+    "Backend radar cache TTL=10 dk; 10 dakikadan sık dış API çağrısı yapılmayacak; lazy refresh (istek geldiğinde TTL doluysa tek seferlik arka plan güncelleme).",
+    "Tile formatı PNG, {z}/{x}/{y}; tile boyutu 256x256; zoom aralığı z=5–9; nowcast hesaplaması orta zoom (örn z=7) üzerinden yapılıp diğer zoom’lara ölçeklenecek.",
+    "Nowcast: Son 6 radar karesiyle optik akış benzeri vektör tahmini; maksimum 90 dk; lead time’lar +10/+20/+30/+60/+90 dk; tahmin frame’leri açıkça etiketlenecek."
   ],
   "known_issues": [
-    "Widget'ler şu anda 'Veri yok' placeholder gösteriyor; mevcut URL bir JSON endpoint değil."
+    "Oluşturma/build adımı platform tarafından tekrar tekrar başarısız oluyor (“AI couldn't implement/process request”)."
   ],
   "isFixRequest": false,
-  "existing_features": [
-    {
-      "id": "feature-update-the-react-frontend-to-publish-the-currently-displayed-weather-data-to-the-backend-whenever-new-weather-data-is-fetched-for-a-selected-location-so-the-backend-s-url-based-json-endpoint-stays-fresh-for-android-widgets",
-      "title": "Update the React frontend to publish the currently displayed weather data to the backend whenever new weather data is fetched for a selected location, so the backend’s URL-based JSON endpoint stays fresh for Android widgets.",
-      "reqIds": [
-        "REQ-7"
-      ],
-      "version": 1
-    }
-  ],
+  "existing_features": [],
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "weatherverse-gy1.caffeine.xyz üzerinde widget'lerin tüketebileceği JSON döndüren bir API endpoint (ör. /api/weather) kurma",
+      "summary": "Backend proxy/cache katmanı: RainViewer JSON meta + PNG tile’ları istemciye tek backend üzerinden servis et; TTL=10 dk; client doğrudan dış API’ye istek atmasın; tek kaynak-çoklu kullanıcı mimarisi",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Implement an HTTP JSON API in the Motoko backend so that the deployed domain https://weatherverse-gy1.caffeine.xyz/ can be used as a URL-based JSON endpoint for Android widgets (i.e., a GET request returns JSON, not HTML).",
+      "summary": "Lazy refresh cache stratejisi: Cache geçerliyse servis et; TTL dolduysa backend tek seferlik arka plan güncellemesi yapsın; aynı timestamp için tekrar istek yapılmasın; zoom/pan/animasyon yeni dış API çağrısı tetiklemesin",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Nowcast üretimi: Son 6 radar karesiyle optik akış benzeri kareden-kareye vektör tahmini; ML’siz/CPU-dostu; +10/+20/+30/+60/+90 dk lead time için extrapolation tabanlı “tahmini radar” frame’leri üret",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Frontend UX: Canlı radar haritası (z=5–9, 256x256 tile), geçmiş+nowcast animasyonu, tek zaman çizelgesi/frame kontrolü, belirsizlik etiketi, veri güncellenemezse son başarılı kareyi göster ve kullanıcıyı bilgilendir",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Implement a backend RainViewer integration that fetches the RainViewer public JSON metadata from `https://api.rainviewer.com/public/weather-maps.json`, normalizes it into a stable structure (host, past frames, nowcast frames, combined frames), and serves it to the frontend via a canister method so the client does not call RainViewer directly.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Add a backend cache for the RainViewer JSON metadata with TTL=10 minutes and a lazy-refresh strategy: if cached data is still valid, return it immediately; if TTL has expired, return the last cached value immediately and trigger a single background refresh that updates the cache (avoiding duplicate refreshes).",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Implement a backend tile proxy endpoint/method that fetches RainViewer tile PNGs on-demand from RainViewer and returns them to the frontend as bytes, so the browser never calls RainViewer directly. The proxy must support the radar tile pattern used by the client (256x256 tiles; z range 5–9) and should reject/guard invalid z/x/y values.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Ensure the backend minimizes redundant RainViewer requests: do not re-fetch the same JSON metadata or the same tile repeatedly within the effective cache window, and prevent multiple refreshes for the same cache entry from running concurrently.",
       "reqIds": [
         "REQ-4"
       ],
       "status": "pending"
     },
     {
-      "id": "AR-3",
-      "summary": "Define and serve a stable JSON schema for widget consumption that includes fields for current, daily, and weekly forecasts (matching the earlier discussed structure), and ensure the backend always returns these keys even when data is missing (using null/empty arrays rather than omitting keys).",
+      "id": "AR-9",
+      "summary": "Keep existing backend health check functionality (or provide an equivalent health check method) so the frontend/app can verify the canister is up while the new RainViewer functionality is added.",
       "reqIds": [
         "REQ-5"
       ],
       "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Add backend methods and storage to allow the frontend to publish (upsert) the latest weather payload that the public JSON endpoint will serve, so the API can work without relying on direct external HTTP calls from the canister.",
-      "reqIds": [
-        "REQ-6"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-6",
-      "summary": "Provide a simple health/version endpoint under /api (e.g., /api/health) that returns JSON indicating the service is running, for easy widget/network debugging.",
-      "reqIds": [
-        "REQ-8"
-      ],
-      "status": "pending"
     }
   ],
+  "gameProjectType": "none",
   "projectName": "WeatherVerse",
   "clarification_mode": "instant",
   "clarification_rounds": 0

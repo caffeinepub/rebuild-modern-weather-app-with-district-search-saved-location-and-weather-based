@@ -7,16 +7,18 @@ import { RadarInfoPanel } from './radar/RadarInfoPanel';
 import { RadarAlertBanner } from './radar/RadarAlertBanner';
 import { RadarAlertControls } from './radar/RadarAlertControls';
 import { RadarOverlayStatus } from './radar/RadarOverlayStatus';
+import { RadarFrameModeToggle } from './radar/RadarFrameModeToggle';
 import { useRainViewer } from '../hooks/useRainViewer';
 import { useRadarPlayback } from '../hooks/useRadarPlayback';
 import { useRadarAlerts } from '../hooks/useRadarAlerts';
 import { useRadarOverlayData } from '../hooks/useRadarOverlayData';
-import { getPreferredPlaybackFrames, getInitialFrameIndex } from '../lib/rainviewer';
+import { getInitialFrameIndex } from '../lib/rainviewer';
 import { LocationSearch } from './LocationSearch';
 import type { SavedLocation } from '../hooks/usePersistedLocation';
 import { useI18n } from '../i18n/useI18n';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 interface RadarScreenProps {
   location: SavedLocation | null;
@@ -24,9 +26,12 @@ interface RadarScreenProps {
   onClearLocation: () => void;
 }
 
+export type RadarFrameMode = 'forecast' | 'past';
+
 export function RadarScreen({ location, onLocationSelect, onClearLocation }: RadarScreenProps) {
   const { t } = useI18n();
   const [enabledLayers, setEnabledLayers] = useState<Set<string>>(new Set(['precipitation']));
+  const [frameMode, setFrameMode] = useState<RadarFrameMode>('forecast');
 
   // Fetch radar data
   const { data: radarData, isLoading, error } = useRainViewer(location);
@@ -38,11 +43,31 @@ export function RadarScreen({ location, onLocationSelect, onClearLocation }: Rad
     isError: isOverlayError 
   } = useRadarOverlayData(location);
 
-  // Compute preferred playback frames (nowcast-only when available; otherwise past)
-  const playbackFrames = useMemo(() => getPreferredPlaybackFrames(radarData), [radarData]);
+  // Compute playback frames based on selected mode with safe fallbacks
+  const playbackFrames = useMemo(() => {
+    if (!radarData) return [];
+    
+    if (frameMode === 'forecast') {
+      // Use nowcast frames for forecast mode
+      const frames = Array.isArray(radarData.nowcastFrames) ? radarData.nowcastFrames : [];
+      return frames;
+    } else {
+      // Use past frames for past mode
+      const frames = Array.isArray(radarData.pastFrames) ? radarData.pastFrames : [];
+      return frames;
+    }
+  }, [radarData, frameMode]);
   
-  // Compute initial frame index (earliest upcoming nowcast frame)
-  const initialFrameIndex = useMemo(() => getInitialFrameIndex(playbackFrames), [playbackFrames]);
+  // Compute initial frame index (earliest upcoming frame for forecast mode)
+  const initialFrameIndex = useMemo(() => {
+    if (playbackFrames.length === 0) return 0;
+    
+    if (frameMode === 'forecast') {
+      return getInitialFrameIndex(playbackFrames);
+    }
+    // For past mode, start at the latest (most recent) frame
+    return Math.max(0, playbackFrames.length - 1);
+  }, [playbackFrames, frameMode]);
 
   // Playback state
   const {
@@ -50,10 +75,9 @@ export function RadarScreen({ location, onLocationSelect, onClearLocation }: Rad
     isPlaying,
     play,
     pause,
-    setFrameIndex,
+    seekToFrame,
     getCurrentFrame,
     getFrameLabel,
-    isPastFrame,
   } = useRadarPlayback(playbackFrames, initialFrameIndex);
 
   // Alert system
@@ -65,6 +89,14 @@ export function RadarScreen({ location, onLocationSelect, onClearLocation }: Rad
   );
 
   const currentFrame = getCurrentFrame();
+
+  // Check if forecast frames are unavailable
+  const forecastUnavailable = 
+    frameMode === 'forecast' && 
+    playbackFrames.length === 0 && 
+    radarData && 
+    Array.isArray(radarData.pastFrames) && 
+    radarData.pastFrames.length > 0;
 
   if (!location) {
     return (
@@ -115,9 +147,32 @@ export function RadarScreen({ location, onLocationSelect, onClearLocation }: Rad
         onClearLocation={onClearLocation}
       />
 
+      {/* Frame Mode Toggle */}
+      <RadarFrameModeToggle
+        mode={frameMode}
+        onModeChange={setFrameMode}
+      />
+
       {/* Alert Banner */}
       {activeAlert && (
         <RadarAlertBanner alert={activeAlert} onDismiss={dismissAlert} />
+      )}
+
+      {/* Forecast Unavailable Message */}
+      {forecastUnavailable && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between gap-4">
+            <span>{t('radar.forecast.unavailable')}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setFrameMode('past')}
+            >
+              {t('radar.forecast.switchToPast')}
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* Main Radar Container */}
@@ -165,9 +220,9 @@ export function RadarScreen({ location, onLocationSelect, onClearLocation }: Rad
             isPlaying={isPlaying}
             onPlay={play}
             onPause={pause}
-            onFrameChange={setFrameIndex}
+            onSeek={seekToFrame}
             frameLabel={getFrameLabel(currentFrameIndex)}
-            isPastFrame={isPastFrame(currentFrameIndex)}
+            mode={frameMode}
           />
         </div>
 

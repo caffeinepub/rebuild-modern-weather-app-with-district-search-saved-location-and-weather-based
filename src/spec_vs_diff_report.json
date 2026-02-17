@@ -1,39 +1,47 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-16T15:50:26.225Z",
-  "summary": "Diff adds frontend-side publishing utilities/hooks, but does not show implementation of the required HTTP JSON API endpoints (/api/weather, /api/health) or the required stable JSON schema (city/current/daily/weekly) being served from the Motoko backend. Backend changes shown introduce new types/cache and stub query methods that don’t match the requested widget schema.",
+  "generatedAt": "2026-02-16T23:59:05.158Z",
+  "summary": "Diff adds some frontend RainViewer hooks/utilities and a backend migration type/map for RainViewer metadata cache, but the provided diff summary does not show concrete backend RainViewer fetch/proxy implementations (metadata fetch + TTL lazy-refresh + tile PNG proxy) nor a health-check method. Because backend/main.mo is truncated, some items may exist outside the visible excerpt; findings below are based only on what is evidenced in the diff summary.",
   "missing_requirements": [
     {
+      "id": "REQ-1",
+      "requirement": "Backend method that fetches RainViewer public JSON metadata from https://api.rainviewer.com/public/weather-maps.json, normalizes to stable structure (host, past/nowcast/combined frames), and returns safe error/empty result on invalid payload.",
+      "reason": "The diff summary does not include any visible backend code that performs an HTTP outcall to RainViewer’s weather-maps.json, parses/validates it, or exposes a public method returning the normalized structure. Frontend expects a backend method, but its backend implementation is not evidenced in the shown backend/main.mo excerpt.",
+      "evidence": [
+        "backend/main.mo (truncated)",
+        "frontend/src/lib/rainviewer.ts (calls actor.fetchAndCacheRainViewerMetadata())"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "requirement": "Backend cache for RainViewer JSON metadata with TTL=10 minutes and lazy-refresh: serve cached within TTL; after TTL serve last value immediately and trigger at most one background refresh; store fetch timestamp.",
+      "reason": "While a RainViewerMetadata type includes a timestamp and a rainViewerMetadataCache map is added in migration, the diff summary does not show any TTL logic (10 minutes), lazy-refresh behavior, or single in-flight refresh/dedup implementation in backend/main.mo.",
+      "evidence": [
+        "backend/migration.mo (adds RainViewerMetadata.timestamp and rainViewerMetadataCache)",
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Backend tile proxy method to fetch RainViewer PNG tiles and return bytes; must guard invalid z/x/y and enforce zoom range 5–9.",
+      "reason": "No backend method for tile fetching/proxying (PNG bytes) is shown in the diff summary, and no z/x/y validation or zoom-range guarding is evidenced.",
+      "evidence": [
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
       "id": "REQ-4",
-      "requirement": "Implement an HTTP JSON API in the Motoko backend via http_request so GET to an /api path returns JSON (not HTML) with application/json content-type and CORS headers.",
-      "reason": "The diff for backend/main.mo does not show any http_request implementation or any routing for /api/weather, nor evidence of setting Content-Type/CORS headers.",
+      "requirement": "Minimize redundant RainViewer requests: dedupe concurrent metadata refreshes (single in-flight), and avoid repeated outbound calls for identical tile requests when caching is enabled/feasible.",
+      "reason": "The diff summary does not show any concurrency/in-flight dedup for metadata refreshes, nor any tile request caching/dedup mechanism.",
       "evidence": [
         "backend/main.mo (truncated)"
       ]
     },
     {
       "id": "REQ-5",
-      "requirement": "Serve a stable JSON schema for widgets including keys: city (string), current (object), daily (array), weekly (array), always present even when data missing (nulls/empty arrays).",
-      "reason": "The backend WeatherResponse type shown is {city, country, daily: object, weekly: [..]} and does not include current, does not include daily as an array, and adds an unrequested country field. No evidence shown of always-returned keys with null/empty arrays.",
-      "evidence": [
-        "backend/main.mo (truncated)",
-        "backend/migration.mo"
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "requirement": "Add backend storage and a frontend-accessible update method to publish (upsert) the latest weather payload; public GET endpoint returns the most recently published payload.",
-      "reason": "Frontend calls actor.upsertWeather(...), but the diff does not show the backend implementing an upsert/publish method, any persisted canister state for the latest published payload, or an HTTP GET endpoint that returns that stored payload.",
-      "evidence": [
-        "frontend/src/hooks/usePublishWidgetWeather.ts",
-        "backend/main.mo (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "requirement": "Provide /api/health JSON endpoint returning HTTP 200 with JSON body and CORS headers.",
-      "reason": "No evidence in backend/main.mo diff of an /api/health handler, http_request routing, or JSON response headers.",
+      "requirement": "Keep or provide a backend health check method returning status + version + timestamp (or equivalent).",
+      "reason": "The diff summary does not show any health check method in backend/main.mo; the visible portion only shows weather-related query methods.",
       "evidence": [
         "backend/main.mo (truncated)"
       ]
@@ -41,38 +49,36 @@
   ],
   "hallucinated_features": [
     {
-      "description": "Added a migration module and migration wiring with oracleCache/lastCacheClear state.",
-      "reason": "BuildRequest constraints call for single-actor architecture and do not request a migration system or an oracleCache/lastCacheClear mechanism; this appears unrelated to the requested widget JSON endpoint + publish flow.",
+      "description": "Client-side RainViewer caching strategy and refresh cadence via React Query (staleTime/refetchInterval 5 minutes; gcTime 10 minutes) plus local cache validation logic.",
+      "reason": "The BuildRequest focuses on backend proxy/cache and does not request implementing client-side RainViewer caching/refresh policies. This is additional behavior beyond the backend cache requirements.",
       "evidence": [
-        "backend/migration.mo",
-        "backend/main.mo (truncated)"
+        "frontend/src/hooks/useRainViewer.ts",
+        "frontend/src/hooks/useQueries.ts"
       ]
     },
     {
-      "description": "Introduced/changed backend query methods returning hardcoded weather data (getWeather/getWeeklyForecast/getDailyForecast/getCurrentWeather).",
-      "reason": "BuildRequest focuses on an HTTP JSON endpoint backed by frontend-published payloads (no direct external outcalls). The diff shows query APIs with stubbed static values and no connection to the publish/store-and-serve requirement.",
+      "description": "Frontend utilities for splitting frames by current time and choosing initial playback frame index.",
+      "reason": "Frontend radar/timeline/animation work is explicitly listed as a non-goal for this step; these helpers are frontend radar playback-related logic.",
       "evidence": [
-        "backend/main.mo (truncated)"
+        "frontend/src/lib/rainviewer.ts"
       ]
     },
     {
-      "description": "Backend/Frontend payload schema includes a 'country' field and uses 'daily' as an object rather than the required keys (city, current, daily[], weekly[]).",
-      "reason": "REQ-5 explicitly requires city/current/daily(array)/weekly(array). Adding 'country' and altering daily/current structure is not requested and risks violating the stable schema requirement.",
+      "description": "Added backend migration module with extensive weather-related types plus RainViewer metadata cache map initialization.",
+      "reason": "The BuildRequest is about RainViewer proxy/cache; adding/retaining large unrelated weather schema in a new migration module is not requested in the described scope (though it may be incidental to the project).",
       "evidence": [
-        "backend/main.mo (truncated)",
-        "backend/migration.mo",
-        "frontend/src/lib/widgetWeatherPayload.ts"
+        "backend/migration.mo"
       ]
     }
   ],
-  "confidence": 0.74,
+  "confidence": 0.62,
   "changed_files": [
     "backend/main.mo",
     "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
-    "frontend/src/hooks/usePublishWidgetWeather.ts",
-    "frontend/src/lib/widgetWeatherPayload.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/hooks/useRainViewer.ts",
+    "frontend/src/lib/rainviewer.ts",
     "project_state.json"
   ]
 }

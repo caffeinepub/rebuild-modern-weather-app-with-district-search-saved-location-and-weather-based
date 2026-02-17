@@ -1,33 +1,6 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Publish fetched weather data from React frontend to backend for widget JSON freshness",
-  "requirements": [
-    {
-      "id": "REQ-7",
-      "summary": "Publish the latest successfully fetched weather data for the selected location to the backend so the public URL-based JSON stays fresh for Android widgets.",
-      "acceptanceCriteria": [
-        "When a location is selected and weather data loads successfully, the app calls the backend publish method with a payload derived from the existing useWeather() data shape.",
-        "Publishing failures do not crash the UI; errors are handled gracefully (e.g., logged or shown as non-blocking status).",
-        "No changes are made to files listed as immutable in SYSTEM_CONTEXT."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/lib/widgetWeatherPayload.ts",
-          "operation": "create",
-          "description": "Create a small transformation utility that converts the existing useWeather() result plus the selected SavedLocation into the backend-compatible publish payload and a stable publish key (e.g., derived from city/country). Keep the output deterministic and ensure the produced object is safe to send even when some values are missing (use safe defaults)."
-        },
-        {
-          "path": "frontend/src/hooks/usePublishWidgetWeather.ts",
-          "operation": "create",
-          "description": "Add a dedicated hook that uses the core-infrastructure backend connection pattern (useActor / actor calls) to publish (upsert) the transformed payload to the backend, exposing a non-throwing publish function and lightweight status for optional UI/debug use. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Wire publishing into the main data flow: when activeLocation is set and useWeather() returns a successful new weatherData value, call the publish hook to send the latest payload to the backend. Ensure failures are handled gracefully (no crash; log and/or show a non-blocking status) and avoid repeated publishes for identical data where reasonable."
-        }
-      ]
-    }
-  ]
+  "title": "WeatherVerse — Frontend implementation plan (no changes required for this backend-only request)",
+  "requirements": []
 }

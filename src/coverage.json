@@ -1,54 +1,46 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-16T15:50:26.228Z",
+  "generatedAt": "2026-02-16T23:59:05.162Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 5,
-    "implemented": 1,
+    "implemented": 0,
     "items": [
       {
+        "id": "REQ-1",
+        "summary": "Implement a backend RainViewer integration that fetches the RainViewer public JSON metadata from `https://api.rainviewer.com/public/weather-maps.json`, normalizes it into a stable structure (host, past frames, nowcast frames, combined frames), and serves it to the frontend via a canister method so the client does not call RainViewer directly.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Add a backend cache for the RainViewer JSON metadata with TTL=10 minutes and a lazy-refresh strategy: if cached data is still valid, return it immediately; if TTL has expired, return the last cached value immediately and trigger a single background refresh that updates the cache (avoiding duplicate refreshes).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Implement a backend tile proxy endpoint/method that fetches RainViewer tile PNGs on-demand from RainViewer and returns them to the frontend as bytes, so the browser never calls RainViewer directly. The proxy must support the radar tile pattern used by the client (256x256 tiles; z range 5–9) and should reject/guard invalid z/x/y values.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
         "id": "REQ-4",
-        "summary": "Implement an HTTP JSON API in the Motoko backend so that the deployed domain https://weatherverse-gy1.caffeine.xyz/ can be used as a URL-based JSON endpoint for Android widgets (i.e., a GET request returns JSON, not HTML).",
+        "summary": "Ensure the backend minimizes redundant RainViewer requests: do not re-fetch the same JSON metadata or the same tile repeatedly within the effective cache window, and prevent multiple refreshes for the same cache entry from running concurrently.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
         "id": "REQ-5",
-        "summary": "Define and serve a stable JSON schema for widget consumption that includes fields for current, daily, and weekly forecasts (matching the earlier discussed structure), and ensure the backend always returns these keys even when data is missing (using null/empty arrays rather than omitting keys).",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-6",
-        "summary": "Add backend methods and storage to allow the frontend to publish (upsert) the latest weather payload that the public JSON endpoint will serve, so the API can work without relying on direct external HTTP calls from the canister.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-7",
-        "summary": "Update the React frontend to publish the currently displayed weather data to the backend whenever new weather data is fetched for a selected location, so the backend’s URL-based JSON endpoint stays fresh for Android widgets.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/lib/widgetWeatherPayload.ts",
-          "frontend/src/hooks/usePublishWidgetWeather.ts",
-          "frontend/src/App.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/lib/widgetWeatherPayload.ts",
-          "frontend/src/hooks/usePublishWidgetWeather.ts",
-          "frontend/src/App.tsx"
-        ]
-      },
-      {
-        "id": "REQ-8",
-        "summary": "Provide a simple health/version endpoint under /api (e.g., /api/health) that returns JSON indicating the service is running, for easy widget/network debugging.",
+        "summary": "Keep existing backend health check functionality (or provide an equivalent health check method) so the frontend/app can verify the canister is up while the new RainViewer functionality is added.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
@@ -56,6 +48,7 @@
     ]
   },
   "changedFiles": [
+    "backend/http-outcalls/outcall.mo",
     "backend/main.mo",
     "backend/migration.mo",
     "build-request.json",
@@ -63,14 +56,13 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/config.ts",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/usePublishWidgetWeather.ts",
-    "frontend/src/lib/widgetWeatherPayload.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/hooks/useRainViewer.ts",
+    "frontend/src/lib/rainviewer.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

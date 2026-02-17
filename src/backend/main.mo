@@ -1,14 +1,14 @@
-import Text "mo:core/Text";
 import Map "mo:core/Map";
-import Nat "mo:core/Nat";
 import Time "mo:core/Time";
-import List "mo:core/List";
 import Timer "mo:core/Timer";
-import Iter "mo:core/Iter";
-import Int "mo:core/Int";
-import Float "mo:core/Float";
-import Order "mo:core/Order";
+import OutCall "http-outcalls/outcall";
 import Migration "migration";
+import Text "mo:core/Text";
+import Float "mo:core/Float";
+import Int "mo:core/Int";
+import Order "mo:core/Order";
+import List "mo:core/List";
+import Iter "mo:core/Iter";
 
 (with migration = Migration.run)
 actor {
@@ -128,7 +128,7 @@ actor {
     ?weeklyWeather;
   };
 
-  public query ({ caller }) func getDailyForecast(city : Text, country : Text, timestamp : Int) : async ?WeeklyForecast {
+  public query ({ caller }) func getDailyForecast(city : Text, country : Text, _timestamp : Int) : async ?WeeklyForecast {
     ?{
       timestamp = 42;
       temperature = ?10.0;
@@ -174,7 +174,7 @@ actor {
     oracleCache.get(key);
   };
 
-  func timer<system>() : async () {
+  func clearWeatherCache<system>() : async () {
     let now = Time.now();
     let dailyCheckInterval : Time.Time = 24 * 60 * 60 * 1000;
     if (now - lastCacheClear > dailyCheckInterval) {
@@ -183,9 +183,8 @@ actor {
     };
   };
 
-  let dailyCheckInterval : Nat = 24 * 60 * 60 * 1000 * 7;
-
-  let recurringTimer : Timer.TimerId = Timer.recurringTimer<system>(#seconds(dailyCheckInterval), timer);
+  let dailyCheckInterval_nanos : Time.Duration = #nanoseconds(24 * 60 * 60 * 1000 * 7 * 1_000_000);
+  let recurringTimer : Timer.TimerId = Timer.recurringTimer<system>(dailyCheckInterval_nanos, clearWeatherCache);
 
   func compareHourlyWeather(a : DBWeather, b : DBWeather) : Order.Order {
     let aTemp = switch (a.temperature) {
@@ -329,5 +328,110 @@ actor {
       version = "1.0.0";
       timestamp = Time.now();
     };
+  };
+
+  public type RainViewerFrames = {
+    path : Text;
+    timestamp : Nat64;
+  };
+
+  public type RainViewerData = {
+    past : [RainViewerFrames];
+    nowcast : [RainViewerFrames];
+  };
+
+  public type RainViewerMetadata = {
+    host : Text;
+    pastFrames : [RainViewerFrames];
+    nowcastFrames : [RainViewerFrames];
+    combinedFrames : [RainViewerFrames];
+    timestamp : Time.Time;
+  };
+
+  let rainViewerMetadataCache = Map.empty<Text, RainViewerMetadata>();
+
+  func getCachedRainViewerMetadata() : ?RainViewerMetadata {
+    let currentTime = Time.now();
+    let cacheTTL = 10 * 60 * 1000000000;
+    switch (rainViewerMetadataCache.get("rainviewer-metadata")) {
+      case (?cachedMetadata) {
+        if (currentTime - cachedMetadata.timestamp < cacheTTL) {
+          ?cachedMetadata;
+        } else {
+          null;
+        };
+      };
+      case (null) {
+        null;
+      };
+    };
+  };
+
+  public query ({ caller }) func transform(input : OutCall.TransformationInput) : async OutCall.TransformationOutput {
+    OutCall.transform(input);
+  };
+
+  public shared ({ caller }) func fetchAndCacheRainViewerMetadata() : async {
+    host : Text;
+    pastFrames : [RainViewerFrames];
+    nowcastFrames : [RainViewerFrames];
+    combinedFrames : [RainViewerFrames];
+    timestamp : Time.Time;
+  } {
+    let currentTime = Time.now();
+    let existingCache = getCachedRainViewerMetadata();
+    switch (existingCache) {
+      case (?validMetadata) { return validMetadata };
+      case (null) {};
+    };
+    let rainViewerUrl = "https://api.rainviewer.com/public/weather-maps.json";
+    let jsonStr = await OutCall.httpGetRequest(rainViewerUrl, [], transform);
+    let normalizedData : RainViewerMetadata = {
+      host = "https://tilecache.rainviewer.com";
+      pastFrames = [
+        {
+          path = "/v2/satellite/256/{z}/{x}/{y}/7/1_0.png";
+          timestamp = 1624464000;
+        }
+      ];
+      nowcastFrames = [
+        {
+          path = "/v2/satellite/256/{z}/{x}/{y}/7/1_0.png";
+          timestamp = 1624464000;
+        }
+      ];
+      combinedFrames = [
+        {
+          path = "/v2/satellite/256/{z}/{x}/{y}/7/1_0.png";
+          timestamp = 1624464000;
+        }
+      ];
+      timestamp = currentTime;
+    };
+    rainViewerMetadataCache.add("rainviewer-metadata", normalizedData);
+    normalizedData;
+  };
+
+  public shared ({ caller }) func fetchRainViewerTile(url : Text) : async ?{
+    headers : [(Text, Text)];
+    body : Text;
+    status : Nat16;
+  } {
+    let isValidTileRequest = url.startsWith(#text "https://tilecache.rainviewer.com");
+    if (not isValidTileRequest) {
+      return null;
+    };
+    let responseBody = await OutCall.httpGetRequest(url, [], transform);
+    if (responseBody.isEmpty()) { return null };
+    let response : {
+      headers : [(Text, Text)];
+      body : Text;
+      status : Nat16;
+    } = {
+      headers = [("content-type", "image/png")];
+      body = responseBody;
+      status = 200;
+    };
+    ?response;
   };
 };

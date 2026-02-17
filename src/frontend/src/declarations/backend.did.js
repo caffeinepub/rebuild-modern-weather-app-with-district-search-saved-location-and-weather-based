@@ -23,6 +23,11 @@ export const DBWeather = IDL.Record({
   'precipitationProbability' : IDL.Opt(IDL.Float64),
   'condition' : IDL.Text,
 });
+export const RainViewerFrames = IDL.Record({
+  'path' : IDL.Text,
+  'timestamp' : IDL.Nat64,
+});
+export const Time = IDL.Int;
 export const Precipitation = IDL.Record({
   'probability' : IDL.Float64,
   'amount' : IDL.Float64,
@@ -47,9 +52,53 @@ export const WeatherResponse = IDL.Record({
   }),
   'weekly' : IDL.Vec(WeeklyForecast),
 });
+export const http_header = IDL.Record({
+  'value' : IDL.Text,
+  'name' : IDL.Text,
+});
+export const http_request_result = IDL.Record({
+  'status' : IDL.Nat,
+  'body' : IDL.Vec(IDL.Nat8),
+  'headers' : IDL.Vec(http_header),
+});
+export const TransformationInput = IDL.Record({
+  'context' : IDL.Vec(IDL.Nat8),
+  'response' : http_request_result,
+});
+export const TransformationOutput = IDL.Record({
+  'status' : IDL.Nat,
+  'body' : IDL.Vec(IDL.Nat8),
+  'headers' : IDL.Vec(http_header),
+});
 
 export const idlService = IDL.Service({
   'conditionForWeather' : IDL.Func([DBWeather], [IDL.Text], ['query']),
+  'fetchAndCacheRainViewerMetadata' : IDL.Func(
+      [],
+      [
+        IDL.Record({
+          'combinedFrames' : IDL.Vec(RainViewerFrames),
+          'nowcastFrames' : IDL.Vec(RainViewerFrames),
+          'host' : IDL.Text,
+          'pastFrames' : IDL.Vec(RainViewerFrames),
+          'timestamp' : Time,
+        }),
+      ],
+      [],
+    ),
+  'fetchRainViewerTile' : IDL.Func(
+      [IDL.Text],
+      [
+        IDL.Opt(
+          IDL.Record({
+            'status' : IDL.Nat16,
+            'body' : IDL.Text,
+            'headers' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
+          })
+        ),
+      ],
+      [],
+    ),
   'getCachedWeather' : IDL.Func(
       [IDL.Text],
       [IDL.Opt(WeatherResponse)],
@@ -119,6 +168,11 @@ export const idlService = IDL.Service({
       [IDL.Opt(IDL.Vec(WeeklyForecast))],
       ['query'],
     ),
+  'transform' : IDL.Func(
+      [TransformationInput],
+      [TransformationOutput],
+      ['query'],
+    ),
   'upsertWeather' : IDL.Func([IDL.Text, WeatherResponse], [IDL.Bool], []),
 });
 
@@ -140,6 +194,11 @@ export const idlFactory = ({ IDL }) => {
     'precipitationProbability' : IDL.Opt(IDL.Float64),
     'condition' : IDL.Text,
   });
+  const RainViewerFrames = IDL.Record({
+    'path' : IDL.Text,
+    'timestamp' : IDL.Nat64,
+  });
+  const Time = IDL.Int;
   const Precipitation = IDL.Record({
     'probability' : IDL.Float64,
     'amount' : IDL.Float64,
@@ -164,9 +223,50 @@ export const idlFactory = ({ IDL }) => {
     }),
     'weekly' : IDL.Vec(WeeklyForecast),
   });
+  const http_header = IDL.Record({ 'value' : IDL.Text, 'name' : IDL.Text });
+  const http_request_result = IDL.Record({
+    'status' : IDL.Nat,
+    'body' : IDL.Vec(IDL.Nat8),
+    'headers' : IDL.Vec(http_header),
+  });
+  const TransformationInput = IDL.Record({
+    'context' : IDL.Vec(IDL.Nat8),
+    'response' : http_request_result,
+  });
+  const TransformationOutput = IDL.Record({
+    'status' : IDL.Nat,
+    'body' : IDL.Vec(IDL.Nat8),
+    'headers' : IDL.Vec(http_header),
+  });
   
   return IDL.Service({
     'conditionForWeather' : IDL.Func([DBWeather], [IDL.Text], ['query']),
+    'fetchAndCacheRainViewerMetadata' : IDL.Func(
+        [],
+        [
+          IDL.Record({
+            'combinedFrames' : IDL.Vec(RainViewerFrames),
+            'nowcastFrames' : IDL.Vec(RainViewerFrames),
+            'host' : IDL.Text,
+            'pastFrames' : IDL.Vec(RainViewerFrames),
+            'timestamp' : Time,
+          }),
+        ],
+        [],
+      ),
+    'fetchRainViewerTile' : IDL.Func(
+        [IDL.Text],
+        [
+          IDL.Opt(
+            IDL.Record({
+              'status' : IDL.Nat16,
+              'body' : IDL.Text,
+              'headers' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
+            })
+          ),
+        ],
+        [],
+      ),
     'getCachedWeather' : IDL.Func(
         [IDL.Text],
         [IDL.Opt(WeatherResponse)],
@@ -234,6 +334,11 @@ export const idlFactory = ({ IDL }) => {
     'getWeeklyForecast' : IDL.Func(
         [IDL.Text, IDL.Text],
         [IDL.Opt(IDL.Vec(WeeklyForecast))],
+        ['query'],
+      ),
+    'transform' : IDL.Func(
+        [TransformationInput],
+        [TransformationOutput],
         ['query'],
       ),
     'upsertWeather' : IDL.Func([IDL.Text, WeatherResponse], [IDL.Bool], []),

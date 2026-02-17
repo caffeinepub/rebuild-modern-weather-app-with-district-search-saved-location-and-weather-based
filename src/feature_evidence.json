@@ -1,25 +1,4 @@
 {
   "kind": "feature_evidence_report",
-  "features": [
-    {
-      "featureId": "feature-update-the-react-frontend-to-publish-the-currently-displayed-weather-data-to-the-backend-whenever-new-weather-data-is-fetched-for-a-selected-location-so-the-backend-s-url-based-json-endpoint-stays-fresh-for-android-widgets",
-      "featureTitle": "Update the React frontend to publish the currently displayed weather data to the backend whenever new weather data is fetched for a selected location, so the backend’s URL-based JSON endpoint stays fresh for Android widgets.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/hooks/usePublishWidgetWeather.ts",
-        "frontend/src/lib/widgetWeatherPayload.ts"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-7"
-      ],
-      "confidence": "high"
-    }
-  ]
+  "features": []
 }

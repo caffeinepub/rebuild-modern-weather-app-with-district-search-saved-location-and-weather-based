@@ -1,3 +1,5 @@
+import type { backendInterface, RainViewerFrames } from '../backend';
+
 export interface RadarFrame {
   time: number;
   path: string;
@@ -10,42 +12,56 @@ export interface RainViewerData {
   nowcastFrames: RadarFrame[]; // Separate nowcast (future) frames
 }
 
-const API_URL = 'https://api.rainviewer.com/public/weather-maps.json';
-
-export async function fetchRainViewerData(): Promise<RainViewerData> {
-  const response = await fetch(API_URL);
-  if (!response.ok) {
-    throw new Error('Failed to fetch RainViewer data');
-  }
-
-  const data = await response.json();
-  
-  // Preserve separate past and nowcast frames
-  const pastFrames: RadarFrame[] = data.radar?.past || [];
-  const nowcastFrames: RadarFrame[] = data.radar?.nowcast || [];
-  
+/**
+ * Converts backend RainViewerFrames to frontend RadarFrame format
+ */
+function convertBackendFrame(frame: RainViewerFrames): RadarFrame {
   return {
-    host: data.host || '',
-    frames: [...pastFrames, ...nowcastFrames], // Combined for compatibility
-    pastFrames,
-    nowcastFrames,
+    time: Number(frame.timestamp),
+    path: frame.path,
   };
 }
 
 /**
- * Helper to choose preferred playback frames.
- * Prefers nowcast (future) frames when available; falls back to past frames.
+ * Splits a combined frames array into past and nowcast based on current time
  */
-export function getPreferredPlaybackFrames(radarData: RainViewerData | null | undefined): RadarFrame[] {
-  if (!radarData) return [];
+export function splitFramesByTime(frames: RadarFrame[]): {
+  pastFrames: RadarFrame[];
+  nowcastFrames: RadarFrame[];
+} {
+  const now = Date.now() / 1000;
   
-  // Prefer nowcast frames if available
-  if (radarData.nowcastFrames.length > 0) {
-    return radarData.nowcastFrames;
+  const pastFrames: RadarFrame[] = [];
+  const nowcastFrames: RadarFrame[] = [];
+  
+  for (const frame of frames) {
+    if (frame.time < now) {
+      pastFrames.push(frame);
+    } else {
+      nowcastFrames.push(frame);
+    }
   }
   
-  // Fallback to past frames
-  return radarData.pastFrames;
+  return { pastFrames, nowcastFrames };
+}
+
+/**
+ * Fetches RainViewer metadata from the backend proxy
+ */
+export async function fetchRainViewerData(actor: backendInterface): Promise<RainViewerData> {
+  const backendData = await actor.fetchAndCacheRainViewerMetadata();
+  
+  // Convert backend format to frontend format
+  const pastFrames = backendData.pastFrames.map(convertBackendFrame);
+  const nowcastFrames = backendData.nowcastFrames.map(convertBackendFrame);
+  const combinedFrames = backendData.combinedFrames.map(convertBackendFrame);
+  
+  return {
+    host: backendData.host,
+    frames: combinedFrames.length > 0 ? combinedFrames : [...pastFrames, ...nowcastFrames],
+    pastFrames,
+    nowcastFrames,
+  };
 }
 
 /**

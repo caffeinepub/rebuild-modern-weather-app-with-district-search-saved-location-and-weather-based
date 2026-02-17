@@ -7,9 +7,9 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
-export interface Precipitation {
-    probability: number;
-    amount: number;
+export interface RainViewerFrames {
+    path: string;
+    timestamp: bigint;
 }
 export interface WeatherResponse {
     country: string;
@@ -22,6 +22,20 @@ export interface WeatherResponse {
         condition: string;
     };
     weekly: Array<WeeklyForecast>;
+}
+export interface TransformationOutput {
+    status: bigint;
+    body: Uint8Array;
+    headers: Array<http_header>;
+}
+export type Time = bigint;
+export interface Precipitation {
+    probability: number;
+    amount: number;
+}
+export interface TransformationInput {
+    context: Uint8Array;
+    response: http_request_result;
 }
 export interface WeeklyForecast {
     precipitation: Precipitation;
@@ -46,11 +60,32 @@ export interface DBWeather {
     precipitationProbability?: number;
     condition: string;
 }
+export interface http_header {
+    value: string;
+    name: string;
+}
+export interface http_request_result {
+    status: bigint;
+    body: Uint8Array;
+    headers: Array<http_header>;
+}
 export interface backendInterface {
     conditionForWeather(weather: DBWeather): Promise<string>;
+    fetchAndCacheRainViewerMetadata(): Promise<{
+        combinedFrames: Array<RainViewerFrames>;
+        nowcastFrames: Array<RainViewerFrames>;
+        host: string;
+        pastFrames: Array<RainViewerFrames>;
+        timestamp: Time;
+    }>;
+    fetchRainViewerTile(url: string): Promise<{
+        status: number;
+        body: string;
+        headers: Array<[string, string]>;
+    } | null>;
     getCachedWeather(key: string): Promise<WeatherResponse | null>;
     getCurrentWeather(city: string, country: string): Promise<WeatherResponse | null>;
-    getDailyForecast(city: string, country: string, timestamp: bigint): Promise<WeeklyForecast | null>;
+    getDailyForecast(city: string, country: string, _timestamp: bigint): Promise<WeeklyForecast | null>;
     getHealthCheck(): Promise<{
         status: string;
         version: string;
@@ -83,5 +118,6 @@ export interface backendInterface {
         }>;
     }>;
     getWeeklyForecast(city: string, country: string): Promise<Array<WeeklyForecast> | null>;
+    transform(input: TransformationInput): Promise<TransformationOutput>;
     upsertWeather(key: string, weatherData: WeatherResponse): Promise<boolean>;
 }
