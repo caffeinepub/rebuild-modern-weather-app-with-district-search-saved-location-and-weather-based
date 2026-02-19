@@ -1,40 +1,77 @@
 {
   "kind": "build_request",
-  "title": "Fix I18n Provider Error",
+  "title": "Fix i18n Provider Error",
+  "projectName": "WeatherVerse",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Wrap the main App component with I18nProvider in frontend/src/main.tsx to resolve the 'useI18n must be used within an I18nProvider' error",
+      "text": "Wrap the App component with I18nProvider in frontend/src/main.tsx to resolve the 'useI18n must be used within an I18nProvider' error",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1",
-          "msg-2",
-          "msg-3"
+          "msg-3",
+          "msg-5"
         ],
         "quotes": [
-          "Error: useI18n must be used within an I18nProvider",
-          "I18n hatasını düzeltmeye hazırım"
+          "useI18n must be used within an I18nProvider",
+          "çok dilde kalsın",
+          "hatayı düzelt uygulama sorunsuz çalışsın"
         ]
       },
       "acceptanceCriteria": [
-        "The I18nProvider component wraps the App component in main.tsx",
-        "The application loads without the I18n provider error",
-        "All existing i18n functionality continues to work correctly"
+        "I18nProvider wraps the App component in the component tree",
+        "Application loads without i18n provider errors",
+        "Multi-language support (Turkish, English) continues to function correctly"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Ensure I18nProvider is imported from frontend/src/i18n/I18nProvider.tsx in main.tsx",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1",
+          "msg-3"
+        ]
+      },
+      "acceptanceCriteria": [
+        "I18nProvider import statement is present and correct",
+        "No import errors occur during build or runtime"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Verify that the component hierarchy in main.tsx correctly places I18nProvider between QueryClientProvider and App component",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1",
+          "msg-3"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Provider hierarchy follows the pattern: QueryClientProvider > InternetIdentityProvider > I18nProvider > App",
+        "All child components can access i18n context without errors"
       ]
     }
   ],
   "constraints": [
-    "Do not modify the existing I18nProvider implementation in frontend/src/i18n/I18nProvider.tsx",
-    "Do not modify the existing useI18n hook in frontend/src/i18n/useI18n.ts",
-    "Preserve all existing authentication and query provider wrappers"
+    "Do not modify frontend/src/hooks/useInternetIdentity.ts",
+    "Do not modify frontend/src/hooks/useInternetIdentity.tsx",
+    "Do not modify frontend/src/hooks/useActor.ts",
+    "Do not modify frontend/src/main.tsx structure beyond adding I18nProvider wrapper",
+    "Do not modify frontend/src/components/ui directory",
+    "Preserve all existing multi-language functionality",
+    "Maintain the existing QueryClientProvider and InternetIdentityProvider wrappers"
   ],
   "nonGoals": [
-    "Adding new translation strings",
-    "Modifying translation logic",
-    "Changing language selection functionality",
-    "Adding new i18n features"
+    "Adding new language translations",
+    "Modifying translation keys or content",
+    "Changing the i18n implementation logic",
+    "Refactoring unrelated components",
+    "Adding new features beyond fixing the provider error"
   ],
   "imageRequirements": {
     "required": [],

@@ -1,10 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the I18n provider error by properly wrapping the App component with I18nProvider in main.tsx.
+**Goal:** Fix the i18n provider error by wrapping the App component with I18nProvider in main.tsx.
 
 **Planned changes:**
-- Wrap the App component with I18nProvider in frontend/src/main.tsx
-- Ensure the I18nProvider is placed correctly within the existing provider hierarchy
+- Import I18nProvider from frontend/src/i18n/I18nProvider.tsx in main.tsx
+- Wrap the App component with I18nProvider in the component hierarchy
+- Ensure correct provider hierarchy: QueryClientProvider > InternetIdentityProvider > I18nProvider > App
 
-**User-visible outcome:** The application loads without the "useI18n must be used within an I18nProvider" error, and all i18n functionality works correctly.
+**User-visible outcome:** The application loads without errors and multi-language support (Turkish, English) continues to work correctly.

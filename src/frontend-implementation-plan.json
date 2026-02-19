@@ -1,21 +1,51 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix I18n Provider Error",
+  "title": "Fix i18n Provider Error",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Wrap the main App component with I18nProvider in frontend/src/main.tsx to resolve the 'useI18n must be used within an I18nProvider' error",
+      "summary": "Wrap the App component with I18nProvider in frontend/src/main.tsx to resolve the 'useI18n must be used within an I18nProvider' error",
       "acceptanceCriteria": [
-        "The I18nProvider component wraps the App component in main.tsx",
-        "The application loads without the I18n provider error",
-        "All existing i18n functionality continues to work correctly"
+        "I18nProvider wraps the App component in the component tree",
+        "Application loads without i18n provider errors",
+        "Multi-language support (Turkish, English) continues to function correctly"
       ],
       "file_operations": [
         {
           "path": "frontend/src/main.tsx",
           "operation": "modify",
-          "description": "Import I18nProvider from frontend/src/i18n/I18nProvider.tsx and wrap the App component with I18nProvider, ensuring it is placed inside the QueryClientProvider and InternetIdentityProvider but outside the App component. Preserve all existing authentication and query provider wrappers without modification."
+          "description": "Add I18nProvider as a wrapper between InternetIdentityProvider and App component. Import I18nProvider from frontend/src/i18n/I18nProvider.tsx. Ensure the provider hierarchy follows: QueryClientProvider > InternetIdentityProvider > I18nProvider > App. This provides the i18n context to all components using the useI18n hook, resolving the 'useI18n must be used within an I18nProvider' error while preserving existing QueryClientProvider and InternetIdentityProvider wrappers."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Ensure I18nProvider is imported from frontend/src/i18n/I18nProvider.tsx in main.tsx",
+      "acceptanceCriteria": [
+        "I18nProvider import statement is present and correct",
+        "No import errors occur during build or runtime"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/main.tsx",
+          "operation": "modify",
+          "description": "Add the import statement for I18nProvider at the top of the file alongside other provider imports. Import from the correct path: frontend/src/i18n/I18nProvider.tsx. Ensure the import uses the correct named export syntax."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Verify that the component hierarchy in main.tsx correctly places I18nProvider between QueryClientProvider and App component",
+      "acceptanceCriteria": [
+        "Provider hierarchy follows the pattern: QueryClientProvider > InternetIdentityProvider > I18nProvider > App",
+        "All child components can access i18n context without errors"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/main.tsx",
+          "operation": "modify",
+          "description": "Restructure the component tree to nest I18nProvider between InternetIdentityProvider and App. The final hierarchy must be: QueryClientProvider wraps InternetIdentityProvider, which wraps I18nProvider, which wraps App. This ensures all child components have access to both authentication and internationalization contexts in the correct order."
         }
       ]
     }

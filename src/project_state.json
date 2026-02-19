@@ -1,24 +1,43 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Web application with I18n (internationalization) support",
+  "summary": "Multi-language application with i18n support (Turkish, English, etc.)",
   "architectural_notes": [
-    "I18nProvider wrapper required at app root for translation support"
+    "Multi-language support using i18n (Turkish, English, etc.)",
+    "I18nProvider must wrap the App component correctly"
   ],
-  "known_issues": [],
+  "known_issues": [
+    "useI18n must be used within an I18nProvider error occurring after recent updates"
+  ],
   "isFixRequest": true,
   "existing_features": [],
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Wrap the main App component with I18nProvider in frontend/src/main.tsx to resolve the 'useI18n must be used within an I18nProvider' error",
+      "summary": "Wrap the App component with I18nProvider in frontend/src/main.tsx to resolve the 'useI18n must be used within an I18nProvider' error",
       "reqIds": [
         "REQ-1"
       ],
       "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Ensure I18nProvider is imported from frontend/src/i18n/I18nProvider.tsx in main.tsx",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Verify that the component hierarchy in main.tsx correctly places I18nProvider between QueryClientProvider and App component",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
     }
   ],
-  "projectName": "Fix I18n Provider Error",
+  "projectName": "WeatherVerse",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
