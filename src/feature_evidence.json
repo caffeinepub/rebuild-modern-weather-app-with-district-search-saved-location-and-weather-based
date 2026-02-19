@@ -1,4 +1,81 @@
 {
   "kind": "feature_evidence_report",
-  "features": []
+  "features": [
+    {
+      "featureId": "feature-add-radar-tab-to-the-bottom-navigation-between-driver-tab-and-beach-tab-using-the-existing-bottomnav-component-structure",
+      "featureTitle": "Add Radar tab to the bottom navigation between Driver tab and Beach tab, using the existing BottomNav component structure",
+      "files": [
+        "frontend/src/components/BottomNav.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-create-radarscreen-component-that-uses-the-location-from-the-main-weather-location-state-the-location-entered-in-the-hava-durumu-weather-section-to-display-weather-radar-visualization",
+      "featureTitle": "Create RadarScreen component that uses the location from the main weather location state (the location entered in the Hava Durumu/Weather section) to display weather radar visualization",
+      "files": [
+        "frontend/src/components/RadarScreen.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-integrate-existing-radarmap-component-into-radarscreen-to-display-cloud-and-precipitation-layers-on-the-map-using-the-weather-api-data",
+      "featureTitle": "Integrate existing RadarMap component into RadarScreen to display cloud and precipitation layers on the map using the weather API data",
+      "files": [
+        "frontend/src/components/RadarScreen.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-wire-up-the-radar-tab-in-app-tsx-to-conditionally-render-radarscreen-when-the-radar-tab-is-active-following-the-same-pattern-as-other-tabs-weather-farmer-driver-beach",
+      "featureTitle": "Wire up the Radar tab in App.tsx to conditionally render RadarScreen when the radar tab is active, following the same pattern as other tabs (weather, farmer, driver, beach)",
+      "files": [
+        "frontend/src/App.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    }
+  ]
 }

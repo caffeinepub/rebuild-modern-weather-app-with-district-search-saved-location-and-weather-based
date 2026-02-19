@@ -1,77 +1,116 @@
 {
   "kind": "build_request",
-  "title": "Fix i18n Provider Error",
+  "title": "Restore Radar tab between Driver and Beach tabs",
   "projectName": "WeatherVerse",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Wrap the App component with I18nProvider in frontend/src/main.tsx to resolve the 'useI18n must be used within an I18nProvider' error",
+      "text": "Add Radar tab to the bottom navigation between Driver tab and Beach tab, using the existing BottomNav component structure",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1",
-          "msg-3",
-          "msg-5"
+          "msg-13",
+          "msg-15"
         ],
         "quotes": [
-          "useI18n must be used within an I18nProvider",
-          "çok dilde kalsın",
-          "hatayı düzelt uygulama sorunsuz çalışsın"
+          "radar sekmesi nereye kayboldu?",
+          "sürücü ile play deniz sekmesi arasındaydi"
         ]
       },
       "acceptanceCriteria": [
-        "I18nProvider wraps the App component in the component tree",
-        "Application loads without i18n provider errors",
-        "Multi-language support (Turkish, English) continues to function correctly"
+        "Radar tab appears in bottom navigation between Driver and Beach tabs",
+        "Tab uses appropriate radar/weather icon",
+        "Tab label is internationalized in Turkish and English",
+        "Active state styling matches other tabs in BottomNav"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Ensure I18nProvider is imported from frontend/src/i18n/I18nProvider.tsx in main.tsx",
+      "text": "Create RadarScreen component that uses the location from the main weather location state (the location entered in the Hava Durumu/Weather section) to display weather radar visualization",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1",
-          "msg-3"
+          "msg-19"
+        ],
+        "quotes": [
+          "konumu zaten hava durumu kısmından giriyordum o kısımdaki konum bilgisini kullanıyordu"
         ]
       },
       "acceptanceCriteria": [
-        "I18nProvider import statement is present and correct",
-        "No import errors occur during build or runtime"
+        "RadarScreen component receives location from App.tsx location state",
+        "Component only renders when a location is selected",
+        "Shows appropriate empty state when no location is available"
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Verify that the component hierarchy in main.tsx correctly places I18nProvider between QueryClientProvider and App component",
+      "text": "Integrate existing RadarMap component into RadarScreen to display cloud and precipitation layers on the map using the weather API data",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1",
-          "msg-3"
+          "msg-19",
+          "msg-21"
+        ],
+        "quotes": [
+          "harita üüzerinde bulut ve yağış durumunu gösteriyorduü",
+          "Harita üzerinde bulut ve yağış durumu görselleştirilecek"
         ]
       },
       "acceptanceCriteria": [
-        "Provider hierarchy follows the pattern: QueryClientProvider > InternetIdentityProvider > I18nProvider > App",
-        "All child components can access i18n context without errors"
+        "RadarMap component renders with cloud and precipitation overlays",
+        "Map centers on the selected location coordinates",
+        "Weather data from API is fetched and displayed on map layers",
+        "Map shows current cloud cover and precipitation intensity"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Wire up the Radar tab in App.tsx to conditionally render RadarScreen when the radar tab is active, following the same pattern as other tabs (weather, farmer, driver, beach)",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-21",
+          "msg-23"
+        ]
+      },
+      "acceptanceCriteria": [
+        "App.tsx activeTab state includes 'radar' option",
+        "RadarScreen renders when activeTab === 'radar'",
+        "Tab switching works smoothly between all tabs including radar",
+        "Location prop is passed from App.tsx to RadarScreen"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Add internationalization strings for the Radar tab label in both Turkish ('Radar') and English ('Radar') to the translations dictionary",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-13"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Translation keys added to translations.ts",
+        "Turkish translation displays correctly",
+        "English translation displays correctly",
+        "Tab label updates when language is changed"
       ]
     }
   ],
   "constraints": [
-    "Do not modify frontend/src/hooks/useInternetIdentity.ts",
-    "Do not modify frontend/src/hooks/useInternetIdentity.tsx",
-    "Do not modify frontend/src/hooks/useActor.ts",
-    "Do not modify frontend/src/main.tsx structure beyond adding I18nProvider wrapper",
-    "Do not modify frontend/src/components/ui directory",
-    "Preserve all existing multi-language functionality",
-    "Maintain the existing QueryClientProvider and InternetIdentityProvider wrappers"
+    "Do not modify the backend - all weather data comes from client-side API calls",
+    "Use existing RadarMap component and radar-related hooks (useRainViewer, useRadarOverlayData)",
+    "Follow the same component structure and patterns as other tab screens (WeatherPanel, FarmerGardenWeatherPanel, DriverWeatherPanel, BeachMarineScreen)",
+    "Do not implement real-time GPS or live location tracking - use the manually entered location from weather section",
+    "Maintain the existing BottomNav component structure with glass morphism design"
   ],
   "nonGoals": [
-    "Adding new language translations",
-    "Modifying translation keys or content",
-    "Changing the i18n implementation logic",
-    "Refactoring unrelated components",
-    "Adding new features beyond fixing the provider error"
+    "Adding new weather data sources or APIs",
+    "Implementing GPS or automatic location detection",
+    "Creating new backend endpoints for radar data",
+    "Modifying existing radar components beyond integration",
+    "Adding radar-specific settings or configuration UI beyond what already exists"
   ],
   "imageRequirements": {
     "required": [],

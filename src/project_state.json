@@ -1,38 +1,60 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Multi-language application with i18n support (Turkish, English, etc.)",
+  "summary": "Weather application with Radar feature showing cloud and precipitation on map using weather API data",
   "architectural_notes": [
-    "Multi-language support using i18n (Turkish, English, etc.)",
-    "I18nProvider must wrap the App component correctly"
+    "Radar tab uses location data from Weather section (manual input)",
+    "Weather API integration for cloud and precipitation data",
+    "Map visualization layer for weather conditions"
   ],
-  "known_issues": [
-    "useI18n must be used within an I18nProvider error occurring after recent updates"
-  ],
+  "known_issues": [],
   "isFixRequest": true,
-  "existing_features": [],
-  "new_feature_requests": [
+  "existing_features": [
     {
-      "id": "AR-1",
-      "summary": "Wrap the App component with I18nProvider in frontend/src/main.tsx to resolve the 'useI18n must be used within an I18nProvider' error",
+      "id": "feature-add-radar-tab-to-the-bottom-navigation-between-driver-tab-and-beach-tab-using-the-existing-bottomnav-component-structure",
+      "title": "Add Radar tab to the bottom navigation between Driver tab and Beach tab, using the existing BottomNav component structure",
       "reqIds": [
         "REQ-1"
       ],
-      "status": "pending"
+      "version": 1
     },
     {
-      "id": "AR-2",
-      "summary": "Ensure I18nProvider is imported from frontend/src/i18n/I18nProvider.tsx in main.tsx",
+      "id": "feature-create-radarscreen-component-that-uses-the-location-from-the-main-weather-location-state-the-location-entered-in-the-hava-durumu-weather-section-to-display-weather-radar-visualization",
+      "title": "Create RadarScreen component that uses the location from the main weather location state (the location entered in the Hava Durumu/Weather section) to display weather radar visualization",
       "reqIds": [
         "REQ-2"
       ],
-      "status": "pending"
+      "version": 1
     },
     {
-      "id": "AR-3",
-      "summary": "Verify that the component hierarchy in main.tsx correctly places I18nProvider between QueryClientProvider and App component",
+      "id": "feature-integrate-existing-radarmap-component-into-radarscreen-to-display-cloud-and-precipitation-layers-on-the-map-using-the-weather-api-data",
+      "title": "Integrate existing RadarMap component into RadarScreen to display cloud and precipitation layers on the map using the weather API data",
       "reqIds": [
         "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-wire-up-the-radar-tab-in-app-tsx-to-conditionally-render-radarscreen-when-the-radar-tab-is-active-following-the-same-pattern-as-other-tabs-weather-farmer-driver-beach",
+      "title": "Wire up the Radar tab in App.tsx to conditionally render RadarScreen when the radar tab is active, following the same pattern as other tabs (weather, farmer, driver, beach)",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Restore Radar tab between Driver and Sea tabs with weather map visualization",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Add internationalization strings for the Radar tab label in both Turkish ('Radar') and English ('Radar') to the translations dictionary",
+      "reqIds": [
+        "REQ-5"
       ],
       "status": "pending"
     }

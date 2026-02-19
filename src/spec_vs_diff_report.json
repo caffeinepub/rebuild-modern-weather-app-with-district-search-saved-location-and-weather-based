@@ -1,48 +1,63 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-19T03:11:24.245Z",
-  "summary": "The diff summary does not show any modifications to frontend/src/main.tsx, which is the primary file required to implement all three requirements (REQ-1, REQ-2, REQ-3). The changes appear to be in other frontend files unrelated to fixing the i18n provider error.",
-  "missing_requirements": [
-    {
-      "id": "REQ-1",
-      "requirement": "Wrap the App component with I18nProvider in frontend/src/main.tsx to resolve the 'useI18n must be used within an I18nProvider' error",
-      "reason": "No changes to frontend/src/main.tsx are present in the diff summary. The file is not listed in either ADDED or MODIFIED sections.",
-      "evidence": []
-    },
-    {
-      "id": "REQ-2",
-      "requirement": "Ensure I18nProvider is imported from frontend/src/i18n/I18nProvider.tsx in main.tsx",
-      "reason": "No changes to frontend/src/main.tsx are present in the diff summary, so the import statement cannot have been added.",
-      "evidence": []
-    },
-    {
-      "id": "REQ-3",
-      "requirement": "Verify that the component hierarchy in main.tsx correctly places I18nProvider between QueryClientProvider and App component",
-      "reason": "No changes to frontend/src/main.tsx are present in the diff summary, so the provider hierarchy cannot have been established.",
-      "evidence": []
-    }
-  ],
+  "generatedAt": "2026-02-19T15:20:56.293Z",
+  "summary": "The implementation successfully addresses all five requirements. The Radar tab has been added to BottomNav between Driver and Beach tabs with proper internationalization, RadarScreen component has been created with location prop handling and empty state support, RadarMap integration is evident with playback controls and layer toggles, App.tsx has been wired to conditionally render RadarScreen when activeTab === 'radar', and the code shows proper tab switching logic. Translation strings are not visible in the truncated diff but the component usage in BottomNav shows t('nav.radar') which indicates the translation key exists.",
+  "missing_requirements": [],
   "hallucinated_features": [
     {
-      "description": "Modifications to frontend/src/App.tsx, ThemeProvider.tsx, BackgroundIllustration.tsx, LocationSearch.tsx, WeatherPanel.tsx, and various hooks and utilities",
-      "reason": "The BuildRequest constraints explicitly state not to modify unrelated components beyond the i18n provider fix. The changes to App.tsx, various components, hooks (useWeather.ts, useGeocodingSearch.ts, etc.), and utility files (weatherTheme.ts, weatherContrast.ts, openMeteo.ts) appear unrelated to fixing the i18n provider error in main.tsx.",
+      "description": "RadarFrameModeToggle component with 'forecast' and 'past' mode switching functionality",
+      "reason": "BuildRequest does not request forecast vs. past mode toggle. The requirement is to display cloud and precipitation layers, not to implement temporal playback modes.",
       "evidence": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/ThemeProvider.tsx",
-        "frontend/src/components/BackgroundIllustration.tsx",
-        "frontend/src/components/LocationSearch.tsx",
-        "frontend/src/components/WeatherPanel.tsx",
-        "frontend/src/hooks/useWeather.ts",
-        "frontend/src/hooks/useGeocodingSearch.ts",
-        "frontend/src/lib/weatherTheme.ts",
-        "frontend/src/lib/openMeteo.ts"
+        "frontend/src/components/radar/RadarFrameModeToggle.tsx",
+        "frontend/src/components/RadarScreen.tsx"
+      ]
+    },
+    {
+      "description": "RadarPlaybackControls with play/pause/skip functionality and timeline slider",
+      "reason": "BuildRequest does not request animation or playback controls for the radar visualization. The requirement is to display current cloud cover and precipitation, not animated sequences.",
+      "evidence": [
+        "frontend/src/components/radar/RadarPlaybackControls.tsx",
+        "frontend/src/components/RadarScreen.tsx"
+      ]
+    },
+    {
+      "description": "RadarAlertControls and RadarAlertBanner components for alert system",
+      "reason": "BuildRequest explicitly states in non-goals to not add radar-specific settings or configuration UI beyond what already exists. Alert controls are new UI elements not requested.",
+      "evidence": [
+        "frontend/src/components/RadarScreen.tsx"
+      ]
+    },
+    {
+      "description": "RadarInfoPanel component",
+      "reason": "BuildRequest does not request any additional info panels for the radar screen. The requirement is focused on displaying the map visualization.",
+      "evidence": [
+        "frontend/src/components/RadarScreen.tsx"
+      ]
+    },
+    {
+      "description": "RadarOverlayStatus component for displaying overlay loading/error states",
+      "reason": "BuildRequest does not request status indicators beyond the basic empty state when no location is available.",
+      "evidence": [
+        "frontend/src/components/RadarScreen.tsx"
+      ]
+    },
+    {
+      "description": "RadarForecastLabel component",
+      "reason": "BuildRequest does not request forecast-specific labeling or UI elements.",
+      "evidence": [
+        "frontend/src/components/RadarScreen.tsx"
       ]
     }
   ],
-  "confidence": 0.95,
+  "confidence": 0.85,
   "changed_files": [
     "frontend-file-summaries.txt",
+    "frontend/src/App.tsx",
+    "frontend/src/components/BottomNav.tsx",
+    "frontend/src/components/RadarScreen.tsx",
+    "frontend/src/components/radar/RadarFrameModeToggle.tsx",
+    "frontend/src/components/radar/RadarPlaybackControls.tsx",
     "project_state.json"
   ]
 }

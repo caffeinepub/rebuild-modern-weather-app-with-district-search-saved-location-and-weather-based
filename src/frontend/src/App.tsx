@@ -4,12 +4,14 @@ import { LocationSearch } from './components/LocationSearch';
 import { WeatherPanel } from './components/WeatherPanel';
 import { FarmerGardenWeatherPanel } from './components/FarmerGardenWeatherPanel';
 import { DriverWeatherPanel } from './components/DriverWeatherPanel';
+import { RadarScreen } from './components/RadarScreen';
 import { BeachMarineScreen } from './components/BeachMarineScreen';
 import { BottomNav } from './components/BottomNav';
 import { BackgroundIllustration } from './components/BackgroundIllustration';
 import { InitialRenderErrorBoundary } from './components/InitialRenderErrorBoundary';
 import { ImminentWeatherAlertBanner } from './components/ImminentWeatherAlertBanner';
 import { LanguageDropdownOverlay } from './components/LanguageDropdownOverlay';
+import { I18nProvider } from './i18n/I18nProvider';
 import { usePersistedLocation } from './hooks/usePersistedLocation';
 import { useWeather } from './hooks/useWeather';
 import { useImminentWeatherAlerts } from './hooks/useImminentWeatherAlerts';
@@ -18,13 +20,12 @@ import { getWeatherTheme } from './lib/weatherTheme';
 import { generatePublishKey, transformToWidgetPayload } from './lib/widgetWeatherPayload';
 import { useI18n } from './i18n/useI18n';
 import type { SavedLocation } from './hooks/usePersistedLocation';
-import { Cloud, Heart } from 'lucide-react';
-import { SiFacebook, SiX, SiInstagram } from 'react-icons/si';
+import { Cloud } from 'lucide-react';
 
 function AppContent() {
   const { location, setLocation, clearLocation } = usePersistedLocation();
   const [activeLocation, setActiveLocation] = useState<SavedLocation | null>(null);
-  const [activeTab, setActiveTab] = useState<'weather' | 'farmer' | 'driver' | 'beach'>('weather');
+  const [activeTab, setActiveTab] = useState<'weather' | 'farmer' | 'driver' | 'radar' | 'beach'>('weather');
   const { locale, t } = useI18n();
   const lastPublishedDataRef = useRef<string | null>(null);
 
@@ -142,6 +143,13 @@ function AppContent() {
                 />
               )}
 
+              {activeTab === 'radar' && (
+                <RadarScreen
+                  location={activeLocation}
+                  weatherData={weatherData || null}
+                />
+              )}
+
               {activeTab === 'beach' && (
                 <BeachMarineScreen
                   location={activeLocation}
@@ -153,70 +161,16 @@ function AppContent() {
             </div>
           </main>
 
-          <footer className="px-4 py-4 sm:px-6 sm:py-6 mt-auto pb-20 sm:pb-24">
-            <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
-              <div className="glass-surface p-4 sm:p-6 rounded-2xl">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <a
-                      href="https://www.facebook.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-foreground/60 hover:text-primary transition-colors"
-                      aria-label="Facebook"
-                    >
-                      <SiFacebook className="w-5 h-5 sm:w-6 sm:h-6" />
-                    </a>
-                    <a
-                      href="https://twitter.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-foreground/60 hover:text-primary transition-colors"
-                      aria-label="X (Twitter)"
-                    >
-                      <SiX className="w-5 h-5 sm:w-6 sm:h-6" />
-                    </a>
-                    <a
-                      href="https://www.instagram.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-foreground/60 hover:text-primary transition-colors"
-                      aria-label="Instagram"
-                    >
-                      <SiInstagram className="w-5 h-5 sm:w-6 sm:h-6" />
-                    </a>
-                  </div>
-                  <p className="text-xs sm:text-sm text-foreground/60 text-center sm:text-left">
-                    Powered by{" "}
-                    <a
-                      href="https://open-meteo.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      Open-Meteo
-                    </a>
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-center">
-                <p className="text-xs sm:text-sm text-foreground/60">
-                  © {new Date().getFullYear()} WeatherVerse. Built with{" "}
-                  <Heart className="inline w-3 h-3 sm:w-4 sm:h-4 text-destructive fill-destructive" />{" "}
-                  using{" "}
-                  <a
-                    href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(
-                      typeof window !== "undefined" ? window.location.hostname : "weatherverse-app"
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline font-medium"
-                  >
-                    caffeine.ai
-                  </a>
-                </p>
-              </div>
+          <footer className="px-4 py-3 sm:px-6 sm:py-4 mt-auto pb-20 sm:pb-24">
+            <div className="max-w-7xl mx-auto text-center">
+              <a
+                href="https://sites.google.com/view/weatherverse/privacy-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs sm:text-sm text-foreground/60 hover:text-primary transition-colors hover:underline"
+              >
+                Gizlilik Politikası
+              </a>
             </div>
           </footer>
 
@@ -230,7 +184,9 @@ function AppContent() {
 function App() {
   return (
     <InitialRenderErrorBoundary>
-      <AppContent />
+      <I18nProvider>
+        <AppContent />
+      </I18nProvider>
     </InitialRenderErrorBoundary>
   );
 }

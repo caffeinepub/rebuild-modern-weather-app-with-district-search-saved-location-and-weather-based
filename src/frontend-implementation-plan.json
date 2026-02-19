@@ -1,51 +1,89 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix i18n Provider Error",
+  "title": "Restore Radar tab between Driver and Beach tabs",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Wrap the App component with I18nProvider in frontend/src/main.tsx to resolve the 'useI18n must be used within an I18nProvider' error",
+      "summary": "Add Radar tab to the bottom navigation between Driver tab and Beach tabs using the existing BottomNav component structure",
       "acceptanceCriteria": [
-        "I18nProvider wraps the App component in the component tree",
-        "Application loads without i18n provider errors",
-        "Multi-language support (Turkish, English) continues to function correctly"
+        "Radar tab appears in bottom navigation between Driver and Beach tabs",
+        "Tab uses appropriate radar/weather icon",
+        "Tab label is internationalized in Turkish and English",
+        "Active state styling matches other tabs in BottomNav"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/main.tsx",
+          "path": "frontend/src/components/BottomNav.tsx",
           "operation": "modify",
-          "description": "Add I18nProvider as a wrapper between InternetIdentityProvider and App component. Import I18nProvider from frontend/src/i18n/I18nProvider.tsx. Ensure the provider hierarchy follows: QueryClientProvider > InternetIdentityProvider > I18nProvider > App. This provides the i18n context to all components using the useI18n hook, resolving the 'useI18n must be used within an I18nProvider' error while preserving existing QueryClientProvider and InternetIdentityProvider wrappers."
+          "description": "Add 'radar' as the third tab option between 'driver' and 'beach' tabs. Insert a new tab button with a Radar icon (use Lucide-React's 'Radar' icon) and the translation key 'nav.radar'. Ensure the tab ordering is: weather, farmer, driver, radar, beach. Match the existing glass morphism styling and active state behavior for the new radar tab."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Ensure I18nProvider is imported from frontend/src/i18n/I18nProvider.tsx in main.tsx",
+      "summary": "Create RadarScreen component that uses the location from the main weather location state to display weather radar visualization",
       "acceptanceCriteria": [
-        "I18nProvider import statement is present and correct",
-        "No import errors occur during build or runtime"
+        "RadarScreen component receives location from App.tsx location state",
+        "Component only renders when a location is selected",
+        "Shows appropriate empty state when no location is available"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/main.tsx",
+          "path": "frontend/src/components/RadarScreen.tsx",
           "operation": "modify",
-          "description": "Add the import statement for I18nProvider at the top of the file alongside other provider imports. Import from the correct path: frontend/src/i18n/I18nProvider.tsx. Ensure the import uses the correct named export syntax."
+          "description": "Create RadarScreen component that accepts location and weatherData props (same structure as BeachMarineScreen and other panels). Check if location exists; if not, render the existing RadarEmptyState component. If location exists, render a container with the RadarMap component (to be integrated in REQ-3). Include loading states and error handling. Use the same panel layout patterns as WeatherPanel and BeachMarineScreen for consistency."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Verify that the component hierarchy in main.tsx correctly places I18nProvider between QueryClientProvider and App component",
+      "summary": "Integrate existing RadarMap component into RadarScreen to display cloud and precipitation layers on the map using the weather API data",
       "acceptanceCriteria": [
-        "Provider hierarchy follows the pattern: QueryClientProvider > InternetIdentityProvider > I18nProvider > App",
-        "All child components can access i18n context without errors"
+        "RadarMap component renders with cloud and precipitation overlays",
+        "Map centers on the selected location coordinates",
+        "Weather data from API is fetched and displayed on map layers",
+        "Map shows current cloud cover and precipitation intensity"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/main.tsx",
+          "path": "frontend/src/components/RadarScreen.tsx",
           "operation": "modify",
-          "description": "Restructure the component tree to nest I18nProvider between InternetIdentityProvider and App. The final hierarchy must be: QueryClientProvider wraps InternetIdentityProvider, which wraps I18nProvider, which wraps App. This ensures all child components have access to both authentication and internationalization contexts in the correct order."
+          "description": "Integrate the existing RadarMap component into RadarScreen's layout. Pass location coordinates and weather data to RadarMap. Use the existing useRainViewer hook to fetch radar frame data and useRadarOverlayData hook to get overlay information (temperature, wind, precipitation, air quality, storm). Ensure the map is properly sized within the screen container and centers on the provided location coordinates. Include RadarLayerToggles, RadarInfoPanel, and RadarOverlayStatus components as part of the radar screen interface to provide full radar functionality matching the existing radar implementation patterns."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Wire up the Radar tab in App.tsx to conditionally render RadarScreen when the radar tab is active, following the same pattern as other tabs",
+      "acceptanceCriteria": [
+        "App.tsx activeTab state includes 'radar' option",
+        "RadarScreen renders when activeTab === 'radar'",
+        "Tab switching works smoothly between all tabs including radar",
+        "Location prop is passed from App.tsx to RadarScreen"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Update the activeTab type definition to include 'radar' as a valid option (between 'driver' and 'beach'). Add a conditional rendering block for RadarScreen that checks if activeTab === 'radar', passing location and weatherData props from App.tsx state. Follow the same pattern used for WeatherPanel, FarmerGardenWeatherPanel, DriverWeatherPanel, and BeachMarineScreen. Import the RadarScreen component at the top of the file. Ensure tab state changes properly trigger re-renders and that the radar screen receives updated location data when it changes."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Add internationalization strings for the Radar tab label in both Turkish and English to the translations dictionary",
+      "acceptanceCriteria": [
+        "Translation keys added to translations.ts",
+        "Turkish translation displays correctly",
+        "English translation displays correctly",
+        "Tab label updates when language is changed"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/i18n/translations.ts",
+          "operation": "modify",
+          "description": "Add 'nav.radar' translation key to both 'tr' and 'en' translation objects. Set the Turkish translation to 'Radar' and the English translation to 'Radar'. Place the new key in the 'nav' section alongside existing navigation translations (nav.weather, nav.farmer, nav.driver, nav.beach). Ensure the key is accessible via the translation function and will be used by BottomNav component."
         }
       ]
     }
