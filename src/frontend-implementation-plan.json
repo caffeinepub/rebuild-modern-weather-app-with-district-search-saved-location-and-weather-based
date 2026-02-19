@@ -1,75 +1,21 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix Radar Forecast (Nowcast) 90-Minute Animation Playback",
+  "title": "Fix I18n Provider Error",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Ensure Forecast mode renders and advances RainViewer nowcast precipitation frames (+90 minutes) as a visible frame-by-frame animation on the map.",
+      "summary": "Wrap the main App component with I18nProvider in frontend/src/main.tsx to resolve the 'useI18n must be used within an I18nProvider' error",
       "acceptanceCriteria": [
-        "When a location is selected and RainViewer nowcast frames exist, the precipitation overlay in Forecast mode updates at a steady cadence (frame-by-frame) and visually animates motion on the map.",
-        "The forecast animation uses only future nowcast frames limited to +90 minutes (as provided by the RainViewer parsing logic), not past frames.",
-        "If there are 0 frames, the UI shows the existing no-frames messaging and no animation runs; if there is 1 frame, playback controls remain disabled as currently designed.",
-        "Switching between Past and Forecast modes stops playback and does not throw errors; returning to Forecast mode allows playback again."
+        "The I18nProvider component wraps the App component in main.tsx",
+        "The application loads without the I18n provider error",
+        "All existing i18n functionality continues to work correctly"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/RadarScreen.tsx",
+          "path": "frontend/src/main.tsx",
           "operation": "modify",
-          "description": "Ensure Forecast mode playback uses only RainViewer nowcastFrames (future-only) for playbackFrames, and confirm mode switching stops playback cleanly without errors; keep the current no-frames and single-frame behaviors intact."
-        },
-        {
-          "path": "frontend/src/components/radar/RadarMap.tsx",
-          "operation": "modify",
-          "description": "Harden precipitation tile-layer updates so that each frame change reliably updates the Leaflet precipitation layer URL (frame path changes) and visually advances on the map; ensure the layer is added/removed safely when frames become available/unavailable."
-        },
-        {
-          "path": "frontend/src/hooks/useRadarPlayback.ts",
-          "operation": "modify",
-          "description": "Review and adjust playback timing/update mechanics as needed to guarantee steady, frame-by-frame advancement during playback (no stalls), while preserving existing disabled-controls behavior for 0/1 frames."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Auto-start Forecast animation when entering Forecast mode and there are at least 2 nowcast frames, while respecting user pause.",
-      "acceptanceCriteria": [
-        "On first load of the Radar screen in Forecast mode, if total forecast frames >= 2, playback starts automatically within 1 second.",
-        "When the user presses Pause, auto-play does not immediately restart unless the user switches mode away and back (or frames refresh and re-initialize).",
-        "Auto-play does not start in Past mode."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/RadarScreen.tsx",
-          "operation": "modify",
-          "description": "Add Forecast-mode auto-play orchestration: when entering Forecast mode (or when forecast frames refresh/re-initialize) and total forecast frames >= 2, start playback within 1 second; track an explicit user-paused intent so Pause prevents immediate auto-restart until a mode switch away/back or frames refresh triggers re-initialization."
-        },
-        {
-          "path": "frontend/src/components/radar/RadarPlaybackControls.tsx",
-          "operation": "modify",
-          "description": "Wire play/pause callbacks so RadarScreen can distinguish user-initiated Pause from programmatic stops (e.g., mode switch), enabling the required auto-play behavior without changing existing disabled-controls logic for 0/1 frames."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Move Forecast uncertainty banner text to i18n and remove hardcoded user-facing text from the Radar UI.",
-      "acceptanceCriteria": [
-        "RadarForecastLabel displays its message using the existing i18n mechanism (useI18n + translations.ts).",
-        "English text is: \"Short-term radar forecast – uncertainty applies\".",
-        "Turkish equivalent is provided in translations.ts and is displayed when locale is Turkish.",
-        "No user-facing forecast label text remains hardcoded in the component."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/radar/RadarForecastLabel.tsx",
-          "operation": "modify",
-          "description": "Replace the hardcoded Forecast uncertainty banner string with a translation lookup via the existing useI18n mechanism."
-        },
-        {
-          "path": "frontend/src/i18n/translations.ts",
-          "operation": "modify",
-          "description": "Add new translation keys for the Forecast uncertainty banner in both English and Turkish; English must be exactly \"Short-term radar forecast – uncertainty applies\" and Turkish must provide an equivalent meaning."
+          "description": "Import I18nProvider from frontend/src/i18n/I18nProvider.tsx and wrap the App component with I18nProvider, ensuring it is placed inside the QueryClientProvider and InternetIdentityProvider but outside the App component. Preserve all existing authentication and query provider wrappers without modification."
         }
       ]
     }

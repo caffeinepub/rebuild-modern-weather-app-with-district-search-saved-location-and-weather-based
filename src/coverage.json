@@ -1,76 +1,30 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T12:02:43.845Z",
+  "generatedAt": "2026-02-19T02:10:37.968Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 3,
+    "total": 1,
+    "implemented": 0,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Ensure the Radar screen \"Forecast\" mode plays a real RainViewer-based nowcast animation over the available +90 minute precipitation frames, so the precipitation layer visibly advances frame-by-frame on the map.",
-        "status": "implemented",
+        "summary": "Wrap the main App component with I18nProvider in frontend/src/main.tsx to resolve the 'useI18n must be used within an I18nProvider' error",
+        "status": "missing",
         "plannedFiles": [
-          "frontend/src/components/RadarScreen.tsx",
-          "frontend/src/components/radar/RadarMap.tsx",
-          "frontend/src/hooks/useRadarPlayback.ts"
+          "frontend/src/main.tsx"
         ],
-        "matchedFiles": [
-          "frontend/src/components/RadarScreen.tsx",
-          "frontend/src/components/radar/RadarMap.tsx",
-          "frontend/src/hooks/useRadarPlayback.ts"
-        ]
-      },
-      {
-        "id": "REQ-2",
-        "summary": "Change Radar Forecast behavior so animation begins automatically (without requiring the user to press Play) when entering Forecast mode and there are at least 2 nowcast frames available.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/RadarScreen.tsx",
-          "frontend/src/components/radar/RadarPlaybackControls.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/RadarScreen.tsx"
-        ]
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Fix backend RainViewer caching so that when the cache TTL has expired, the canister refreshes RainViewer data instead of returning stale cached data, ensuring forecast (nowcast) frames remain available and up to date.",
-        "status": "unknown",
-        "plannedFiles": [],
         "matchedFiles": []
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Move the Forecast uncertainty banner text into i18n and render it via translations (English and Turkish), avoiding hardcoded user-facing strings in the Radar UI.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/radar/RadarForecastLabel.tsx",
-          "frontend/src/i18n/translations.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/radar/RadarForecastLabel.tsx",
-          "frontend/src/i18n/translations.ts"
-        ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
-    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/RadarScreen.tsx",
-    "frontend/src/components/radar/RadarForecastLabel.tsx",
-    "frontend/src/components/radar/RadarMap.tsx",
-    "frontend/src/hooks/useRadarPlayback.ts",
-    "frontend/src/i18n/translations.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

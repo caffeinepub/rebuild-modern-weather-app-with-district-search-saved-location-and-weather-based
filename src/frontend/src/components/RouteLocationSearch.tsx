@@ -1,113 +1,122 @@
-import { useState, useRef } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Loader2, MapPin, X } from 'lucide-react';
-import { FloatingAutocompleteDropdown } from './FloatingAutocompleteDropdown';
-import { useGeocodingSearch } from '../hooks/useGeocodingSearch';
-import type { GeocodingResult } from '../lib/openMeteo';
+import { useState, useRef, useEffect } from "react";
+import { Search, MapPin, X, Loader2 } from "lucide-react";
+import { useGeocodingSearch } from "../hooks/useGeocodingSearch";
+import { FloatingAutocompleteDropdown } from "./FloatingAutocompleteDropdown";
+import type { GeocodingResult } from "../lib/openMeteo";
 
 interface RouteLocationSearchProps {
-  placeholder: string;
-  onLocationSelect: (location: GeocodingResult | null) => void;
-  selectedLocation: GeocodingResult | null;
+  label: string;
+  onLocationSelect: (location: GeocodingResult) => void;
+  onClear: () => void;
+  currentLocation: GeocodingResult | null;
 }
 
-export function RouteLocationSearch({ placeholder, onLocationSelect, selectedLocation }: RouteLocationSearchProps) {
-  const [query, setQuery] = useState('');
-  const [showResults, setShowResults] = useState(false);
-  const inputContainerRef = useRef<HTMLDivElement | null>(null);
+export function RouteLocationSearch({
+  label,
+  onLocationSelect,
+  onClear,
+  currentLocation,
+}: RouteLocationSearchProps) {
+  const [query, setQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { results, isLoading } = useGeocodingSearch(query);
 
-  const { results, isLoading, error } = useGeocodingSearch(query);
+  useEffect(() => {
+    if (query.length > 0 && results && results.length > 0) {
+      setIsOpen(true);
+    } else {
+      setIsOpen(false);
+    }
+  }, [query, results]);
 
   const handleSelect = (location: GeocodingResult) => {
     onLocationSelect(location);
-    setQuery('');
-    setShowResults(false);
+    setQuery("");
+    setIsOpen(false);
+    inputRef.current?.blur();
   };
 
   const handleClear = () => {
-    onLocationSelect(null);
-    setQuery('');
+    onClear();
+    setQuery("");
+    setIsOpen(false);
   };
 
   return (
-    <div className="relative">
-      {selectedLocation ? (
-        <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-muted/50 p-3">
-          <MapPin className="h-4 w-4 text-primary" />
-          <div className="flex-1">
-            <p className="text-sm font-medium">{selectedLocation.name}</p>
-            <p className="text-xs text-muted-foreground">
-              {selectedLocation.admin1 && `${selectedLocation.admin1}, `}
-              {selectedLocation.country}
-            </p>
+    <div className="w-full">
+      <label className="block text-xs sm:text-sm font-medium mb-2">{label}</label>
+
+      {currentLocation && (
+        <div className="glass-surface p-3 sm:p-4 rounded-xl mb-2 sm:mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-sm sm:text-base truncate">{currentLocation.name}</p>
+              <p className="text-xs sm:text-sm text-foreground/60 truncate">
+                {currentLocation.admin1 && `${currentLocation.admin1}, `}
+                {currentLocation.country}
+              </p>
+            </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
+          <button
             onClick={handleClear}
-            className="h-8 w-8"
+            className="ml-2 p-2 rounded-lg hover:bg-foreground/10 transition-colors flex-shrink-0 min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center"
+            aria-label="Clear"
           >
-            <X className="h-4 w-4" />
-          </Button>
+            <X className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+          </button>
         </div>
-      ) : (
-        <>
-          <div ref={inputContainerRef} className="relative">
-            <Input
+      )}
+
+      <div className="relative">
+        <div className="glass-surface rounded-xl overflow-hidden">
+          <div className="flex items-center gap-2 sm:gap-3 px-4 py-3 sm:px-3 sm:py-2">
+            <Search className="w-5 h-5 sm:w-4 sm:h-4 text-foreground/60 flex-shrink-0" />
+            <input
+              ref={inputRef}
               type="text"
-              placeholder={placeholder}
               value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setShowResults(true);
-              }}
-              onFocus={() => setShowResults(true)}
-              className="pr-10"
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search location..."
+              className="flex-1 bg-transparent outline-none text-base sm:text-sm placeholder:text-foreground/40 min-h-[44px] sm:min-h-[36px]"
             />
             {isLoading && (
-              <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+              <Loader2 className="w-5 h-5 sm:w-4 sm:h-4 text-primary animate-spin flex-shrink-0" />
             )}
           </div>
+        </div>
 
-          <FloatingAutocompleteDropdown
-            anchorRef={inputContainerRef}
-            isOpen={showResults && query.length > 0}
-            onClose={() => setShowResults(false)}
-          >
-            {error && (
-              <div className="p-4 text-sm text-destructive">
-                Failed to search locations
-              </div>
-            )}
-
-            {!error && results.length === 0 && !isLoading && (
-              <div className="p-4 text-sm text-muted-foreground">
-                No locations found
-              </div>
-            )}
-
-            {results.map((result) => (
-              <button
-                key={result.id}
-                onClick={() => handleSelect(result)}
-                className="w-full px-4 py-3 text-left hover:bg-muted/50 transition-colors border-b border-border/40 last:border-0"
-              >
-                <div className="flex items-start gap-2">
-                  <MapPin className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium">{result.name}</p>
-                    <p className="text-xs text-muted-foreground">
+        <FloatingAutocompleteDropdown
+          isOpen={isOpen}
+          anchorRef={inputRef as React.RefObject<HTMLElement>}
+          onClose={() => setIsOpen(false)}
+        >
+          {results && results.length > 0 ? (
+            <div className="py-2 sm:py-1">
+              {results.map((result, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleSelect(result)}
+                  className="w-full px-4 py-3 sm:px-3 sm:py-2 text-left hover:bg-foreground/10 transition-colors min-h-[44px] sm:min-h-[36px] flex items-center"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-base sm:text-sm truncate">{result.name}</p>
+                    <p className="text-xs sm:text-[11px] text-foreground/60 truncate">
                       {result.admin1 && `${result.admin1}, `}
                       {result.country}
                     </p>
                   </div>
-                </div>
-              </button>
-            ))}
-          </FloatingAutocompleteDropdown>
-        </>
-      )}
+                </button>
+              ))}
+            </div>
+          ) : query.length > 0 && !isLoading ? (
+            <div className="px-4 py-3 sm:px-3 sm:py-2 text-foreground/60 text-base sm:text-sm">
+              No results found
+            </div>
+          ) : null}
+        </FloatingAutocompleteDropdown>
+      </div>
     </div>
   );
 }

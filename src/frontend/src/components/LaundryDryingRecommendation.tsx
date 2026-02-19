@@ -1,8 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, Info } from 'lucide-react';
-import type { WeatherData } from '../hooks/useWeather';
-import { getLaundryDryingRecommendation } from '../lib/laundryDrying';
-import { useI18n } from '../i18n/useI18n';
+import { Wind, Sun, CloudRain } from "lucide-react";
+import { useI18n } from "../i18n/useI18n";
+import { getLaundryDryingRecommendation } from "../lib/laundryDrying";
+import type { WeatherData } from "../hooks/useWeather";
 
 interface LaundryDryingRecommendationProps {
   weatherData: WeatherData;
@@ -12,66 +11,51 @@ export function LaundryDryingRecommendation({ weatherData }: LaundryDryingRecomm
   const { t } = useI18n();
   const recommendation = getLaundryDryingRecommendation(weatherData);
 
-  return (
-    <Card className="glass-surface rounded-2xl">
-      <CardHeader>
-        <CardTitle className="text-xl font-bold">{t('laundry.title')}</CardTitle>
-        <div className="flex items-start gap-2 mt-2 text-sm text-muted-foreground">
-          <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
-          <p className="leading-relaxed">{t('laundry.note')}</p>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {recommendation.hasGoodTimes ? (
-          <div className="space-y-4">
-            {/* Best Time */}
-            {recommendation.bestRange && (
-              <div className="rounded-xl border-2 border-success/30 bg-success/10 p-5 shadow-soft">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="rounded-lg bg-success/20 p-2">
-                    <Clock className="h-6 w-6 text-success" />
-                  </div>
-                  <h3 className="text-lg font-bold text-success">{t('laundry.bestTime')}</h3>
-                </div>
-                <p className="text-2xl font-bold">
-                  {recommendation.bestRange.start} - {recommendation.bestRange.end}
-                </p>
-              </div>
-            )}
+  if (!recommendation || !recommendation.hasGoodTimes) {
+    return null;
+  }
 
-            {/* Alternative Times */}
-            {recommendation.additionalRanges.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                  {t('laundry.alternativeTimes')}
-                </h3>
-                <div className="space-y-2">
-                  {recommendation.additionalRanges.map((range, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-3 rounded-xl border-2 border-primary/20 bg-primary/5 p-4 shadow-soft"
-                    >
-                      <Clock className="h-5 w-5 text-primary" />
-                      <p className="text-lg font-bold">
-                        {range.start} - {range.end}
-                      </p>
-                    </div>
-                  ))}
+  const getIcon = () => {
+    return <Sun className="w-5 h-5 sm:w-6 sm:h-6 text-success" />;
+  };
+
+  return (
+    <div className="glass-surface p-4 sm:p-6 rounded-2xl border border-success/30 bg-success/5">
+      <div className="flex items-start gap-3 sm:gap-4">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-success/20">
+          {getIcon()}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2">{t("laundry.title")}</h3>
+          <p className="text-xs sm:text-sm text-foreground/60 mb-2 sm:mb-3 italic">
+            {t("laundry.note")}
+          </p>
+          {recommendation.bestRange && (
+            <div className="mb-2 sm:mb-3">
+              <p className="text-sm sm:text-base font-medium text-success mb-1">
+                {t("laundry.bestTime")}
+              </p>
+              <p className="text-base sm:text-lg font-bold">
+                {recommendation.bestRange.start} - {recommendation.bestRange.end}
+              </p>
+            </div>
+          )}
+          {recommendation.additionalRanges.length > 0 && (
+            <div className="space-y-1 sm:space-y-2">
+              <p className="text-xs sm:text-sm font-medium text-foreground/60">
+                {t("laundry.alternativeTimes")}
+              </p>
+              {recommendation.additionalRanges.map((range, index) => (
+                <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs sm:text-sm text-foreground/70">
+                  <span className="font-medium">
+                    {range.start} - {range.end}
+                  </span>
                 </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="rounded-xl border-2 border-destructive/30 bg-destructive/10 p-6 text-center">
-            <p className="text-lg font-bold text-destructive mb-2">
-              {t('laundry.noGoodTimes')}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {t('laundry.noGoodTimes.desc')}
-            </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

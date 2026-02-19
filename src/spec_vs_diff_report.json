@@ -1,57 +1,19 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T12:02:43.842Z",
-  "summary": "Frontend changes add forecast auto-play behavior and a frame-advancing playback hook; Forecast uncertainty label now uses i18n. Backend changes introduce a migration and actor wiring, but the diff summary does not show the required RainViewer cache TTL refresh logic. Some acceptance-criteria details (notably user-initiated pause preventing auto-restart) cannot be verified from the truncated diff.",
+  "generatedAt": "2026-02-19T02:10:37.965Z",
+  "summary": "The diff only shows modifications to project_state.json metadata file. No actual implementation changes are present in the diff to address REQ-1, which requires wrapping the App component with I18nProvider in frontend/src/main.tsx.",
   "missing_requirements": [
     {
-      "id": "REQ-2",
-      "requirement": "When the user presses Pause, auto-play does not immediately restart unless the user switches mode away and back (or frames refresh and re-initialize).",
-      "reason": "RadarScreen introduces a `userPaused` flag and an auto-start effect, but the diff is truncated right before the play/pause handler implementations, so there is no evidence that pressing Pause sets `userPaused` in a way that prevents the auto-start effect from restarting playback.",
-      "evidence": [
-        "frontend/src/components/RadarScreen.tsx (truncated at `const handlePlay = () => {`)",
-        "frontend/src/components/RadarScreen.tsx (auto-start effect references `userPaused`)"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "requirement": "Fix backend RainViewer caching so that when the cache TTL has expired, the next call refreshes from https://api.rainviewer.com/public/weather-maps.json and stores the new response; on refresh failure return last cached value if present else empty string; keep caching inside backend/main.mo single actor.",
-      "reason": "backend/main.mo is heavily truncated and the shown portion does not include any RainViewer fetch method, TTL check, refresh logic, or fallback behavior. The added migration changes cache shape, but does not evidence the required TTL-expiry refresh behavior.",
-      "evidence": [
-        "backend/main.mo (truncated; no RainViewer TTL/refresh logic shown)",
-        "backend/migration.mo (changes cache entry structure but not TTL refresh behavior)"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "requirement": "Provide i18n translations (English and Turkish) for the Forecast uncertainty banner text: \"Short-term radar forecast – uncertainty applies\".",
-      "reason": "RadarForecastLabel now calls `t('radar.forecast.uncertaintyLabel')`, but the diff excerpt of translations.ts is truncated and does not show the presence of this key or the required English/Turkish strings.",
-      "evidence": [
-        "frontend/src/components/radar/RadarForecastLabel.tsx",
-        "frontend/src/i18n/translations.ts (truncated; key not visible)"
-      ]
+      "id": "REQ-1",
+      "requirement": "Wrap the main App component with I18nProvider in frontend/src/main.tsx to resolve the 'useI18n must be used within an I18nProvider' error",
+      "reason": "The diff does not include any modifications to frontend/src/main.tsx. Only project_state.json was modified, which is a metadata file and does not implement the required code changes.",
+      "evidence": []
     }
   ],
-  "hallucinated_features": [
-    {
-      "description": "Added backend state migration (migration.mo) and enabled actor migration wiring `(with migration = Migration.run)` despite BuildRequest stating migration.mo should be added only if a state upgrade is required (not expected for this change).",
-      "reason": "REQ-3 asks to fix caching behavior within backend/main.mo and keep a single actor; it does not explicitly request a state schema migration. The diff adds a new cache schema with `valid : Bool` plus migration plumbing, which goes beyond the stated expectation.",
-      "evidence": [
-        "backend/migration.mo",
-        "backend/main.mo (import Migration \"migration\"; `(with migration = Migration.run)`)"
-      ]
-    }
-  ],
-  "confidence": 0.64,
+  "hallucinated_features": [],
+  "confidence": 0.95,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
-    "frontend-file-summaries.txt",
-    "frontend/src/components/RadarScreen.tsx",
-    "frontend/src/components/radar/RadarForecastLabel.tsx",
-    "frontend/src/components/radar/RadarMap.tsx",
-    "frontend/src/hooks/useRadarPlayback.ts",
-    "frontend/src/i18n/translations.ts",
     "project_state.json"
   ]
 }

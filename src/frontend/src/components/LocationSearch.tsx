@@ -1,107 +1,117 @@
-import { useState, useEffect, useRef } from 'react';
-import { Search, MapPin, X, Loader2 } from 'lucide-react';
-import { FloatingAutocompleteDropdown } from './FloatingAutocompleteDropdown';
-import { useGeocodingSearch } from '../hooks/useGeocodingSearch';
-import { useI18n } from '../i18n/useI18n';
-import type { SavedLocation } from '../hooks/usePersistedLocation';
+import { useState, useRef, useEffect } from "react";
+import { Search, MapPin, X, Loader2 } from "lucide-react";
+import { useGeocodingSearch } from "../hooks/useGeocodingSearch";
+import { useI18n } from "../i18n/useI18n";
+import { FloatingAutocompleteDropdown } from "./FloatingAutocompleteDropdown";
+import type { SavedLocation } from "../hooks/usePersistedLocation";
 
 interface LocationSearchProps {
   onLocationSelect: (location: SavedLocation) => void;
-  currentLocation: SavedLocation | null;
   onClearLocation: () => void;
+  currentLocation: SavedLocation | null;
 }
 
-export function LocationSearch({
-  onLocationSelect,
-  currentLocation,
-  onClearLocation,
-}: LocationSearchProps) {
-  const [query, setQuery] = useState('');
-  const { results, isLoading, error } = useGeocodingSearch(query);
-  const [showResults, setShowResults] = useState(false);
-  const inputContainerRef = useRef<HTMLDivElement | null>(null);
+export function LocationSearch({ onLocationSelect, onClearLocation, currentLocation }: LocationSearchProps) {
   const { t } = useI18n();
+  const [query, setQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { results, isLoading } = useGeocodingSearch(query);
 
   useEffect(() => {
-    setShowResults(query.length > 0 && results.length > 0);
+    if (query.length > 0 && results && results.length > 0) {
+      setIsOpen(true);
+    } else {
+      setIsOpen(false);
+    }
   }, [query, results]);
 
-  const handleSelect = (result: SavedLocation) => {
-    onLocationSelect(result);
-    setQuery('');
-    setShowResults(false);
+  const handleSelect = (location: SavedLocation) => {
+    onLocationSelect(location);
+    setQuery("");
+    setIsOpen(false);
+    inputRef.current?.blur();
+  };
+
+  const handleClear = () => {
+    onClearLocation();
+    setQuery("");
+    setIsOpen(false);
   };
 
   return (
-    <div className="glass-surface-strong rounded-2xl p-6 border-2">
-      <div className="space-y-4">
-        {/* Current Location Display */}
-        {currentLocation && (
-          <div className="flex items-center justify-between rounded-xl border-2 border-primary/20 bg-primary/5 p-5 shadow-soft">
-            <div className="flex items-center gap-4">
-              <div className="rounded-lg bg-primary/15 p-2.5">
-                <MapPin className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <p className="font-bold text-lg text-foreground">{currentLocation.name}</p>
-                <p className="text-sm font-medium text-muted-foreground">
-                  {currentLocation.country}
-                  {currentLocation.admin1 && ` · ${currentLocation.admin1}`}
-                </p>
-              </div>
+    <div className="w-full">
+      {currentLocation && (
+        <div className="glass-surface-strong p-3 sm:p-4 rounded-xl mb-3 sm:mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-base sm:text-lg truncate">
+                {currentLocation.name}
+              </p>
+              <p className="text-xs sm:text-sm text-foreground/60 truncate">
+                {currentLocation.admin1 && `${currentLocation.admin1}, `}
+                {currentLocation.country}
+              </p>
             </div>
-            <button
-              onClick={onClearLocation}
-              className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <X className="h-5 w-5" />
-            </button>
           </div>
-        )}
+          <button
+            onClick={handleClear}
+            className="ml-2 p-2 sm:p-2.5 rounded-lg hover:bg-foreground/10 transition-colors flex-shrink-0 min-h-[44px] min-w-[44px] sm:min-h-[40px] sm:min-w-[40px] flex items-center justify-center"
+            aria-label="Clear location"
+          >
+            <X className="w-5 h-5 sm:w-4 sm:h-4" />
+          </button>
+        </div>
+      )}
 
-        {/* Search Input */}
-        <div ref={inputContainerRef} className="relative">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+      <div className="relative">
+        <div className="glass-surface-strong rounded-xl overflow-hidden">
+          <div className="flex items-center gap-2 sm:gap-3 px-4 py-3 sm:px-3 sm:py-2">
+            <Search className="w-5 h-5 sm:w-4 sm:h-4 text-foreground/60 flex-shrink-0" />
             <input
+              ref={inputRef}
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={t('location.search.placeholder')}
-              className="w-full rounded-xl border-2 border-border bg-background/50 pl-12 pr-12 py-4 text-lg font-medium text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+              placeholder={t("location.search.placeholder")}
+              className="flex-1 bg-transparent outline-none text-base sm:text-sm placeholder:text-foreground/40 min-h-[44px] sm:min-h-[36px]"
             />
             {isLoading && (
-              <Loader2 className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin text-primary" />
+              <Loader2 className="w-5 h-5 sm:w-4 sm:h-4 text-primary animate-spin flex-shrink-0" />
             )}
           </div>
+        </div>
 
-          {/* Floating Results Dropdown */}
-          <FloatingAutocompleteDropdown
-            anchorRef={inputContainerRef}
-            isOpen={showResults}
-            onClose={() => setShowResults(false)}
-          >
-            <div className="py-2">
+        <FloatingAutocompleteDropdown
+          isOpen={isOpen}
+          anchorRef={inputRef as React.RefObject<HTMLElement>}
+          onClose={() => setIsOpen(false)}
+        >
+          {results && results.length > 0 ? (
+            <div className="py-2 sm:py-1">
               {results.map((result, index) => (
                 <button
                   key={index}
                   onClick={() => handleSelect(result)}
-                  className="w-full px-4 py-3 text-left hover:bg-accent/50 transition-colors border-l-4 border-transparent hover:border-primary focus:outline-none focus:bg-accent/50 focus:border-primary"
+                  className="w-full px-4 py-3 sm:px-3 sm:py-2 text-left hover:bg-foreground/10 transition-colors min-h-[44px] sm:min-h-[36px] flex items-center"
                 >
-                  <div className="font-semibold text-base text-foreground">{result.name}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {result.country}
-                    {result.admin1 && ` · ${result.admin1}`}
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-base sm:text-sm truncate">{result.name}</p>
+                    <p className="text-xs sm:text-[11px] text-foreground/60 truncate">
+                      {result.admin1 && `${result.admin1}, `}
+                      {result.country}
+                    </p>
                   </div>
                 </button>
               ))}
             </div>
-          </FloatingAutocompleteDropdown>
-
-          {error && (
-            <p className="mt-2 text-sm text-destructive">{t('location.search.error')}</p>
-          )}
-        </div>
+          ) : query.length > 0 && !isLoading ? (
+            <div className="px-4 py-3 sm:px-3 sm:py-2 text-foreground/60 text-base sm:text-sm">
+              {t("location.search.error")}
+            </div>
+          ) : null}
+        </FloatingAutocompleteDropdown>
       </div>
     </div>
   );

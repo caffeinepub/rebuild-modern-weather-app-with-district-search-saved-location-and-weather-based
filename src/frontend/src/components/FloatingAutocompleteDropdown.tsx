@@ -1,82 +1,59 @@
-import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { createPortal } from "react-dom";
 
 interface FloatingAutocompleteDropdownProps {
-  anchorRef: React.RefObject<HTMLElement | null>;
   isOpen: boolean;
+  anchorRef: RefObject<HTMLElement>;
   onClose: () => void;
-  children: React.ReactNode;
-  className?: string;
+  children: ReactNode;
 }
 
 export function FloatingAutocompleteDropdown({
-  anchorRef,
   isOpen,
+  anchorRef,
   onClose,
   children,
-  className = '',
 }: FloatingAutocompleteDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState<{
-    top: number;
-    left: number;
-    width: number;
-    maxHeight: number;
-    openUpward: boolean;
-  }>({ top: 0, left: 0, width: 0, maxHeight: 300, openUpward: false });
+  const [position, setPosition] = useState({ top: 0, left: 0, width: 0, maxHeight: 0 });
+  const [flipUpward, setFlipUpward] = useState(false);
 
-  // Calculate position relative to anchor
-  const updatePosition = () => {
-    if (!anchorRef.current) return;
-
-    const anchorRect = anchorRef.current.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-    const spaceBelow = viewportHeight - anchorRect.bottom;
-    const spaceAbove = anchorRect.top;
-    
-    // Reserve space for bottom nav (typically 80px) and some padding
-    const bottomNavHeight = 80;
-    const padding = 16;
-    const availableSpaceBelow = spaceBelow - bottomNavHeight - padding;
-    const availableSpaceAbove = spaceAbove - padding;
-
-    // Decide whether to open upward or downward
-    const openUpward = availableSpaceBelow < 200 && availableSpaceAbove > availableSpaceBelow;
-    
-    // Calculate max height based on available space
-    const maxHeight = openUpward 
-      ? Math.min(400, availableSpaceAbove)
-      : Math.min(400, availableSpaceBelow);
-
-    setPosition({
-      top: openUpward ? anchorRect.top - maxHeight - 8 : anchorRect.bottom + 8,
-      left: anchorRect.left,
-      width: anchorRect.width,
-      maxHeight,
-      openUpward,
-    });
-  };
-
-  // Update position on mount, when opening, and on scroll/resize
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !anchorRef.current) return;
 
-    updatePosition();
+    const updatePosition = () => {
+      const anchor = anchorRef.current;
+      if (!anchor) return;
 
-    const handleUpdate = () => {
-      updatePosition();
+      const rect = anchor.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      const dropdownMaxHeight = Math.min(320, Math.max(240, viewportHeight * 0.4));
+
+      const shouldFlipUp = spaceBelow < dropdownMaxHeight && spaceAbove > spaceBelow;
+
+      setFlipUpward(shouldFlipUp);
+      setPosition({
+        top: shouldFlipUp ? rect.top - 8 : rect.bottom + 8,
+        left: rect.left,
+        width: rect.width,
+        maxHeight: shouldFlipUp
+          ? Math.min(dropdownMaxHeight, spaceAbove - 16)
+          : Math.min(dropdownMaxHeight, spaceBelow - 16),
+      });
     };
 
-    window.addEventListener('scroll', handleUpdate, true);
-    window.addEventListener('resize', handleUpdate);
+    updatePosition();
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
 
     return () => {
-      window.removeEventListener('scroll', handleUpdate, true);
-      window.removeEventListener('resize', handleUpdate);
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
     };
   }, [isOpen, anchorRef]);
 
-  // Handle outside clicks
   useEffect(() => {
     if (!isOpen) return;
 
@@ -91,9 +68,8 @@ export function FloatingAutocompleteDropdown({
       }
     };
 
-    // Use capture phase to ensure we catch the event before other handlers
-    document.addEventListener('mousedown', handleClickOutside, true);
-    return () => document.removeEventListener('mousedown', handleClickOutside, true);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose, anchorRef]);
 
   if (!isOpen) return null;
@@ -101,20 +77,17 @@ export function FloatingAutocompleteDropdown({
   return createPortal(
     <div
       ref={dropdownRef}
+      className="fixed z-50 glass-surface-strong rounded-xl shadow-lg overflow-hidden"
       style={{
-        position: 'fixed',
-        top: `${position.top}px`,
+        top: flipUpward ? "auto" : `${position.top}px`,
+        bottom: flipUpward ? `${window.innerHeight - position.top}px` : "auto",
         left: `${position.left}px`,
         width: `${position.width}px`,
         maxHeight: `${position.maxHeight}px`,
-        zIndex: 9999,
       }}
-      className="animate-in fade-in-0 zoom-in-95"
     >
-      <div className={`glass-surface-strong shadow-xl overflow-hidden rounded-xl border-2 ${className}`}>
-        <div className="overflow-y-auto" style={{ maxHeight: `${position.maxHeight}px` }}>
-          {children}
-        </div>
+      <div className="overflow-y-auto max-h-full">
+        {children}
       </div>
     </div>,
     document.body

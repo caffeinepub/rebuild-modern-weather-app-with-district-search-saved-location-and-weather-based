@@ -1,407 +1,224 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-  Cloud,
-  Wind,
-  Droplets,
-  Gauge,
-  AlertCircle,
-  Shirt,
-  Layers,
-  Umbrella,
-  Wind as WindIcon,
-  Sun,
-  Eye,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  Info,
-} from 'lucide-react';
-import type { SavedLocation } from '../hooks/usePersistedLocation';
-import type { WeatherData } from '../hooks/useWeather';
-import { getWeatherIcon, getWeatherDescriptionKey } from '../lib/weatherTheme';
-import { useI18n } from '../i18n/useI18n';
-import type { TranslationKey } from '../i18n/translations';
-import { formatDailyForecastDate } from '../lib/formatDailyForecastDate';
-import { getClothingAdvisories } from '../lib/clothingAdvisories';
-import { LaundryDryingRecommendation } from './LaundryDryingRecommendation';
+import { Cloud, Droplets, Wind, Eye, Gauge, Sun, Leaf, AlertTriangle, Loader2 } from "lucide-react";
+import { useI18n } from "../i18n/useI18n";
+import { LaundryDryingRecommendation } from "./LaundryDryingRecommendation";
+import { formatDailyForecastDate } from "../lib/formatDailyForecastDate";
+import { getWeatherDescriptionKey } from "../lib/weatherTheme";
+import type { WeatherData } from "../hooks/useWeather";
+import type { SavedLocation } from "../hooks/usePersistedLocation";
 
 interface WeatherPanelProps {
-  location: SavedLocation;
-  weatherData?: WeatherData;
+  weatherData: WeatherData | undefined;
   isLoading: boolean;
   error: Error | null;
+  location: SavedLocation | null;
 }
 
-const advisoryIcons = {
-  light: Shirt,
-  coat: Layers,
-  umbrella: Umbrella,
-  wind: WindIcon,
-};
-
-function isFoggy(weatherCode: number, visibility?: number): boolean {
-  // WMO codes 45 and 48 are fog
-  if (weatherCode === 45 || weatherCode === 48) {
-    return true;
-  }
-  // Also consider low visibility as foggy (< 1000m)
-  if (visibility !== undefined && visibility < 1000) {
-    return true;
-  }
-  return false;
-}
-
-function getAQICategoryKey(aqi?: number): TranslationKey | null {
-  if (aqi === undefined || aqi === null) {
-    return null;
-  }
-  
-  if (aqi <= 20) return 'weather.aqi.good';
-  if (aqi <= 40) return 'weather.aqi.fair';
-  if (aqi <= 60) return 'weather.aqi.moderate';
-  if (aqi <= 80) return 'weather.aqi.poor';
-  return 'weather.aqi.veryPoor';
-}
-
-function getAQIColor(aqi?: number): string {
-  if (aqi === undefined || aqi === null) {
-    return 'text-muted-foreground';
-  }
-  
-  if (aqi <= 20) return 'text-green-600';
-  if (aqi <= 40) return 'text-yellow-600';
-  if (aqi <= 60) return 'text-orange-600';
-  if (aqi <= 80) return 'text-red-600';
-  return 'text-purple-600';
-}
-
-function getUVCategoryKey(uv?: number): TranslationKey | null {
-  if (uv === undefined || uv === null) {
-    return null;
-  }
-  
-  if (uv < 3) return 'weather.uv.low';
-  if (uv < 6) return 'weather.uv.moderate';
-  if (uv < 8) return 'weather.uv.high';
-  if (uv < 11) return 'weather.uv.veryHigh';
-  return 'weather.uv.extreme';
-}
-
-function getUVColor(uv?: number): string {
-  if (uv === undefined || uv === null) {
-    return 'text-muted-foreground';
-  }
-  
-  if (uv < 3) return 'text-green-600';
-  if (uv < 6) return 'text-yellow-600';
-  if (uv < 8) return 'text-orange-600';
-  if (uv < 11) return 'text-red-600';
-  return 'text-purple-600';
-}
-
-export function WeatherPanel({ location, weatherData, isLoading, error }: WeatherPanelProps) {
+export function WeatherPanel({ weatherData, isLoading, error, location }: WeatherPanelProps) {
   const { t, locale } = useI18n();
 
-  if (error) {
+  if (!location) {
     return (
-      <Alert variant="destructive" className="glass-surface rounded-xl">
-        <AlertCircle className="h-5 w-5" />
-        <AlertDescription className="font-medium">
-          {t('weather.error')}
-        </AlertDescription>
-      </Alert>
+      <div className="glass-surface p-6 sm:p-8 rounded-2xl text-center">
+        <Cloud className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-foreground/40" />
+        <p className="text-base sm:text-lg text-foreground/60">{t("location.search.placeholder")}</p>
+      </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Card className="glass-surface rounded-2xl">
-          <CardHeader>
-            <Skeleton className="h-8 w-48" />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Skeleton className="h-32 w-full" />
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-24 w-full" />
-            </div>
-          </CardContent>
-        </Card>
+      <div className="glass-surface p-6 sm:p-8 rounded-2xl text-center">
+        <Loader2 className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-primary animate-spin" />
+        <p className="text-base sm:text-lg text-foreground/60">Loading weather data...</p>
       </div>
     );
   }
 
-  if (!weatherData) {
-    return null;
+  if (error || !weatherData) {
+    return (
+      <div className="glass-surface p-6 sm:p-8 rounded-2xl text-center">
+        <AlertTriangle className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-destructive" />
+        <p className="text-base sm:text-lg text-foreground/60">{t("weather.error")}</p>
+      </div>
+    );
   }
 
-  const WeatherIcon = getWeatherIcon(weatherData.current.weatherCode);
-  const clothingAdvisories = getClothingAdvisories(weatherData);
-  const fogStatus = isFoggy(weatherData.current.weatherCode, weatherData.current.visibility);
-  const aqiCategoryKey = getAQICategoryKey(weatherData.current.aqi);
-  const aqiColor = getAQIColor(weatherData.current.aqi);
-  const uvCategoryKey = getUVCategoryKey(weatherData.current.uvIndex);
-  const uvColor = getUVColor(weatherData.current.uvIndex);
+  const getAQICategory = (aqi: number) => {
+    if (aqi <= 50) return t("weather.aqi.good");
+    if (aqi <= 100) return t("weather.aqi.moderate");
+    if (aqi <= 150) return t("weather.aqi.poor");
+    if (aqi <= 200) return t("weather.aqi.poor");
+    if (aqi <= 300) return t("weather.aqi.veryPoor");
+    return t("weather.aqi.veryPoor");
+  };
+
+  const getUVCategory = (uv: number) => {
+    if (uv <= 2) return t("weather.uv.low");
+    if (uv <= 5) return t("weather.uv.moderate");
+    if (uv <= 7) return t("weather.uv.high");
+    if (uv <= 10) return t("weather.uv.veryHigh");
+    return t("weather.uv.extreme");
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Current Weather */}
-      <Card className="glass-surface-strong rounded-2xl">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">{t('weather.current')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center space-y-6 py-8 sm:flex-row sm:justify-between sm:space-y-0">
-            <div className="flex items-center gap-8">
-              <div className="rounded-2xl bg-primary/10 p-4 shadow-glow">
-                <WeatherIcon className="h-28 w-28 text-primary" />
-              </div>
-              <div>
-                <p className="text-7xl font-bold">{Math.round(weatherData.current.temperature)}°</p>
-                <p className="mt-3 text-xl font-semibold text-muted-foreground">
-                  {t(getWeatherDescriptionKey(weatherData.current.weatherCode))}
-                </p>
-              </div>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="glass-surface p-4 sm:p-6 rounded-2xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 mb-4 sm:mb-6">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-1 sm:mb-2">
+              {weatherData.current.temperature !== null
+                ? `${Math.round(weatherData.current.temperature)}°C`
+                : "N/A"}
+            </h2>
+            <p className="text-base sm:text-lg text-foreground/80">
+              {t(getWeatherDescriptionKey(weatherData.current.weatherCode))}
+            </p>
+          </div>
+          <div className="flex items-center gap-3 sm:gap-4 self-start sm:self-auto">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+              <Cloud className="w-10 h-10 sm:w-12 sm:h-12 text-primary" />
             </div>
-            <div className="text-center sm:text-right">
-              <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t('weather.feelsLike')}</p>
-              <p className="text-4xl font-bold mt-1">
-                {Math.round(weatherData.current.apparentTemperature)}°
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div className="glass-surface p-3 sm:p-4 rounded-xl border border-primary/20">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                <Droplets className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+              </div>
+              <span className="text-xs sm:text-sm text-foreground/60">{t("weather.humidity")}</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold">{weatherData.current.humidity}%</p>
+          </div>
+
+          <div className="glass-surface p-3 sm:p-4 rounded-xl border border-accent/20">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-accent/20 flex items-center justify-center">
+                <Wind className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
+              </div>
+              <span className="text-xs sm:text-sm text-foreground/60">{t("weather.windSpeed")}</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold">{weatherData.current.windSpeed} km/h</p>
+          </div>
+
+          <div className="glass-surface p-3 sm:p-4 rounded-xl border border-secondary/20">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-secondary/20 flex items-center justify-center">
+                <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
+              </div>
+              <span className="text-xs sm:text-sm text-foreground/60">{t("weather.visibility")}</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold">
+              {weatherData.current.visibility ? (weatherData.current.visibility / 1000).toFixed(1) : "N/A"} km
+            </p>
+          </div>
+
+          <div className="glass-surface p-3 sm:p-4 rounded-xl border border-success/20">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-success/20 flex items-center justify-center">
+                <Gauge className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
+              </div>
+              <span className="text-xs sm:text-sm text-foreground/60">{t("weather.pressure")}</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold">{weatherData.current.pressure} hPa</p>
+            {weatherData.current.pressureTrend && (
+              <p className="text-xs sm:text-sm text-foreground/60 mt-1">
+                {weatherData.current.pressureTrend > 0 ? "↑" : "↓"}{" "}
+                {Math.abs(weatherData.current.pressureTrend).toFixed(1)} hPa
               </p>
-            </div>
-          </div>
-
-          {/* Weather Details Grid */}
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="flex items-center gap-4 rounded-xl border-2 border-primary/20 bg-primary/5 p-5 shadow-soft interactive-hover">
-              <div className="rounded-lg bg-primary/15 p-2.5">
-                <Wind className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t('weather.windSpeed')}</p>
-                <p className="text-2xl font-bold">{weatherData.current.windSpeed} km/h</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 rounded-xl border-2 border-primary/20 bg-primary/5 p-5 shadow-soft interactive-hover">
-              <div className="rounded-lg bg-primary/15 p-2.5">
-                <Droplets className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t('weather.humidity')}</p>
-                <p className="text-2xl font-bold">{weatherData.current.humidity}%</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 rounded-xl border-2 border-primary/20 bg-primary/5 p-5 shadow-soft interactive-hover">
-              <div className="rounded-lg bg-primary/15 p-2.5">
-                <Gauge className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t('weather.pressure')}</p>
-                <p className="text-2xl font-bold">{weatherData.current.pressure} hPa</p>
-                {weatherData.current.pressureTrend !== undefined && (
-                  <div className="flex items-center gap-1 mt-1">
-                    {weatherData.current.pressureTrend > 0.5 ? (
-                      <TrendingUp className="h-4 w-4 text-green-600" />
-                    ) : weatherData.current.pressureTrend < -0.5 ? (
-                      <TrendingDown className="h-4 w-4 text-red-600" />
-                    ) : (
-                      <Minus className="h-4 w-4 text-muted-foreground" />
-                    )}
-                    <span className="text-xs text-muted-foreground">
-                      {weatherData.current.pressureTrend > 0 ? '+' : ''}
-                      {weatherData.current.pressureTrend.toFixed(1)} {t('weather.pressureTrend')}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 rounded-xl border-2 border-primary/20 bg-primary/5 p-5 shadow-soft interactive-hover">
-              <div className="rounded-lg bg-primary/15 p-2.5">
-                <Cloud className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t('weather.cloudCover')}</p>
-                <p className="text-2xl font-bold">{weatherData.current.cloudCover}%</p>
-              </div>
-            </div>
-
-            {weatherData.current.uvIndex !== undefined && (
-              <div className="flex items-center gap-4 rounded-xl border-2 border-warning/20 bg-warning/5 p-5 shadow-soft interactive-hover">
-                <div className="rounded-lg bg-warning/15 p-2.5">
-                  <Sun className="h-8 w-8 text-warning" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t('weather.uvIndex')}</p>
-                  <p className="text-2xl font-bold">{weatherData.current.uvIndex.toFixed(1)}</p>
-                  {uvCategoryKey && (
-                    <p className={`text-xs font-semibold mt-1 ${uvColor}`}>
-                      {t(uvCategoryKey)}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {weatherData.current.visibility !== undefined && (
-              <div className="flex items-center gap-4 rounded-xl border-2 border-accent/20 bg-accent/5 p-5 shadow-soft interactive-hover">
-                <div className="rounded-lg bg-accent/15 p-2.5">
-                  <Eye className="h-8 w-8 text-accent" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t('weather.visibility')}</p>
-                  <p className="text-2xl font-bold">{(weatherData.current.visibility / 1000).toFixed(1)} km</p>
-                  {fogStatus && (
-                    <p className="text-xs font-semibold text-warning mt-1">
-                      {t('weather.fog')}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {weatherData.current.aqi !== undefined && (
-              <div className="flex items-center gap-4 rounded-xl border-2 border-success/20 bg-success/5 p-5 shadow-soft interactive-hover">
-                <div className="rounded-lg bg-success/15 p-2.5">
-                  <Wind className="h-8 w-8 text-success" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t('weather.aqi')}</p>
-                  <p className="text-2xl font-bold">{weatherData.current.aqi}</p>
-                  {aqiCategoryKey && (
-                    <p className={`text-xs font-semibold mt-1 ${aqiColor}`}>
-                      {t(aqiCategoryKey)}
-                    </p>
-                  )}
-                </div>
-              </div>
             )}
           </div>
-        </CardContent>
-      </Card>
 
-      {/* What Should I Wear */}
-      <Card className="glass-surface rounded-2xl">
-        <CardHeader>
-          <CardTitle className="text-xl font-bold">{t('weather.whatToWear')}</CardTitle>
-          <div className="flex items-start gap-2 mt-2 text-sm text-muted-foreground">
-            <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
-            <p className="leading-relaxed">{t('weather.whatToWear.note')}</p>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {clothingAdvisories.map((advisory) => {
-              const Icon = advisoryIcons[advisory.icon];
-              return (
-                <div
-                  key={advisory.key}
-                  className="flex items-center gap-4 rounded-xl border-2 border-primary/20 bg-primary/5 p-5 shadow-soft interactive-hover"
-                >
-                  <div className="rounded-lg bg-primary/15 p-2.5">
-                    <Icon className="h-8 w-8 text-primary" />
-                  </div>
-                  <p className="text-sm font-semibold leading-tight">{t(advisory.key)}</p>
+          {weatherData.current.uvIndex !== undefined && (
+            <div className="glass-surface p-3 sm:p-4 rounded-xl border border-warning/20">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-warning/20 flex items-center justify-center">
+                  <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-warning" />
                 </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+                <span className="text-xs sm:text-sm text-foreground/60">{t("weather.uvIndex")}</span>
+              </div>
+              <p className="text-xl sm:text-2xl font-bold">{weatherData.current.uvIndex}</p>
+              <p className="text-xs sm:text-sm text-foreground/60 mt-1">{getUVCategory(weatherData.current.uvIndex)}</p>
+            </div>
+          )}
 
-      {/* Laundry Drying Recommendation */}
+          {weatherData.current.aqi !== undefined && (
+            <div className="glass-surface p-3 sm:p-4 rounded-xl border border-destructive/20">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-destructive/20 flex items-center justify-center">
+                  <Leaf className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
+                </div>
+                <span className="text-xs sm:text-sm text-foreground/60">{t("weather.aqi")}</span>
+              </div>
+              <p className="text-xl sm:text-2xl font-bold">{weatherData.current.aqi}</p>
+              <p className="text-xs sm:text-sm text-foreground/60 mt-1">{getAQICategory(weatherData.current.aqi)}</p>
+            </div>
+          )}
+        </div>
+      </div>
+
       <LaundryDryingRecommendation weatherData={weatherData} />
 
-      {/* Hourly Forecast */}
-      <Card className="glass-surface rounded-2xl">
-        <CardHeader>
-          <CardTitle className="text-xl font-bold">{t('weather.hourly')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-6 overflow-x-auto pb-4">
-            {weatherData.hourly.slice(0, 24).map((hour, index) => {
-              const HourIcon = getWeatherIcon(hour.weatherCode);
-              return (
-                <div
-                  key={hour.timestamp}
-                  className="flex min-w-[100px] flex-col items-center gap-3 rounded-xl border-2 border-primary/20 bg-primary/5 p-4 shadow-soft interactive-hover"
-                >
-                  <p className="text-sm font-bold text-muted-foreground">
-                    {index === 0 ? t('weather.hourly.now') : hour.time}
-                  </p>
-                  <div className="rounded-lg bg-primary/10 p-2">
-                    <HourIcon className="h-10 w-10 text-primary" />
+      <div className="glass-surface p-4 sm:p-6 rounded-2xl">
+        <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">{t("weather.hourly")}</h3>
+        <div className="overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6">
+          <div className="flex gap-3 sm:gap-4 min-w-max pb-2">
+            {weatherData.hourly.slice(0, 24).map((hour, index) => (
+              <div key={index} className="glass-surface p-3 sm:p-4 rounded-xl text-center min-w-[80px] sm:min-w-[90px]">
+                <p className="text-xs sm:text-sm text-foreground/60 mb-2">{hour.time}</p>
+                <p className="text-lg sm:text-xl font-bold mb-2">
+                  {hour.temperature !== null ? `${Math.round(hour.temperature)}°` : "-"}
+                </p>
+                <div className="flex flex-col items-center gap-1 sm:gap-2">
+                  <div className="flex items-center gap-1">
+                    <Droplets className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+                    <span className="text-xs sm:text-sm">{hour.precipitation}mm</span>
                   </div>
-                  <p className="text-2xl font-bold">{Math.round(hour.temperature)}°</p>
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Droplets className="h-4 w-4" />
-                    <span className="font-semibold">{hour.precipitation.toFixed(1)}mm</span>
+                  <div className="flex items-center gap-1">
+                    <Wind className="w-3 h-3 sm:w-4 sm:h-4 text-accent" />
+                    <span className="text-xs sm:text-sm">{hour.windSpeed}km/h</span>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* Daily Forecast */}
-      <Card className="glass-surface rounded-2xl">
-        <CardHeader>
-          <CardTitle className="text-xl font-bold">{t('weather.daily')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {weatherData.daily.map((day) => {
-              const DayIcon = getWeatherIcon(day.weatherCode);
-              return (
-                <div
-                  key={day.date}
-                  className="flex items-center justify-between rounded-xl border-2 border-primary/20 bg-primary/5 p-5 shadow-soft interactive-hover"
-                >
-                  <div className="flex items-center gap-6">
-                    <div className="rounded-lg bg-primary/10 p-2.5">
-                      <DayIcon className="h-10 w-10 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold">
-                        {formatDailyForecastDate(day.date, locale)}
-                      </p>
-                      <p className="text-sm text-muted-foreground font-medium">
-                        {t(getWeatherDescriptionKey(day.weatherCode))}
-                      </p>
-                    </div>
+      <div className="glass-surface p-4 sm:p-6 rounded-2xl">
+        <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">{t("weather.daily")}</h3>
+        <div className="space-y-3 sm:space-y-4">
+          {weatherData.daily.map((day, index) => (
+            <div key={index} className="glass-surface p-3 sm:p-4 rounded-xl">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm sm:text-base mb-1">
+                    {formatDailyForecastDate(day.date, locale)}
+                  </p>
+                  <p className="text-xs sm:text-sm text-foreground/60">
+                    {t(getWeatherDescriptionKey(day.weatherCode))}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                  <div className="flex items-center gap-2 flex-1 sm:flex-initial">
+                    <span className="text-base sm:text-lg font-bold">
+                      {day.temperatureMax !== null ? `${Math.round(day.temperatureMax)}°` : "-"}
+                    </span>
+                    <span className="text-sm sm:text-base text-foreground/60">
+                      {day.temperatureMin !== null ? `${Math.round(day.temperatureMin)}°` : "-"}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-8">
-                    <div className="text-right">
-                      <p className="text-3xl font-bold">{Math.round(day.temperatureMax)}°</p>
-                      <p className="text-lg text-muted-foreground font-semibold">
-                        {Math.round(day.temperatureMin)}°
-                      </p>
-                    </div>
-                    {day.precipitationSum > 0 && (
-                      <div className="flex items-center gap-2 text-primary">
-                        <Droplets className="h-6 w-6" />
-                        <span className="text-lg font-bold">{day.precipitationSum.toFixed(1)}mm</span>
-                      </div>
-                    )}
+                  <div className="flex items-center gap-2 flex-1 sm:flex-initial">
+                    <Droplets className="w-4 h-4 text-primary" />
+                    <span className="text-xs sm:text-sm">{day.precipitationSum}mm</span>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

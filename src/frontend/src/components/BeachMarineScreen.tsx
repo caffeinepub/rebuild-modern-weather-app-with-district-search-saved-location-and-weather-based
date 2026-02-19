@@ -1,235 +1,132 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { useI18n } from '../i18n/useI18n';
-import { useMarineConditions } from '../hooks/useMarineConditions';
-import type { SavedLocation } from '../hooks/usePersistedLocation';
-import { Waves, Wind, Thermometer, Eye, Navigation, Clock, AlertCircle } from 'lucide-react';
+import { Waves, Wind, Thermometer, Eye, AlertTriangle, Loader2, Droplets } from "lucide-react";
+import { useI18n } from "../i18n/useI18n";
+import { useMarineConditions } from "../hooks/useMarineConditions";
+import type { WeatherData } from "../hooks/useWeather";
+import type { SavedLocation } from "../hooks/usePersistedLocation";
 
 interface BeachMarineScreenProps {
   location: SavedLocation | null;
+  weatherData: WeatherData | undefined;
+  isLoading: boolean;
+  error: Error | null;
 }
 
-export function BeachMarineScreen({ location }: BeachMarineScreenProps) {
+export function BeachMarineScreen({ location, weatherData, isLoading, error }: BeachMarineScreenProps) {
   const { t } = useI18n();
-  const { data: marineData, isLoading, error } = useMarineConditions(
+  const { data: marineData, isLoading: isMarineLoading } = useMarineConditions(
     location?.latitude,
     location?.longitude
   );
 
-  // Empty state when no location is selected
   if (!location) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center glass-surface rounded-2xl">
-        <div className="text-center">
-          <div className="mx-auto mb-6 rounded-2xl bg-primary/10 p-6 w-fit">
-            <Waves className="h-20 w-20 text-primary" />
-          </div>
-          <h2 className="mb-3 text-2xl font-bold text-foreground">
-            {t('beach.empty.title')}
-          </h2>
-          <p className="text-lg text-muted-foreground">
-            {t('beach.empty.description')}
-          </p>
-        </div>
+      <div className="glass-surface p-6 sm:p-8 rounded-2xl text-center">
+        <Waves className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-foreground/40" />
+        <p className="text-base sm:text-lg text-foreground/60">{t("location.search.placeholder")}</p>
       </div>
     );
   }
 
-  // Loading state
-  if (isLoading) {
+  if (isLoading || isMarineLoading) {
     return (
-      <div className="space-y-6">
-        <Card className="glass-surface rounded-2xl">
-          <CardHeader>
-            <Skeleton className="h-6 w-48" />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
-          </CardContent>
-        </Card>
+      <div className="glass-surface p-6 sm:p-8 rounded-2xl text-center">
+        <Loader2 className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-primary animate-spin" />
+        <p className="text-base sm:text-lg text-foreground/60">Loading marine data...</p>
       </div>
     );
   }
 
-  // Error state
-  if (error) {
+  if (error || !weatherData || !marineData) {
     return (
-      <Alert variant="destructive" className="glass-surface rounded-xl">
-        <AlertCircle className="h-5 w-5" />
-        <AlertDescription className="font-medium">{t('beach.error')}</AlertDescription>
-      </Alert>
+      <div className="glass-surface p-6 sm:p-8 rounded-2xl text-center">
+        <AlertTriangle className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-destructive" />
+        <p className="text-base sm:text-lg text-foreground/60">{t("weather.error")}</p>
+      </div>
     );
-  }
-
-  if (!marineData) {
-    return null;
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="glass-surface-strong rounded-2xl p-6">
-        <h2 className="text-3xl font-bold mb-2">{t('beach.title')}</h2>
-        <p className="text-lg font-medium text-muted-foreground">{location.name}</p>
-      </div>
-
-      {/* Sea Surface Temperature */}
-      <Card className="glass-surface-strong rounded-2xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-xl font-bold">
-            <div className="rounded-lg bg-primary/15 p-2">
-              <Thermometer className="h-6 w-6 text-primary" />
-            </div>
-            {t('beach.sst.title')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {marineData.seaSurfaceTemperature !== null ? (
-            <div className="flex items-baseline gap-3">
-              <span className="text-5xl font-bold">
-                {marineData.seaSurfaceTemperature.toFixed(1)}
-              </span>
-              <span className="text-2xl font-semibold text-muted-foreground">°C</span>
-            </div>
-          ) : (
-            <p className="text-lg font-medium text-muted-foreground">{t('beach.notAvailable')}</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Wave Conditions */}
-      <Card className="glass-surface-strong rounded-2xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-xl font-bold">
-            <div className="rounded-lg bg-primary/15 p-2">
-              <Waves className="h-6 w-6 text-primary" />
-            </div>
-            {t('beach.waves.title')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-xl border-2 border-accent/20 bg-accent/10 p-5">
-              <p className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2">{t('beach.waves.height')}</p>
-              {marineData.waveHeight !== null ? (
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold">{marineData.waveHeight.toFixed(1)}</span>
-                  <span className="text-lg font-semibold text-muted-foreground">m</span>
-                </div>
-              ) : (
-                <p className="text-sm font-medium text-muted-foreground">{t('beach.notAvailable')}</p>
-              )}
-            </div>
-            <div className="rounded-xl border-2 border-accent/20 bg-accent/10 p-5">
-              <p className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2">{t('beach.waves.period')}</p>
-              {marineData.wavePeriod !== null ? (
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold">{marineData.wavePeriod.toFixed(1)}</span>
-                  <span className="text-lg font-semibold text-muted-foreground">s</span>
-                </div>
-              ) : (
-                <p className="text-sm font-medium text-muted-foreground">{t('beach.notAvailable')}</p>
-              )}
-            </div>
-            <div className="rounded-xl border-2 border-accent/20 bg-accent/10 p-5">
-              <p className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2">{t('beach.waves.direction')}</p>
-              {marineData.waveDirection !== null ? (
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold">{marineData.waveDirection.toFixed(0)}</span>
-                  <span className="text-lg font-semibold text-muted-foreground">°</span>
-                </div>
-              ) : (
-                <p className="text-sm font-medium text-muted-foreground">{t('beach.notAvailable')}</p>
-              )}
-            </div>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="glass-surface p-4 sm:p-6 rounded-2xl">
+        <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+            <Waves className="w-7 h-7 sm:w-10 sm:h-10 text-primary" />
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Wind Conditions */}
-      <Card className="glass-surface-strong rounded-2xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-xl font-bold">
-            <div className="rounded-lg bg-primary/15 p-2">
-              <Wind className="h-6 w-6 text-primary" />
-            </div>
-            {t('beach.wind.title')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="rounded-xl border-2 border-accent/20 bg-accent/10 p-5">
-              <p className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2">{t('beach.wind.speed')}</p>
-              {marineData.windSpeed !== null ? (
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold">{marineData.windSpeed.toFixed(1)}</span>
-                  <span className="text-lg font-semibold text-muted-foreground">km/h</span>
-                </div>
-              ) : (
-                <p className="text-sm font-medium text-muted-foreground">{t('beach.notAvailable')}</p>
-              )}
-            </div>
-            <div className="rounded-xl border-2 border-accent/20 bg-accent/10 p-5">
-              <p className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2">{t('beach.wind.direction')}</p>
-              {marineData.windDirection !== null ? (
-                <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-accent/20 p-2">
-                    <Navigation 
-                      className="h-7 w-7 text-accent" 
-                      style={{ transform: `rotate(${marineData.windDirection}deg)` }}
-                    />
-                  </div>
-                  <span className="text-3xl font-bold">{marineData.windDirection.toFixed(0)}°</span>
-                </div>
-              ) : (
-                <p className="text-sm font-medium text-muted-foreground">{t('beach.notAvailable')}</p>
-              )}
-            </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold">{t("beach.title")}</h2>
+            <p className="text-xs sm:text-sm text-foreground/60">Marine and coastal conditions</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Visibility / Fog Indicator */}
-      <Card className="glass-surface-strong rounded-2xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-xl font-bold">
-            <div className="rounded-lg bg-primary/15 p-2">
-              <Eye className="h-6 w-6 text-primary" />
-            </div>
-            {t('beach.visibility.title')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {marineData.visibility !== null ? (
-            <div className="space-y-3">
-              <div className="flex items-baseline gap-3">
-                <span className="text-5xl font-bold">
-                  {marineData.visibility >= 1000 
-                    ? `${(marineData.visibility / 1000).toFixed(1)} km`
-                    : `${marineData.visibility.toFixed(0)} m`
-                  }
-                </span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+          <div className="glass-surface p-3 sm:p-4 rounded-xl border border-primary/20">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                <Waves className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               </div>
-              {marineData.visibilityDerived && (
-                <Badge variant="outline" className="text-xs font-semibold">
-                  {t('beach.visibility.derived')}
-                </Badge>
-              )}
+              <span className="text-xs sm:text-sm text-foreground/60">Wave Height</span>
             </div>
-          ) : (
-            <p className="text-lg font-medium text-muted-foreground">{t('beach.notAvailable')}</p>
-          )}
-        </CardContent>
-      </Card>
+            <p className="text-xl sm:text-2xl font-bold">
+              {marineData.waveHeight !== null ? marineData.waveHeight.toFixed(1) : "N/A"}m
+            </p>
+          </div>
 
-      {/* Last Updated */}
-      <div className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground">
-        <Clock className="h-4 w-4" />
-        <span>{t('beach.lastUpdated')}</span>
+          <div className="glass-surface p-3 sm:p-4 rounded-xl border border-accent/20">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-accent/20 flex items-center justify-center">
+                <Droplets className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
+              </div>
+              <span className="text-xs sm:text-sm text-foreground/60">Wave Period</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold">
+              {marineData.wavePeriod !== null ? marineData.wavePeriod.toFixed(1) : "N/A"}s
+            </p>
+          </div>
+
+          <div className="glass-surface p-3 sm:p-4 rounded-xl border border-secondary/20">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-secondary/20 flex items-center justify-center">
+                <Wind className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
+              </div>
+              <span className="text-xs sm:text-sm text-foreground/60">Wave Direction</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold">{marineData.waveDirection}°</p>
+          </div>
+
+          <div className="glass-surface p-3 sm:p-4 rounded-xl border border-success/20">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-success/20 flex items-center justify-center">
+                <Thermometer className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
+              </div>
+              <span className="text-xs sm:text-sm text-foreground/60">Sea Temperature</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold">
+              {marineData.seaSurfaceTemperature !== null ? marineData.seaSurfaceTemperature.toFixed(1) : "N/A"}°C
+            </p>
+          </div>
+
+          <div className="glass-surface p-3 sm:p-4 rounded-xl border border-warning/20">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-warning/20 flex items-center justify-center">
+                <Wind className="w-4 h-4 sm:w-5 sm:h-5 text-warning" />
+              </div>
+              <span className="text-xs sm:text-sm text-foreground/60">Wind Speed</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold">{weatherData.current.windSpeed.toFixed(1)} km/h</p>
+          </div>
+
+          <div className="glass-surface p-3 sm:p-4 rounded-xl border border-destructive/20">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-destructive/20 flex items-center justify-center">
+                <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
+              </div>
+              <span className="text-xs sm:text-sm text-foreground/60">Visibility</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold">
+              {weatherData.current.visibility ? (weatherData.current.visibility / 1000).toFixed(1) : "N/A"} km
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

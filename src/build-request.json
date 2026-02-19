@@ -1,109 +1,43 @@
 {
   "kind": "build_request",
-  "title": "Fix Radar Forecast (Nowcast) 90-Minute Animation Playback",
-  "projectName": "Nowcast Radar",
-  "priority": "normal",
+  "title": "Fix I18n Provider Error",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Ensure the Radar screen \"Forecast\" mode plays a real RainViewer-based nowcast animation over the available +90 minute precipitation frames, so the precipitation layer visibly advances frame-by-frame on the map.",
+      "text": "Wrap the main App component with I18nProvider in frontend/src/main.tsx to resolve the 'useI18n must be used within an I18nProvider' error",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-1",
+          "msg-2",
+          "msg-3"
         ],
         "quotes": [
-          "Hani tahmin kısmında animasyon oluşmadı önümüzdeki 90 dakikalık bulut ve yağış durumu gözükmüyor",
-          "Bu hareketli görüntü gerçek radar verisinden 90 dakikalık tahmini animasyon olarak oynatılacak"
+          "Error: useI18n must be used within an I18nProvider",
+          "I18n hatasını düzeltmeye hazırım"
         ]
       },
       "acceptanceCriteria": [
-        "When a location is selected and RainViewer nowcast frames exist, the precipitation overlay in Forecast mode updates at a steady cadence (frame-by-frame) and visually animates motion on the map.",
-        "The forecast animation uses only future nowcast frames limited to +90 minutes (as provided by the RainViewer parsing logic), not past frames.",
-        "If there are 0 frames, the UI shows the existing no-frames messaging and no animation runs; if there is 1 frame, playback controls remain disabled as currently designed.",
-        "Switching between Past and Forecast modes stops playback and does not throw errors; returning to Forecast mode allows playback again."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Change Radar Forecast behavior so animation begins automatically (without requiring the user to press Play) when entering Forecast mode and there are at least 2 nowcast frames available.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "radar ekranında tahmin kısmında gözükecekti",
-          "bulut yağış hareketi"
-        ]
-      },
-      "acceptanceCriteria": [
-        "On first load of the Radar screen in Forecast mode, if total forecast frames >= 2, playback starts automatically within 1 second.",
-        "When the user presses Pause, auto-play does not immediately restart unless the user switches mode away and back (or frames refresh and re-initialize).",
-        "Auto-play does not start in Past mode."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Fix backend RainViewer caching so that when the cache TTL has expired, the canister refreshes RainViewer data instead of returning stale cached data, ensuring forecast (nowcast) frames remain available and up to date.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "önümüzdeki 90 dakikalık bulut ve yağış durumu gözükmüyor"
-        ]
-      },
-      "acceptanceCriteria": [
-        "When the RainViewer cache entry is older than the TTL, the next call to the backend RainViewer method triggers a refresh from https://api.rainviewer.com/public/weather-maps.json and stores the new response in cache.",
-        "If the refresh fails, the backend returns the last cached value if present; otherwise it returns an empty string as it does today.",
-        "No changes are made to the single-actor architecture; RainViewer caching remains inside backend/main.mo."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Move the Forecast uncertainty banner text into i18n and render it via translations (English and Turkish), avoiding hardcoded user-facing strings in the Radar UI.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Use English for any user-facing text in the build request."
-        ]
-      },
-      "acceptanceCriteria": [
-        "RadarForecastLabel displays its message using the existing i18n mechanism (useI18n + translations.ts).",
-        "English text is: \"Short-term radar forecast – uncertainty applies\".",
-        "Turkish equivalent is provided in translations.ts and is displayed when locale is Turkish.",
-        "No user-facing forecast label text remains hardcoded in the component."
+        "The I18nProvider component wraps the App component in main.tsx",
+        "The application loads without the I18n provider error",
+        "All existing i18n functionality continues to work correctly"
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (Shadcn UI components are read-only).",
-    "Do not edit frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx (immutable paths).",
-    "Backend must remain a single Motoko actor in backend/main.mo; add migration.mo only if a state upgrade is required (not expected for this change)."
+    "Do not modify the existing I18nProvider implementation in frontend/src/i18n/I18nProvider.tsx",
+    "Do not modify the existing useI18n hook in frontend/src/i18n/useI18n.ts",
+    "Preserve all existing authentication and query provider wrappers"
   ],
   "nonGoals": [
-    "Adding a new radar data provider other than RainViewer.",
-    "Implementing real-time communication (WebSockets) or push notifications.",
-    "Adding third-party authentication beyond Internet Identity.",
-    "Changing the overall navigation structure or adding new tabs/screens unrelated to Radar forecast animation."
+    "Adding new translation strings",
+    "Modifying translation logic",
+    "Changing language selection functionality",
+    "Adding new i18n features"
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

@@ -9,10 +9,10 @@ import List "mo:core/List";
 import Int "mo:core/Int";
 import Iter "mo:core/Iter";
 import OutCall "http-outcalls/outcall";
-import Migration "migration";
 
 
-(with migration = Migration.run)
+
+
 actor {
   type WeatherResponse = {
     city : Text;

@@ -1,57 +1,24 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Weather radar app: show a real radar-data-based 90-minute cloud & precipitation forecast animation in the Radar screen's forecast section.",
+  "summary": "Web application with I18n (internationalization) support",
   "architectural_notes": [
-    "Radar screen forecast animation requires integrating a radar/nowcast data source that provides ~90 minutes of forecast frames for clouds/precipitation."
+    "I18nProvider wrapper required at app root for translation support"
   ],
-  "known_issues": [
-    "Radar screen: forecast section currently does not show the intended 90-minute cloud/precipitation motion animation."
-  ],
+  "known_issues": [],
   "isFixRequest": true,
-  "existing_features": [
-    {
-      "id": "feature-ensure-the-radar-screen-forecast-mode-plays-a-real-rainviewer-based-nowcast-animation-over-the-available-90-minute-precipitation-frames-so-the-precipitation-layer-visibly-advances-frame-by-frame-on-the-map",
-      "title": "Ensure the Radar screen \"Forecast\" mode plays a real RainViewer-based nowcast animation over the available +90 minute precipitation frames, so the precipitation layer visibly advances frame-by-frame on the map.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-change-radar-forecast-behavior-so-animation-begins-automatically-without-requiring-the-user-to-press-play-when-entering-forecast-mode-and-there-are-at-least-2-nowcast-frames-available",
-      "title": "Change Radar Forecast behavior so animation begins automatically (without requiring the user to press Play) when entering Forecast mode and there are at least 2 nowcast frames available.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-move-the-forecast-uncertainty-banner-text-into-i18n-and-render-it-via-translations-english-and-turkish-avoiding-hardcoded-user-facing-strings-in-the-radar-ui",
-      "title": "Move the Forecast uncertainty banner text into i18n and render it via translations (English and Turkish), avoiding hardcoded user-facing strings in the Radar UI.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    }
-  ],
+  "existing_features": [],
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add real radar-data-based 90-minute cloud & precipitation forecast animation in the Radar screen (forecast section).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Fix backend RainViewer caching so that when the cache TTL has expired, the canister refreshes RainViewer data instead of returning stale cached data, ensuring forecast (nowcast) frames remain available and up to date.",
+      "summary": "Wrap the main App component with I18nProvider in frontend/src/main.tsx to resolve the 'useI18n must be used within an I18nProvider' error",
       "reqIds": [
-        "REQ-3"
+        "REQ-1"
       ],
       "status": "pending"
     }
   ],
-  "projectName": "Nowcast Radar",
+  "projectName": "Fix I18n Provider Error",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
