@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import {
+  type ReactNode,
+  type RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
 
 interface FloatingAutocompleteDropdownProps {
@@ -15,7 +21,12 @@ export function FloatingAutocompleteDropdown({
   children,
 }: FloatingAutocompleteDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState({ top: 0, left: 0, width: 0, maxHeight: 0 });
+  const [position, setPosition] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+    maxHeight: 0,
+  });
   const [flipUpward, setFlipUpward] = useState(false);
 
   useEffect(() => {
@@ -29,9 +40,13 @@ export function FloatingAutocompleteDropdown({
       const viewportHeight = window.innerHeight;
       const spaceBelow = viewportHeight - rect.bottom;
       const spaceAbove = rect.top;
-      const dropdownMaxHeight = Math.min(320, Math.max(240, viewportHeight * 0.4));
+      const dropdownMaxHeight = Math.min(
+        320,
+        Math.max(240, viewportHeight * 0.4),
+      );
 
-      const shouldFlipUp = spaceBelow < dropdownMaxHeight && spaceAbove > spaceBelow;
+      const shouldFlipUp =
+        spaceBelow < dropdownMaxHeight && spaceAbove > spaceBelow;
 
       setFlipUpward(shouldFlipUp);
       setPosition({
@@ -86,10 +101,8 @@ export function FloatingAutocompleteDropdown({
         maxHeight: `${position.maxHeight}px`,
       }}
     >
-      <div className="overflow-y-auto max-h-full">
-        {children}
-      </div>
+      <div className="overflow-y-auto max-h-full">{children}</div>
     </div>,
-    document.body
+    document.body,
   );
 }

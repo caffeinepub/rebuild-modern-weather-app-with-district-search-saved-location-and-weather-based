@@ -1,15 +1,15 @@
-import { useQuery } from '@tanstack/react-query';
-import { fetchMarineData, type MarineConditions } from '../lib/openMeteoMarine';
+import { useQuery } from "@tanstack/react-query";
+import { type MarineConditions, fetchMarineData } from "../lib/openMeteoMarine";
 
 export function useMarineConditions(
   latitude: number | undefined,
-  longitude: number | undefined
+  longitude: number | undefined,
 ) {
   return useQuery<MarineConditions>({
-    queryKey: ['marineConditions', latitude, longitude],
+    queryKey: ["marineConditions", latitude, longitude],
     queryFn: async () => {
       if (!latitude || !longitude) {
-        throw new Error('Location coordinates are required');
+        throw new Error("Location coordinates are required");
       }
       return fetchMarineData(latitude, longitude);
     },

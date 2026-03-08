@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { SavedLocation } from './usePersistedLocation';
-import type { RainViewerData, RadarFrame } from '../lib/rainviewer';
-import { useSessionState } from './useSessionState';
+import { useCallback, useEffect, useState } from "react";
+import type { RadarFrame, RainViewerData } from "../lib/rainviewer";
+import type { SavedLocation } from "./usePersistedLocation";
+import { useSessionState } from "./useSessionState";
 
 export interface RadarAlertSettings {
   enabled: boolean;
@@ -10,7 +10,7 @@ export interface RadarAlertSettings {
 
 export interface RadarAlert {
   id: string;
-  severity: 'warning' | 'severe';
+  severity: "warning" | "severe";
   titleKey: string;
   messageKey: string;
   timestamp: number;
@@ -25,43 +25,63 @@ export function useRadarAlerts(
   location: SavedLocation | null,
   radarData: RainViewerData | null | undefined,
   playbackFrames: RadarFrame[],
-  currentFrameIndex: number
+  currentFrameIndex: number,
 ) {
   const [alertSettings, setAlertSettings] = useSessionState<RadarAlertSettings>(
-    'radar-alert-settings',
-    DEFAULT_SETTINGS
+    "radar-alert-settings",
+    DEFAULT_SETTINGS,
   );
   const [activeAlert, setActiveAlert] = useState<RadarAlert | null>(null);
-  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
+  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(
+    new Set(),
+  );
 
   // Check for severe conditions
   useEffect(() => {
-    if (!alertSettings.enabled || !location || !radarData || playbackFrames.length === 0) {
+    if (
+      !alertSettings.enabled ||
+      !location ||
+      !radarData ||
+      playbackFrames.length === 0
+    ) {
       setActiveAlert(null);
       return;
     }
 
     // Simple heuristic: check if there are many frames (indicating heavy precipitation)
     const hasHeavyPrecipitation = playbackFrames.length > 15;
-    
-    if (hasHeavyPrecipitation && currentFrameIndex > playbackFrames.length - 5) {
+
+    if (
+      hasHeavyPrecipitation &&
+      currentFrameIndex > playbackFrames.length - 5
+    ) {
       const alertId = `heavy-precip-${Date.now()}`;
-      
+
       if (!dismissedAlerts.has(alertId)) {
         setActiveAlert({
           id: alertId,
-          severity: 'severe',
-          titleKey: 'radar.alert.heavy.title',
-          messageKey: 'radar.alert.heavy.message',
+          severity: "severe",
+          titleKey: "radar.alert.heavy.title",
+          messageKey: "radar.alert.heavy.message",
           timestamp: Date.now(),
         });
       }
     }
-  }, [alertSettings, location, radarData, playbackFrames, currentFrameIndex, dismissedAlerts]);
+  }, [
+    alertSettings,
+    location,
+    radarData,
+    playbackFrames,
+    currentFrameIndex,
+    dismissedAlerts,
+  ]);
 
-  const updateAlertSettings = useCallback((settings: RadarAlertSettings) => {
-    setAlertSettings(settings);
-  }, [setAlertSettings]);
+  const updateAlertSettings = useCallback(
+    (settings: RadarAlertSettings) => {
+      setAlertSettings(settings);
+    },
+    [setAlertSettings],
+  );
 
   const dismissAlert = useCallback(() => {
     if (activeAlert) {

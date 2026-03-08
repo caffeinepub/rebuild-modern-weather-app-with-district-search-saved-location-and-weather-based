@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from "react";
-import { Search, MapPin, X, Loader2 } from "lucide-react";
+import { Loader2, MapPin, Search, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useGeocodingSearch } from "../hooks/useGeocodingSearch";
+import type { SavedLocation } from "../hooks/usePersistedLocation";
 import { useI18n } from "../i18n/useI18n";
 import { FloatingAutocompleteDropdown } from "./FloatingAutocompleteDropdown";
-import type { SavedLocation } from "../hooks/usePersistedLocation";
 
 interface LocationSearchProps {
   onLocationSelect: (location: SavedLocation) => void;
@@ -11,7 +11,11 @@ interface LocationSearchProps {
   currentLocation: SavedLocation | null;
 }
 
-export function LocationSearch({ onLocationSelect, onClearLocation, currentLocation }: LocationSearchProps) {
+export function LocationSearch({
+  onLocationSelect,
+  onClearLocation,
+  currentLocation,
+}: LocationSearchProps) {
   const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -56,6 +60,7 @@ export function LocationSearch({ onLocationSelect, onClearLocation, currentLocat
             </div>
           </div>
           <button
+            type="button"
             onClick={handleClear}
             className="ml-2 p-2 sm:p-2.5 rounded-lg hover:bg-foreground/10 transition-colors flex-shrink-0 min-h-[44px] min-w-[44px] sm:min-h-[40px] sm:min-w-[40px] flex items-center justify-center"
             aria-label="Clear location"
@@ -90,14 +95,17 @@ export function LocationSearch({ onLocationSelect, onClearLocation, currentLocat
         >
           {results && results.length > 0 ? (
             <div className="py-2 sm:py-1">
-              {results.map((result, index) => (
+              {results.map((result) => (
                 <button
-                  key={index}
+                  type="button"
+                  key={`${result.name}-${result.latitude}-${result.longitude}`}
                   onClick={() => handleSelect(result)}
                   className="w-full px-4 py-3 sm:px-3 sm:py-2 text-left hover:bg-foreground/10 transition-colors min-h-[44px] sm:min-h-[36px] flex items-center"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-base sm:text-sm truncate">{result.name}</p>
+                    <p className="font-medium text-base sm:text-sm truncate">
+                      {result.name}
+                    </p>
                     <p className="text-xs sm:text-[11px] text-foreground/60 truncate">
                       {result.admin1 && `${result.admin1}, `}
                       {result.country}

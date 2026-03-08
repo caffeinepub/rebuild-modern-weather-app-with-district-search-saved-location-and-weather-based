@@ -1,8 +1,16 @@
-import { Waves, Wind, Thermometer, Eye, AlertTriangle, Loader2, Droplets } from "lucide-react";
-import { useI18n } from "../i18n/useI18n";
+import {
+  AlertTriangle,
+  Droplets,
+  Eye,
+  Loader2,
+  Thermometer,
+  Waves,
+  Wind,
+} from "lucide-react";
 import { useMarineConditions } from "../hooks/useMarineConditions";
-import type { WeatherData } from "../hooks/useWeather";
 import type { SavedLocation } from "../hooks/usePersistedLocation";
+import type { WeatherData } from "../hooks/useWeather";
+import { useI18n } from "../i18n/useI18n";
 
 interface BeachMarineScreenProps {
   location: SavedLocation | null;
@@ -11,18 +19,25 @@ interface BeachMarineScreenProps {
   error: Error | null;
 }
 
-export function BeachMarineScreen({ location, weatherData, isLoading, error }: BeachMarineScreenProps) {
+export function BeachMarineScreen({
+  location,
+  weatherData,
+  isLoading,
+  error,
+}: BeachMarineScreenProps) {
   const { t } = useI18n();
   const { data: marineData, isLoading: isMarineLoading } = useMarineConditions(
     location?.latitude,
-    location?.longitude
+    location?.longitude,
   );
 
   if (!location) {
     return (
       <div className="glass-surface p-6 sm:p-8 rounded-2xl text-center">
         <Waves className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-foreground/40" />
-        <p className="text-base sm:text-lg text-foreground/60">{t("location.search.placeholder")}</p>
+        <p className="text-base sm:text-lg text-foreground/60">
+          {t("location.search.placeholder")}
+        </p>
       </div>
     );
   }
@@ -31,7 +46,9 @@ export function BeachMarineScreen({ location, weatherData, isLoading, error }: B
     return (
       <div className="glass-surface p-6 sm:p-8 rounded-2xl text-center">
         <Loader2 className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-primary animate-spin" />
-        <p className="text-base sm:text-lg text-foreground/60">Loading marine data...</p>
+        <p className="text-base sm:text-lg text-foreground/60">
+          Loading marine data...
+        </p>
       </div>
     );
   }
@@ -40,7 +57,9 @@ export function BeachMarineScreen({ location, weatherData, isLoading, error }: B
     return (
       <div className="glass-surface p-6 sm:p-8 rounded-2xl text-center">
         <AlertTriangle className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-destructive" />
-        <p className="text-base sm:text-lg text-foreground/60">{t("weather.error")}</p>
+        <p className="text-base sm:text-lg text-foreground/60">
+          {t("weather.error")}
+        </p>
       </div>
     );
   }
@@ -53,8 +72,12 @@ export function BeachMarineScreen({ location, weatherData, isLoading, error }: B
             <Waves className="w-7 h-7 sm:w-10 sm:h-10 text-primary" />
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold">{t("beach.title")}</h2>
-            <p className="text-xs sm:text-sm text-foreground/60">Marine and coastal conditions</p>
+            <h2 className="text-xl sm:text-2xl font-bold">
+              {t("beach.title")}
+            </h2>
+            <p className="text-xs sm:text-sm text-foreground/60">
+              {t("beach.marineCoastalConditions")}
+            </p>
           </div>
         </div>
 
@@ -64,10 +87,15 @@ export function BeachMarineScreen({ location, weatherData, isLoading, error }: B
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/20 flex items-center justify-center">
                 <Waves className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               </div>
-              <span className="text-xs sm:text-sm text-foreground/60">Wave Height</span>
+              <span className="text-xs sm:text-sm text-foreground/60">
+                {t("beach.waveHeight")}
+              </span>
             </div>
             <p className="text-xl sm:text-2xl font-bold">
-              {marineData.waveHeight !== null ? marineData.waveHeight.toFixed(1) : "N/A"}m
+              {marineData.waveHeight !== null
+                ? marineData.waveHeight.toFixed(1)
+                : "N/A"}
+              m
             </p>
           </div>
 
@@ -76,10 +104,15 @@ export function BeachMarineScreen({ location, weatherData, isLoading, error }: B
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-accent/20 flex items-center justify-center">
                 <Droplets className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
               </div>
-              <span className="text-xs sm:text-sm text-foreground/60">Wave Period</span>
+              <span className="text-xs sm:text-sm text-foreground/60">
+                {t("beach.wavePeriod")}
+              </span>
             </div>
             <p className="text-xl sm:text-2xl font-bold">
-              {marineData.wavePeriod !== null ? marineData.wavePeriod.toFixed(1) : "N/A"}s
+              {marineData.wavePeriod !== null
+                ? marineData.wavePeriod.toFixed(1)
+                : "N/A"}
+              s
             </p>
           </div>
 
@@ -88,9 +121,13 @@ export function BeachMarineScreen({ location, weatherData, isLoading, error }: B
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-secondary/20 flex items-center justify-center">
                 <Wind className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
               </div>
-              <span className="text-xs sm:text-sm text-foreground/60">Wave Direction</span>
+              <span className="text-xs sm:text-sm text-foreground/60">
+                {t("beach.waveDirection")}
+              </span>
             </div>
-            <p className="text-xl sm:text-2xl font-bold">{marineData.waveDirection}°</p>
+            <p className="text-xl sm:text-2xl font-bold">
+              {marineData.waveDirection}°
+            </p>
           </div>
 
           <div className="glass-surface p-3 sm:p-4 rounded-xl border border-success/20">
@@ -98,10 +135,15 @@ export function BeachMarineScreen({ location, weatherData, isLoading, error }: B
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-success/20 flex items-center justify-center">
                 <Thermometer className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
               </div>
-              <span className="text-xs sm:text-sm text-foreground/60">Sea Temperature</span>
+              <span className="text-xs sm:text-sm text-foreground/60">
+                {t("beach.seaTemperature")}
+              </span>
             </div>
             <p className="text-xl sm:text-2xl font-bold">
-              {marineData.seaSurfaceTemperature !== null ? marineData.seaSurfaceTemperature.toFixed(1) : "N/A"}°C
+              {marineData.seaSurfaceTemperature !== null
+                ? marineData.seaSurfaceTemperature.toFixed(1)
+                : "N/A"}
+              °C
             </p>
           </div>
 
@@ -110,9 +152,13 @@ export function BeachMarineScreen({ location, weatherData, isLoading, error }: B
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-warning/20 flex items-center justify-center">
                 <Wind className="w-4 h-4 sm:w-5 sm:h-5 text-warning" />
               </div>
-              <span className="text-xs sm:text-sm text-foreground/60">Wind Speed</span>
+              <span className="text-xs sm:text-sm text-foreground/60">
+                {t("beach.windSpeed")}
+              </span>
             </div>
-            <p className="text-xl sm:text-2xl font-bold">{weatherData.current.windSpeed.toFixed(1)} km/h</p>
+            <p className="text-xl sm:text-2xl font-bold">
+              {weatherData.current.windSpeed.toFixed(1)} km/h
+            </p>
           </div>
 
           <div className="glass-surface p-3 sm:p-4 rounded-xl border border-destructive/20">
@@ -120,10 +166,15 @@ export function BeachMarineScreen({ location, weatherData, isLoading, error }: B
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-destructive/20 flex items-center justify-center">
                 <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
               </div>
-              <span className="text-xs sm:text-sm text-foreground/60">Visibility</span>
+              <span className="text-xs sm:text-sm text-foreground/60">
+                {t("beach.visibility")}
+              </span>
             </div>
             <p className="text-xl sm:text-2xl font-bold">
-              {weatherData.current.visibility ? (weatherData.current.visibility / 1000).toFixed(1) : "N/A"} km
+              {weatherData.current.visibility
+                ? (weatherData.current.visibility / 1000).toFixed(1)
+                : "N/A"}{" "}
+              km
             </p>
           </div>
         </div>

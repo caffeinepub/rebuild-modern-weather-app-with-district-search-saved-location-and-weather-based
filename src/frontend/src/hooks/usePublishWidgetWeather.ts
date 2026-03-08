@@ -1,6 +1,6 @@
-import { useMutation } from '@tanstack/react-query';
-import { useActor } from './useActor';
-import type { WeatherResponse } from '../backend';
+import { useMutation } from "@tanstack/react-query";
+import type { WeatherResponse } from "../backend";
+import { useActor } from "./useActor";
 
 interface PublishParams {
   key: string;
@@ -18,15 +18,15 @@ export function usePublishWidgetWeather() {
   const mutation = useMutation({
     mutationFn: async ({ key, payload }: PublishParams) => {
       if (!actor) {
-        throw new Error('Backend actor not available');
+        throw new Error("Backend actor not available");
       }
-      
+
       const result = await actor.upsertWeather(key, payload);
       return result;
     },
     onError: (error) => {
       // Log error but don't crash the UI
-      console.warn('Failed to publish weather data to backend:', error);
+      console.warn("Failed to publish weather data to backend:", error);
     },
   });
 

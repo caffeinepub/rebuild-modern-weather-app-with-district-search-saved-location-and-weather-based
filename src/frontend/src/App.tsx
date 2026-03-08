@@ -1,32 +1,48 @@
-import { useEffect, useState, useRef } from 'react';
-import { ThemeProvider } from './components/ThemeProvider';
-import { LocationSearch } from './components/LocationSearch';
-import { WeatherPanel } from './components/WeatherPanel';
-import { FarmerGardenWeatherPanel } from './components/FarmerGardenWeatherPanel';
-import { DriverWeatherPanel } from './components/DriverWeatherPanel';
-import { RadarScreen } from './components/RadarScreen';
-import { BeachMarineScreen } from './components/BeachMarineScreen';
-import { BottomNav } from './components/BottomNav';
-import { BackgroundIllustration } from './components/BackgroundIllustration';
-import { InitialRenderErrorBoundary } from './components/InitialRenderErrorBoundary';
-import { ImminentWeatherAlertBanner } from './components/ImminentWeatherAlertBanner';
-import { LanguageDropdownOverlay } from './components/LanguageDropdownOverlay';
-import { I18nProvider } from './i18n/I18nProvider';
-import { usePersistedLocation } from './hooks/usePersistedLocation';
-import { useWeather } from './hooks/useWeather';
-import { useImminentWeatherAlerts } from './hooks/useImminentWeatherAlerts';
-import { usePublishWidgetWeather } from './hooks/usePublishWidgetWeather';
-import { getWeatherTheme } from './lib/weatherTheme';
-import { generatePublishKey, transformToWidgetPayload } from './lib/widgetWeatherPayload';
-import { useI18n } from './i18n/useI18n';
-import type { SavedLocation } from './hooks/usePersistedLocation';
-import { Cloud } from 'lucide-react';
+import { Cloud } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { BackgroundIllustration } from "./components/BackgroundIllustration";
+import { BeachMarineScreen } from "./components/BeachMarineScreen";
+import { BottomNav } from "./components/BottomNav";
+import { DriverWeatherPanel } from "./components/DriverWeatherPanel";
+import { EventPlannerScreen } from "./components/EventPlannerScreen";
+import { FarmerGardenWeatherPanel } from "./components/FarmerGardenWeatherPanel";
+import { HealthRecommendationsScreen } from "./components/HealthRecommendationsScreen";
+import { ImminentWeatherAlertBanner } from "./components/ImminentWeatherAlertBanner";
+import { InitialRenderErrorBoundary } from "./components/InitialRenderErrorBoundary";
+import { LanguageDropdownOverlay } from "./components/LanguageDropdownOverlay";
+import { LocationSearch } from "./components/LocationSearch";
+import { RadarScreen } from "./components/RadarScreen";
+import { ThemeProvider } from "./components/ThemeProvider";
+import { WeatherPanel } from "./components/WeatherPanel";
+import { useImminentWeatherAlerts } from "./hooks/useImminentWeatherAlerts";
+import { usePersistedLocation } from "./hooks/usePersistedLocation";
+import type { SavedLocation } from "./hooks/usePersistedLocation";
+import { usePublishWidgetWeather } from "./hooks/usePublishWidgetWeather";
+import { useWeather } from "./hooks/useWeather";
+import { I18nProvider } from "./i18n/I18nProvider";
+import { useI18n } from "./i18n/useI18n";
+import { getWeatherTheme } from "./lib/weatherTheme";
+import {
+  generatePublishKey,
+  transformToWidgetPayload,
+} from "./lib/widgetWeatherPayload";
+
+type ActiveTab =
+  | "weather"
+  | "farmer"
+  | "driver"
+  | "health"
+  | "eventPlanner"
+  | "radar"
+  | "beach";
 
 function AppContent() {
   const { location, setLocation, clearLocation } = usePersistedLocation();
-  const [activeLocation, setActiveLocation] = useState<SavedLocation | null>(null);
-  const [activeTab, setActiveTab] = useState<'weather' | 'farmer' | 'driver' | 'radar' | 'beach'>('weather');
-  const { locale, t } = useI18n();
+  const [activeLocation, setActiveLocation] = useState<SavedLocation | null>(
+    null,
+  );
+  const [activeTab, setActiveTab] = useState<ActiveTab>("weather");
+  const { locale } = useI18n();
   const lastPublishedDataRef = useRef<string | null>(null);
 
   // Initialize active location from persisted data
@@ -37,13 +53,18 @@ function AppContent() {
   }, [location]);
 
   // Fetch weather for active location
-  const { data: weatherData, isLoading, error } = useWeather(
-    activeLocation?.latitude,
-    activeLocation?.longitude
-  );
+  const {
+    data: weatherData,
+    isLoading,
+    error,
+  } = useWeather(activeLocation?.latitude, activeLocation?.longitude);
 
   // Imminent weather alerts
-  const { activeAlert, dismiss } = useImminentWeatherAlerts(weatherData, activeLocation, locale);
+  const { activeAlert, dismiss } = useImminentWeatherAlerts(
+    weatherData,
+    activeLocation,
+    locale,
+  );
 
   // Backend publishing hook
   const { publish } = usePublishWidgetWeather();
@@ -65,13 +86,15 @@ function AppContent() {
           lastPublishedDataRef.current = dataHash;
         }
       } catch (err) {
-        console.warn('Failed to prepare weather data for publishing:', err);
+        console.warn("Failed to prepare weather data for publishing:", err);
       }
     }
   }, [weatherData, activeLocation, publish]);
 
   // Determine current theme based on weather
-  const currentTheme = weatherData ? getWeatherTheme(weatherData.current.weatherCode) : 'clear';
+  const currentTheme = weatherData
+    ? getWeatherTheme(weatherData.current.weatherCode)
+    : "clear";
 
   const handleLocationSelect = (newLocation: SavedLocation) => {
     setLocation(newLocation);
@@ -87,7 +110,7 @@ function AppContent() {
     <ThemeProvider theme={currentTheme}>
       <div className="min-h-screen relative">
         <BackgroundIllustration theme={currentTheme} />
-        
+
         <div className="relative z-10 min-h-screen flex flex-col">
           <header className="px-4 py-3 sm:px-6 sm:py-4">
             <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -116,7 +139,7 @@ function AppContent() {
                 onClearLocation={handleClearLocation}
               />
 
-              {activeTab === 'weather' && (
+              {activeTab === "weather" && (
                 <WeatherPanel
                   weatherData={weatherData}
                   isLoading={isLoading}
@@ -125,7 +148,7 @@ function AppContent() {
                 />
               )}
 
-              {activeTab === 'farmer' && (
+              {activeTab === "farmer" && (
                 <FarmerGardenWeatherPanel
                   weatherData={weatherData}
                   isLoading={isLoading}
@@ -134,7 +157,7 @@ function AppContent() {
                 />
               )}
 
-              {activeTab === 'driver' && (
+              {activeTab === "driver" && (
                 <DriverWeatherPanel
                   weatherData={weatherData}
                   isLoading={isLoading}
@@ -143,14 +166,29 @@ function AppContent() {
                 />
               )}
 
-              {activeTab === 'radar' && (
+              {activeTab === "health" && (
+                <HealthRecommendationsScreen
+                  location={activeLocation}
+                  weatherData={weatherData}
+                  theme={currentTheme}
+                />
+              )}
+
+              {activeTab === "eventPlanner" && (
+                <EventPlannerScreen
+                  location={activeLocation}
+                  weatherData={weatherData}
+                />
+              )}
+
+              {activeTab === "radar" && (
                 <RadarScreen
                   location={activeLocation}
                   weatherData={weatherData || null}
                 />
               )}
 
-              {activeTab === 'beach' && (
+              {activeTab === "beach" && (
                 <BeachMarineScreen
                   location={activeLocation}
                   weatherData={weatherData}

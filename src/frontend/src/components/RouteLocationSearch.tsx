@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from "react";
-import { Search, MapPin, X, Loader2 } from "lucide-react";
+import { Loader2, MapPin, Search, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useGeocodingSearch } from "../hooks/useGeocodingSearch";
-import { FloatingAutocompleteDropdown } from "./FloatingAutocompleteDropdown";
+import { useI18n } from "../i18n/useI18n";
 import type { GeocodingResult } from "../lib/openMeteo";
+import { FloatingAutocompleteDropdown } from "./FloatingAutocompleteDropdown";
 
 interface RouteLocationSearchProps {
   label: string;
@@ -17,6 +18,7 @@ export function RouteLocationSearch({
   onClear,
   currentLocation,
 }: RouteLocationSearchProps) {
+  const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -45,14 +47,16 @@ export function RouteLocationSearch({
 
   return (
     <div className="w-full">
-      <label className="block text-xs sm:text-sm font-medium mb-2">{label}</label>
+      <p className="block text-xs sm:text-sm font-medium mb-2">{label}</p>
 
       {currentLocation && (
         <div className="glass-surface p-3 sm:p-4 rounded-xl mb-2 sm:mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
             <div className="min-w-0 flex-1">
-              <p className="font-medium text-sm sm:text-base truncate">{currentLocation.name}</p>
+              <p className="font-medium text-sm sm:text-base truncate">
+                {currentLocation.name}
+              </p>
               <p className="text-xs sm:text-sm text-foreground/60 truncate">
                 {currentLocation.admin1 && `${currentLocation.admin1}, `}
                 {currentLocation.country}
@@ -60,6 +64,7 @@ export function RouteLocationSearch({
             </div>
           </div>
           <button
+            type="button"
             onClick={handleClear}
             className="ml-2 p-2 rounded-lg hover:bg-foreground/10 transition-colors flex-shrink-0 min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center"
             aria-label="Clear"
@@ -78,7 +83,7 @@ export function RouteLocationSearch({
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search location..."
+              placeholder={t("driver.searchLocationPlaceholder")}
               className="flex-1 bg-transparent outline-none text-base sm:text-sm placeholder:text-foreground/40 min-h-[44px] sm:min-h-[36px]"
             />
             {isLoading && (
@@ -94,14 +99,17 @@ export function RouteLocationSearch({
         >
           {results && results.length > 0 ? (
             <div className="py-2 sm:py-1">
-              {results.map((result, index) => (
+              {results.map((result) => (
                 <button
-                  key={index}
+                  type="button"
+                  key={`${result.name}-${result.latitude}-${result.longitude}`}
                   onClick={() => handleSelect(result)}
                   className="w-full px-4 py-3 sm:px-3 sm:py-2 text-left hover:bg-foreground/10 transition-colors min-h-[44px] sm:min-h-[36px] flex items-center"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-base sm:text-sm truncate">{result.name}</p>
+                    <p className="font-medium text-base sm:text-sm truncate">
+                      {result.name}
+                    </p>
                     <p className="text-xs sm:text-[11px] text-foreground/60 truncate">
                       {result.admin1 && `${result.admin1}, `}
                       {result.country}

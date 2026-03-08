@@ -1,10 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
-import { searchLocations, type GeocodingResult } from '../lib/openMeteo';
-import { useDebounce } from 'react-use';
-import { useState } from 'react';
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useDebounce } from "react-use";
+import { type GeocodingResult, searchLocations } from "../lib/openMeteo";
 
 export function useGeocodingSearch(query: string) {
-  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState("");
 
   // Debounce the query to avoid too many API calls
   useDebounce(
@@ -12,11 +12,15 @@ export function useGeocodingSearch(query: string) {
       setDebouncedQuery(query);
     },
     500,
-    [query]
+    [query],
   );
 
-  const { data: results = [], isLoading, error } = useQuery<GeocodingResult[]>({
-    queryKey: ['geocoding', debouncedQuery],
+  const {
+    data: results = [],
+    isLoading,
+    error,
+  } = useQuery<GeocodingResult[]>({
+    queryKey: ["geocoding", debouncedQuery],
     queryFn: async () => {
       if (!debouncedQuery || debouncedQuery.length < 2) {
         return [];

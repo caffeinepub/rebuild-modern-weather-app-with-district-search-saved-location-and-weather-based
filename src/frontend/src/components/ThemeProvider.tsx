@@ -1,7 +1,7 @@
-import { createContext, useContext, type ReactNode } from 'react';
-import { isDarkWeatherTheme } from '../lib/weatherContrast';
+import { type ReactNode, createContext, useContext } from "react";
+import { isDarkWeatherTheme } from "../lib/weatherContrast";
 
-type WeatherTheme = 'clear' | 'cloudy' | 'rain' | 'snow';
+type WeatherTheme = "clear" | "cloudy" | "rain" | "snow";
 
 interface ThemeContextValue {
   theme: WeatherTheme;
@@ -12,7 +12,7 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error('useTheme must be used within ThemeProvider');
+    throw new Error("useTheme must be used within ThemeProvider");
   }
   return context;
 }
@@ -24,12 +24,12 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({ children, theme }: ThemeProviderProps) {
   const isDark = isDarkWeatherTheme(theme);
-  
+
   return (
     <ThemeContext.Provider value={{ theme }}>
-      <div 
-        data-weather-theme={theme} 
-        className={`transition-colors duration-700 ${isDark ? 'dark' : ''}`}
+      <div
+        data-weather-theme={theme}
+        className={`transition-colors duration-700 ${isDark ? "dark" : ""}`}
       >
         {children}
       </div>

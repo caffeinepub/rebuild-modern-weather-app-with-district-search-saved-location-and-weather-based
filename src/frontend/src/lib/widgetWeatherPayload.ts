@@ -1,6 +1,6 @@
-import type { WeatherData } from '../hooks/useWeather';
-import type { SavedLocation } from '../hooks/usePersistedLocation';
-import type { WeatherResponse } from '../backend';
+import type { WeatherResponse } from "../backend";
+import type { SavedLocation } from "../hooks/usePersistedLocation";
+import type { WeatherData } from "../hooks/useWeather";
 
 /**
  * Generates a stable key for the weather payload based on location.
@@ -8,8 +8,8 @@ import type { WeatherResponse } from '../backend';
  */
 export function generatePublishKey(location: SavedLocation): string {
   // Create a deterministic key from city and country
-  const city = location.name.toLowerCase().replace(/\s+/g, '-');
-  const country = location.country.toLowerCase().replace(/\s+/g, '-');
+  const city = location.name.toLowerCase().replace(/\s+/g, "-");
+  const country = location.country.toLowerCase().replace(/\s+/g, "-");
   return `${city}_${country}`;
 }
 
@@ -19,7 +19,7 @@ export function generatePublishKey(location: SavedLocation): string {
  */
 export function transformToWidgetPayload(
   weatherData: WeatherData,
-  location: SavedLocation
+  location: SavedLocation,
 ): WeatherResponse {
   // Transform daily forecast (use first 7 days for weekly)
   const weekly = weatherData.daily.slice(0, 7).map((day) => ({
@@ -56,16 +56,16 @@ export function transformToWidgetPayload(
  * Returns safe defaults for unknown codes.
  */
 function mapWeatherCodeToCondition(code: number): string {
-  if (code === 0) return 'Clear';
-  if (code === 1) return 'Mainly Clear';
-  if (code === 2) return 'Partly Cloudy';
-  if (code === 3) return 'Cloudy';
-  if (code === 45 || code === 48) return 'Fog';
-  if (code >= 51 && code <= 57) return 'Drizzle';
-  if (code >= 61 && code <= 67) return 'Rain';
-  if (code >= 71 && code <= 77) return 'Snow';
-  if (code >= 80 && code <= 82) return 'Rain Showers';
-  if (code >= 85 && code <= 86) return 'Snow Showers';
-  if (code >= 95 && code <= 99) return 'Thunderstorm';
-  return 'Unknown';
+  if (code === 0) return "Clear";
+  if (code === 1) return "Mainly Clear";
+  if (code === 2) return "Partly Cloudy";
+  if (code === 3) return "Cloudy";
+  if (code === 45 || code === 48) return "Fog";
+  if (code >= 51 && code <= 57) return "Drizzle";
+  if (code >= 61 && code <= 67) return "Rain";
+  if (code >= 71 && code <= 77) return "Snow";
+  if (code >= 80 && code <= 82) return "Rain Showers";
+  if (code >= 85 && code <= 86) return "Snow Showers";
+  if (code >= 95 && code <= 99) return "Thunderstorm";
+  return "Unknown";
 }

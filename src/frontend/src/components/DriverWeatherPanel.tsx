@@ -1,12 +1,23 @@
-import { Car, AlertTriangle, Loader2, Snowflake, CloudFog, Gauge, Navigation } from "lucide-react";
-import { useI18n } from "../i18n/useI18n";
-import { calculateRoadIceRisk, calculateFogWarning } from "../lib/driverAdvisories";
-import { RouteLocationSearch } from "./RouteLocationSearch";
-import { useRouteWeatherAnalysis } from "../hooks/useRouteWeatherAnalysis";
+import {
+  AlertTriangle,
+  Car,
+  CloudFog,
+  Gauge,
+  Loader2,
+  Navigation,
+  Snowflake,
+} from "lucide-react";
 import { useState } from "react";
-import type { WeatherData } from "../hooks/useWeather";
 import type { SavedLocation } from "../hooks/usePersistedLocation";
+import { useRouteWeatherAnalysis } from "../hooks/useRouteWeatherAnalysis";
+import type { WeatherData } from "../hooks/useWeather";
+import { useI18n } from "../i18n/useI18n";
+import {
+  calculateFogWarning,
+  calculateRoadIceRisk,
+} from "../lib/driverAdvisories";
 import type { GeocodingResult } from "../lib/openMeteo";
+import { RouteLocationSearch } from "./RouteLocationSearch";
 
 interface DriverWeatherPanelProps {
   weatherData: WeatherData | undefined;
@@ -15,17 +26,25 @@ interface DriverWeatherPanelProps {
   location: SavedLocation | null;
 }
 
-export function DriverWeatherPanel({ weatherData, isLoading, error, location }: DriverWeatherPanelProps) {
+export function DriverWeatherPanel({
+  weatherData,
+  isLoading,
+  error,
+  location,
+}: DriverWeatherPanelProps) {
   const { t } = useI18n();
   const [routeStart, setRouteStart] = useState<GeocodingResult | null>(null);
   const [routeEnd, setRouteEnd] = useState<GeocodingResult | null>(null);
-  const { data: routeAnalysis, isLoading: isRouteLoading } = useRouteWeatherAnalysis(routeStart, routeEnd);
+  const { data: routeAnalysis, isLoading: isRouteLoading } =
+    useRouteWeatherAnalysis(routeStart, routeEnd);
 
   if (!location) {
     return (
       <div className="glass-surface p-6 sm:p-8 rounded-2xl text-center">
         <Car className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-foreground/40" />
-        <p className="text-base sm:text-lg text-foreground/60">{t("location.search.placeholder")}</p>
+        <p className="text-base sm:text-lg text-foreground/60">
+          {t("location.search.placeholder")}
+        </p>
       </div>
     );
   }
@@ -34,7 +53,9 @@ export function DriverWeatherPanel({ weatherData, isLoading, error, location }: 
     return (
       <div className="glass-surface p-6 sm:p-8 rounded-2xl text-center">
         <Loader2 className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-primary animate-spin" />
-        <p className="text-base sm:text-lg text-foreground/60">Loading weather data...</p>
+        <p className="text-base sm:text-lg text-foreground/60">
+          Loading weather data...
+        </p>
       </div>
     );
   }
@@ -43,7 +64,9 @@ export function DriverWeatherPanel({ weatherData, isLoading, error, location }: 
     return (
       <div className="glass-surface p-6 sm:p-8 rounded-2xl text-center">
         <AlertTriangle className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-destructive" />
-        <p className="text-base sm:text-lg text-foreground/60">{t("weather.error")}</p>
+        <p className="text-base sm:text-lg text-foreground/60">
+          {t("weather.error")}
+        </p>
       </div>
     );
   }
@@ -59,8 +82,12 @@ export function DriverWeatherPanel({ weatherData, isLoading, error, location }: 
             <Car className="w-7 h-7 sm:w-10 sm:h-10 text-accent" />
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold">{t("driver.title")}</h2>
-            <p className="text-xs sm:text-sm text-foreground/60">Driving conditions and safety</p>
+            <h2 className="text-xl sm:text-2xl font-bold">
+              {t("driver.title")}
+            </h2>
+            <p className="text-xs sm:text-sm text-foreground/60">
+              {t("driver.drivingConditions")}
+            </p>
           </div>
         </div>
 
@@ -71,8 +98,12 @@ export function DriverWeatherPanel({ weatherData, isLoading, error, location }: 
                 <Snowflake className="w-5 h-5 sm:w-6 sm:h-6 text-destructive" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2">{t(iceRisk.messageKey)}</h3>
-                <p className="text-sm sm:text-base text-foreground/80">{t(iceRisk.messageKey)}</p>
+                <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2">
+                  {t(iceRisk.messageKey)}
+                </h3>
+                <p className="text-sm sm:text-base text-foreground/80">
+                  {t(iceRisk.messageKey)}
+                </p>
               </div>
             </div>
           </div>
@@ -85,8 +116,12 @@ export function DriverWeatherPanel({ weatherData, isLoading, error, location }: 
                 <CloudFog className="w-5 h-5 sm:w-6 sm:h-6 text-warning" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2">{t(fogWarning.messageKey)}</h3>
-                <p className="text-sm sm:text-base text-foreground/80">{t(fogWarning.messageKey)}</p>
+                <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2">
+                  {t(fogWarning.messageKey)}
+                </h3>
+                <p className="text-sm sm:text-base text-foreground/80">
+                  {t(fogWarning.messageKey)}
+                </p>
               </div>
             </div>
           </div>
@@ -98,9 +133,11 @@ export function DriverWeatherPanel({ weatherData, isLoading, error, location }: 
               <Gauge className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2">Tire Pressure</h3>
+              <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2">
+                {t("driver.tirePressure")}
+              </h3>
               <p className="text-sm sm:text-base text-foreground/80">
-                Check tire pressure regularly for optimal safety and fuel efficiency.
+                {t("driver.tirePressureDescription")}
               </p>
             </div>
           </div>
@@ -110,19 +147,21 @@ export function DriverWeatherPanel({ weatherData, isLoading, error, location }: 
       <div className="glass-surface p-4 sm:p-6 rounded-2xl">
         <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
           <Navigation className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-          <h3 className="text-lg sm:text-xl font-bold">Route Weather Analysis</h3>
+          <h3 className="text-lg sm:text-xl font-bold">
+            {t("driver.routeWeatherAnalysis")}
+          </h3>
         </div>
 
         <div className="space-y-3 sm:space-y-4">
           <RouteLocationSearch
-            label="Start Location"
+            label={t("driver.startLocation")}
             onLocationSelect={setRouteStart}
             onClear={() => setRouteStart(null)}
             currentLocation={routeStart}
           />
 
           <RouteLocationSearch
-            label="End Location"
+            label={t("driver.endLocation")}
             onLocationSelect={setRouteEnd}
             onClear={() => setRouteEnd(null)}
             currentLocation={routeEnd}
@@ -131,7 +170,9 @@ export function DriverWeatherPanel({ weatherData, isLoading, error, location }: 
           {isRouteLoading && (
             <div className="text-center py-4 sm:py-6">
               <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 sm:mb-3 text-primary animate-spin" />
-              <p className="text-sm sm:text-base text-foreground/60">Analyzing route conditions...</p>
+              <p className="text-sm sm:text-base text-foreground/60">
+                Analyzing route conditions...
+              </p>
             </div>
           )}
 
@@ -145,10 +186,15 @@ export function DriverWeatherPanel({ weatherData, isLoading, error, location }: 
                     : "border-success/30 bg-success/5"
               }`}
             >
-              <h4 className="text-base sm:text-lg font-bold mb-2 sm:mb-3">{t(routeAnalysis.summaryKey)}</h4>
+              <h4 className="text-base sm:text-lg font-bold mb-2 sm:mb-3">
+                {t(routeAnalysis.summaryKey)}
+              </h4>
               <ul className="space-y-1 sm:space-y-2">
-                {routeAnalysis.factors.map((factor, index) => (
-                  <li key={index} className="text-xs sm:text-sm text-foreground/80 flex items-start gap-2">
+                {routeAnalysis.factors.map((factor) => (
+                  <li
+                    key={String(factor)}
+                    className="text-xs sm:text-sm text-foreground/80 flex items-start gap-2"
+                  >
                     <span className="text-primary mt-0.5">•</span>
                     <span className="flex-1">{String(factor)}</span>
                   </li>

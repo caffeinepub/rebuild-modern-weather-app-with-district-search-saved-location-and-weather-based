@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from "react";
 
-export function useSessionState<T>(key: string, defaultValue: T): [T, (value: T) => void] {
+export function useSessionState<T>(
+  key: string,
+  defaultValue: T,
+): [T, (value: T) => void] {
   const [state, setState] = useState<T>(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return defaultValue;
     }
-    
+
     try {
       const item = sessionStorage.getItem(key);
       return item ? JSON.parse(item) : defaultValue;
@@ -16,7 +19,7 @@ export function useSessionState<T>(key: string, defaultValue: T): [T, (value: T)
   });
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
 

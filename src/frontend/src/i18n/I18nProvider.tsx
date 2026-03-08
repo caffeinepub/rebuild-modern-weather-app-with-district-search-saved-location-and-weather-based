@@ -1,5 +1,5 @@
-import { createContext, useState, useEffect, ReactNode } from 'react';
-import { translations, type Locale, type TranslationKey } from './translations';
+import { type ReactNode, createContext, useEffect, useState } from "react";
+import { type Locale, type TranslationKey, translations } from "./translations";
 
 interface I18nContextType {
   locale: Locale;
@@ -7,27 +7,29 @@ interface I18nContextType {
   t: (key: TranslationKey) => string;
 }
 
-export const I18nContext = createContext<I18nContextType | undefined>(undefined);
+export const I18nContext = createContext<I18nContextType | undefined>(
+  undefined,
+);
 
-const LOCALE_STORAGE_KEY = 'app-locale';
+const LOCALE_STORAGE_KEY = "app-locale";
 
 function getStoredLocale(): Locale {
   try {
     const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
-    if (stored === 'tr' || stored === 'en') {
+    if (stored === "tr" || stored === "en") {
       return stored;
     }
   } catch (error) {
-    console.error('Failed to read locale from localStorage:', error);
+    console.error("Failed to read locale from localStorage:", error);
   }
-  return 'tr'; // Default to Turkish
+  return "tr"; // Default to Turkish
 }
 
 function storeLocale(locale: Locale): void {
   try {
     localStorage.setItem(LOCALE_STORAGE_KEY, locale);
   } catch (error) {
-    console.error('Failed to store locale in localStorage:', error);
+    console.error("Failed to store locale in localStorage:", error);
   }
 }
 
@@ -44,7 +46,7 @@ export function I18nProvider({ children }: I18nProviderProps) {
   };
 
   const t = (key: TranslationKey): string => {
-    return translations[locale][key] || translations['tr'][key] || key;
+    return translations[locale][key] || translations.tr[key] || key;
   };
 
   return (

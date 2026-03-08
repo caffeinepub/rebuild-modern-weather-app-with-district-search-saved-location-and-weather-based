@@ -1,8 +1,8 @@
-import { Clock, Droplets, Navigation, Gauge } from 'lucide-react';
-import { useI18n } from '../../i18n/useI18n';
-import type { SavedLocation } from '../../hooks/usePersistedLocation';
-import type { RainViewerData, RadarFrame } from '../../lib/rainviewer';
-import { computeRadarSummary } from '../../lib/radarNowcastSummary';
+import { Clock, Droplets, Gauge, Navigation } from "lucide-react";
+import type { SavedLocation } from "../../hooks/usePersistedLocation";
+import { useI18n } from "../../i18n/useI18n";
+import { computeRadarSummary } from "../../lib/radarNowcastSummary";
+import type { RadarFrame, RainViewerData } from "../../lib/rainviewer";
 
 interface RadarInfoPanelProps {
   location: SavedLocation;
@@ -11,10 +11,20 @@ interface RadarInfoPanelProps {
   currentFrameIndex: number;
 }
 
-export function RadarInfoPanel({ location, radarData, playbackFrames, currentFrameIndex }: RadarInfoPanelProps) {
+export function RadarInfoPanel({
+  location,
+  radarData,
+  playbackFrames,
+  currentFrameIndex,
+}: RadarInfoPanelProps) {
   const { t } = useI18n();
 
-  const summary = computeRadarSummary(radarData, playbackFrames, currentFrameIndex, location);
+  const summary = computeRadarSummary(
+    radarData,
+    playbackFrames,
+    currentFrameIndex,
+    location,
+  );
 
   return (
     <div className="p-4">
@@ -23,7 +33,7 @@ export function RadarInfoPanel({ location, radarData, playbackFrames, currentFra
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Clock className="h-4 w-4" />
-            <span>{t('radar.info.startTime')}</span>
+            <span>{t("radar.info.startTime")}</span>
           </div>
           <p className="text-lg font-semibold">{summary.startTime}</p>
         </div>
@@ -32,7 +42,7 @@ export function RadarInfoPanel({ location, radarData, playbackFrames, currentFra
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Gauge className="h-4 w-4" />
-            <span>{t('radar.info.duration')}</span>
+            <span>{t("radar.info.duration")}</span>
           </div>
           <p className="text-lg font-semibold">{summary.duration}</p>
         </div>
@@ -41,7 +51,7 @@ export function RadarInfoPanel({ location, radarData, playbackFrames, currentFra
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Droplets className="h-4 w-4" />
-            <span>{t('radar.info.intensity')}</span>
+            <span>{t("radar.info.intensity")}</span>
           </div>
           <p className="text-lg font-semibold">{t(summary.intensity as any)}</p>
         </div>
@@ -50,7 +60,7 @@ export function RadarInfoPanel({ location, radarData, playbackFrames, currentFra
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Navigation className="h-4 w-4" />
-            <span>{t('radar.info.direction')}</span>
+            <span>{t("radar.info.direction")}</span>
           </div>
           <p className="text-lg font-semibold">{summary.direction}</p>
         </div>

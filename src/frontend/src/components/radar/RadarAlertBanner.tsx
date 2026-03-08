@@ -1,8 +1,8 @@
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { AlertTriangle, X } from 'lucide-react';
-import { useI18n } from '../../i18n/useI18n';
-import type { RadarAlert } from '../../hooks/useRadarAlerts';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, X } from "lucide-react";
+import type { RadarAlert } from "../../hooks/useRadarAlerts";
+import { useI18n } from "../../i18n/useI18n";
 
 interface RadarAlertBannerProps {
   alert: RadarAlert;
@@ -14,10 +14,10 @@ export function RadarAlertBanner({ alert, onDismiss }: RadarAlertBannerProps) {
 
   const getVariant = () => {
     switch (alert.severity) {
-      case 'severe':
-        return 'destructive';
+      case "severe":
+        return "destructive";
       default:
-        return 'default';
+        return "default";
     }
   };
 

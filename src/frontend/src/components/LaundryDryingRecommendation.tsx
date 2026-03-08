@@ -1,13 +1,15 @@
-import { Wind, Sun, CloudRain } from "lucide-react";
+import { CloudRain, Sun, Wind } from "lucide-react";
+import type { WeatherData } from "../hooks/useWeather";
 import { useI18n } from "../i18n/useI18n";
 import { getLaundryDryingRecommendation } from "../lib/laundryDrying";
-import type { WeatherData } from "../hooks/useWeather";
 
 interface LaundryDryingRecommendationProps {
   weatherData: WeatherData;
 }
 
-export function LaundryDryingRecommendation({ weatherData }: LaundryDryingRecommendationProps) {
+export function LaundryDryingRecommendation({
+  weatherData,
+}: LaundryDryingRecommendationProps) {
   const { t } = useI18n();
   const recommendation = getLaundryDryingRecommendation(weatherData);
 
@@ -26,7 +28,9 @@ export function LaundryDryingRecommendation({ weatherData }: LaundryDryingRecomm
           {getIcon()}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2">{t("laundry.title")}</h3>
+          <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2">
+            {t("laundry.title")}
+          </h3>
           <p className="text-xs sm:text-sm text-foreground/60 mb-2 sm:mb-3 italic">
             {t("laundry.note")}
           </p>
@@ -36,7 +40,8 @@ export function LaundryDryingRecommendation({ weatherData }: LaundryDryingRecomm
                 {t("laundry.bestTime")}
               </p>
               <p className="text-base sm:text-lg font-bold">
-                {recommendation.bestRange.start} - {recommendation.bestRange.end}
+                {recommendation.bestRange.start} -{" "}
+                {recommendation.bestRange.end}
               </p>
             </div>
           )}
@@ -45,8 +50,11 @@ export function LaundryDryingRecommendation({ weatherData }: LaundryDryingRecomm
               <p className="text-xs sm:text-sm font-medium text-foreground/60">
                 {t("laundry.alternativeTimes")}
               </p>
-              {recommendation.additionalRanges.map((range, index) => (
-                <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs sm:text-sm text-foreground/70">
+              {recommendation.additionalRanges.map((range) => (
+                <div
+                  key={`${range.start}-${range.end}`}
+                  className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs sm:text-sm text-foreground/70"
+                >
                   <span className="font-medium">
                     {range.start} - {range.end}
                   </span>

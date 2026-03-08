@@ -1,6 +1,6 @@
 /**
  * React Query hooks for backend operations.
- * 
+ *
  * This file manages all data fetching and state invalidation.
  * Currently, the backend is not used; all data is fetched client-side from:
  * - Open-Meteo Weather API (weather forecasts)

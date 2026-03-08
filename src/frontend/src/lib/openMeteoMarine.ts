@@ -1,4 +1,4 @@
-import { fetchWithTimeout } from './fetchWithTimeout';
+import { fetchWithTimeout } from "./fetchWithTimeout";
 
 export interface MarineConditions {
   seaSurfaceTemperature: number | null;
@@ -40,30 +40,31 @@ interface ForecastAPIResponse {
 
 export async function fetchMarineData(
   latitude: number,
-  longitude: number
+  longitude: number,
 ): Promise<MarineConditions> {
   // Fetch marine data from Open-Meteo Marine API
   const marineParams = new URLSearchParams({
     latitude: latitude.toString(),
     longitude: longitude.toString(),
-    hourly: 'wave_height,wave_period,wave_direction',
-    timezone: 'auto',
+    hourly: "wave_height,wave_period,wave_direction",
+    timezone: "auto",
   });
 
   const marineResponse = await fetchWithTimeout(
-    `https://marine-api.open-meteo.com/v1/marine?${marineParams}`
+    `https://marine-api.open-meteo.com/v1/marine?${marineParams}`,
   );
 
   // Fetch additional weather data for wind and visibility
   const forecastParams = new URLSearchParams({
     latitude: latitude.toString(),
     longitude: longitude.toString(),
-    current: 'temperature_2m,wind_speed_10m,wind_direction_10m,relative_humidity_2m,visibility',
-    timezone: 'auto',
+    current:
+      "temperature_2m,wind_speed_10m,wind_direction_10m,relative_humidity_2m,visibility",
+    timezone: "auto",
   });
 
   const forecastResponse = await fetchWithTimeout(
-    `https://api.open-meteo.com/v1/forecast?${forecastParams}`
+    `https://api.open-meteo.com/v1/forecast?${forecastParams}`,
   );
 
   let marineData: MarineAPIResponse = {};
@@ -79,10 +80,11 @@ export async function fetchMarineData(
 
   // Extract current/latest values from hourly data
   const currentHourIndex = 0; // Use the first available hour (current)
-  
+
   const waveHeight = marineData.hourly?.wave_height?.[currentHourIndex] ?? null;
   const wavePeriod = marineData.hourly?.wave_period?.[currentHourIndex] ?? null;
-  const waveDirection = marineData.hourly?.wave_direction?.[currentHourIndex] ?? null;
+  const waveDirection =
+    marineData.hourly?.wave_direction?.[currentHourIndex] ?? null;
 
   // Sea surface temperature approximation using air temperature
   // (Open-Meteo Marine API doesn't provide SST for all locations)
@@ -97,7 +99,10 @@ export async function fetchMarineData(
   let visibilityDerived = false;
 
   // If visibility is not available, derive from humidity
-  if (visibility === null && forecastData.current?.relative_humidity_2m !== undefined) {
+  if (
+    visibility === null &&
+    forecastData.current?.relative_humidity_2m !== undefined
+  ) {
     const humidity = forecastData.current.relative_humidity_2m;
     // Simple visibility estimation based on humidity
     // High humidity (>90%) = poor visibility, low humidity = good visibility

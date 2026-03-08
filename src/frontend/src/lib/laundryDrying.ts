@@ -1,6 +1,10 @@
-import type { WeatherData } from '../hooks/useWeather';
+import type { WeatherData } from "../hooks/useWeather";
 
-export type DryingClassification = 'ideal' | 'suitable' | 'limited' | 'not-suitable';
+export type DryingClassification =
+  | "ideal"
+  | "suitable"
+  | "limited"
+  | "not-suitable";
 
 export interface HourlyDryScore {
   hour: string;
@@ -47,7 +51,7 @@ function computeHourlyDryScore(
   humidity: number,
   windSpeed: number,
   precipitation: number,
-  weatherCode: number
+  weatherCode: number,
 ): number | null {
   // Precipitation cutoff - no score if raining
   if (precipitation > 0.2) {
@@ -123,18 +127,18 @@ function computeHourlyDryScore(
  */
 function classifyDryScore(score: number | null): DryingClassification {
   if (score === null) {
-    return 'not-suitable';
+    return "not-suitable";
   }
   if (score >= 70) {
-    return 'ideal';
+    return "ideal";
   }
   if (score >= 50) {
-    return 'suitable';
+    return "suitable";
   }
   if (score >= 35) {
-    return 'limited';
+    return "limited";
   }
-  return 'not-suitable';
+  return "not-suitable";
 }
 
 /**
@@ -166,7 +170,7 @@ function computeHourlyScores(weatherData: WeatherData): HourlyDryScore[] {
       hour.humidity,
       hour.windSpeed,
       hour.precipitation,
-      hour.weatherCode
+      hour.weatherCode,
     );
 
     return {
@@ -182,9 +186,9 @@ function computeHourlyScores(weatherData: WeatherData): HourlyDryScore[] {
  * Add one hour to a time string (HH:00 format), handling day wrap
  */
 function addOneHour(timeStr: string): string {
-  const hour = parseInt(timeStr.split(':')[0], 10);
+  const hour = Number.parseInt(timeStr.split(":")[0], 10);
   const nextHour = (hour + 1) % 24;
-  return `${nextHour.toString().padStart(2, '0')}:00`;
+  return `${nextHour.toString().padStart(2, "0")}:00`;
 }
 
 /**
@@ -197,7 +201,8 @@ function mergeTimeRanges(hourlyScores: HourlyDryScore[]): TimeRange[] {
 
   for (const hourScore of hourlyScores) {
     const isGood =
-      hourScore.classification === 'ideal' || hourScore.classification === 'suitable';
+      hourScore.classification === "ideal" ||
+      hourScore.classification === "suitable";
 
     if (isGood) {
       if (!currentRange) {
@@ -255,7 +260,7 @@ function mergeTimeRanges(hourlyScores: HourlyDryScore[]): TimeRange[] {
  * Generate daily laundry drying recommendation
  */
 export function getLaundryDryingRecommendation(
-  weatherData: WeatherData
+  weatherData: WeatherData,
 ): LaundryDryingRecommendation {
   const hourlyScores = computeHourlyScores(weatherData);
   const ranges = mergeTimeRanges(hourlyScores);

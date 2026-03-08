@@ -1,5 +1,5 @@
-import { Component, ReactNode } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from "lucide-react";
+import { Component, type ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -21,7 +21,7 @@ export class InitialRenderErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Initial render error:', error, errorInfo);
+    console.error("Initial render error:", error, errorInfo);
   }
 
   render() {
@@ -34,10 +34,11 @@ export class InitialRenderErrorBoundary extends Component<Props, State> {
               Something went wrong
             </h1>
             <p className="mb-6 text-muted-foreground">
-              An unexpected error occurred while loading the application.
-              Please refresh the page to try again.
+              An unexpected error occurred while loading the application. Please
+              refresh the page to try again.
             </p>
             <button
+              type="button"
               onClick={() => window.location.reload()}
               className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             >

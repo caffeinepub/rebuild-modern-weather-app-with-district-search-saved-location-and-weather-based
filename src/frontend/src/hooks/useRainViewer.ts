@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import type { SavedLocation } from './usePersistedLocation';
-import { parseRainViewerData } from '../lib/rainviewer';
-import type { RainViewerData } from '../lib/rainviewer';
-import { getRainViewerCache, setRainViewerCache } from '../lib/rainviewerCache';
-import { useActor } from './useActor';
+import { useQuery } from "@tanstack/react-query";
+import { parseRainViewerData } from "../lib/rainviewer";
+import type { RainViewerData } from "../lib/rainviewer";
+import { getRainViewerCache, setRainViewerCache } from "../lib/rainviewerCache";
+import { useActor } from "./useActor";
+import type { SavedLocation } from "./usePersistedLocation";
 
 /**
  * Validates that RainViewerData has safe array structures
@@ -11,8 +11,8 @@ import { useActor } from './useActor';
 function validateRainViewerData(data: any): data is RainViewerData {
   return (
     data &&
-    typeof data === 'object' &&
-    typeof data.host === 'string' &&
+    typeof data === "object" &&
+    typeof data.host === "string" &&
     Array.isArray(data.frames) &&
     Array.isArray(data.pastFrames) &&
     Array.isArray(data.nowcastFrames)
@@ -23,7 +23,7 @@ export function useRainViewer(location: SavedLocation | null) {
   const { actor, isFetching: isActorFetching } = useActor();
 
   return useQuery({
-    queryKey: ['rainviewer', location?.latitude, location?.longitude],
+    queryKey: ["rainviewer", location?.latitude, location?.longitude],
     queryFn: async () => {
       if (!location || !actor) return null;
 
@@ -35,17 +35,17 @@ export function useRainViewer(location: SavedLocation | null) {
 
       // Fetch from backend-cached RainViewer endpoint
       const jsonString = await actor.getBackendCachedRainViewer();
-      
-      if (!jsonString || jsonString.trim() === '') {
-        throw new Error('Empty response from backend');
+
+      if (!jsonString || jsonString.trim() === "") {
+        throw new Error("Empty response from backend");
       }
 
       // Parse and normalize the data
       const data = parseRainViewerData(jsonString);
-      
+
       // Validate parsed data structure
       if (!validateRainViewerData(data)) {
-        throw new Error('Invalid RainViewer data structure');
+        throw new Error("Invalid RainViewer data structure");
       }
 
       setRainViewerCache(data);

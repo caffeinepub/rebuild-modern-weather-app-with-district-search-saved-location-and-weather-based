@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from "react";
 
 export interface SavedLocation {
   name: string;
@@ -8,7 +8,7 @@ export interface SavedLocation {
   admin1?: string;
 }
 
-const STORAGE_KEY = 'weather-app-location';
+const STORAGE_KEY = "weather-app-location";
 
 export function usePersistedLocation() {
   const [location, setLocationState] = useState<SavedLocation | null>(null);
@@ -22,7 +22,7 @@ export function usePersistedLocation() {
         setLocationState(parsed);
       }
     } catch (error) {
-      console.error('Failed to load persisted location:', error);
+      console.error("Failed to load persisted location:", error);
     }
   }, []);
 
@@ -31,7 +31,7 @@ export function usePersistedLocation() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newLocation));
       setLocationState(newLocation);
     } catch (error) {
-      console.error('Failed to persist location:', error);
+      console.error("Failed to persist location:", error);
     }
   };
 
@@ -40,7 +40,7 @@ export function usePersistedLocation() {
       localStorage.removeItem(STORAGE_KEY);
       setLocationState(null);
     } catch (error) {
-      console.error('Failed to clear location:', error);
+      console.error("Failed to clear location:", error);
     }
   };
 

@@ -1,34 +1,36 @@
-import { useState } from 'react';
-import { useI18n } from '../i18n/useI18n';
-import { RadarEmptyState } from './radar/RadarEmptyState';
-import { RadarMap } from './radar/RadarMap';
-import { RadarPlaybackControls } from './radar/RadarPlaybackControls';
-import { RadarLayerToggles } from './radar/RadarLayerToggles';
-import { RadarInfoPanel } from './radar/RadarInfoPanel';
-import { RadarAlertControls } from './radar/RadarAlertControls';
-import { RadarAlertBanner } from './radar/RadarAlertBanner';
-import { RadarOverlayStatus } from './radar/RadarOverlayStatus';
-import { RadarFrameModeToggle } from './radar/RadarFrameModeToggle';
-import { RadarForecastLabel } from './radar/RadarForecastLabel';
-import { useRainViewer } from '../hooks/useRainViewer';
-import { useRadarPlayback } from '../hooks/useRadarPlayback';
-import { useRadarAlerts } from '../hooks/useRadarAlerts';
-import { useRadarOverlayData } from '../hooks/useRadarOverlayData';
-import type { SavedLocation } from '../hooks/usePersistedLocation';
-import type { WeatherData } from '../hooks/useWeather';
+import { useEffect, useState } from "react";
+import type { SavedLocation } from "../hooks/usePersistedLocation";
+import { useRadarAlerts } from "../hooks/useRadarAlerts";
+import { useRadarOverlayData } from "../hooks/useRadarOverlayData";
+import { useRadarPlayback } from "../hooks/useRadarPlayback";
+import type { PlaybackSpeed } from "../hooks/useRadarPlayback";
+import { useRainViewer } from "../hooks/useRainViewer";
+import type { WeatherData } from "../hooks/useWeather";
+import { RadarAlertBanner } from "./radar/RadarAlertBanner";
+import { RadarAlertControls } from "./radar/RadarAlertControls";
+import { RadarEmptyState } from "./radar/RadarEmptyState";
+import { RadarForecastLabel } from "./radar/RadarForecastLabel";
+import { RadarFrameModeToggle } from "./radar/RadarFrameModeToggle";
+import { RadarInfoPanel } from "./radar/RadarInfoPanel";
+import { RadarLayerToggles } from "./radar/RadarLayerToggles";
+import { RadarMap } from "./radar/RadarMap";
+import { RadarOverlayStatus } from "./radar/RadarOverlayStatus";
+import { RadarPlaybackControls } from "./radar/RadarPlaybackControls";
 
 interface RadarScreenProps {
   location: SavedLocation | null;
   weatherData: WeatherData | null;
 }
 
-export function RadarScreen({ location, weatherData }: RadarScreenProps) {
-  const { t } = useI18n();
-  const [enabledLayers, setEnabledLayers] = useState<Set<string>>(new Set(['precipitation']));
-  const [frameMode, setFrameMode] = useState<'forecast' | 'past'>('forecast');
+export function RadarScreen({ location }: RadarScreenProps) {
+  const [enabledLayers, setEnabledLayers] = useState<Set<string>>(
+    new Set(["precipitation"]),
+  );
+  const [frameMode, setFrameMode] = useState<"forecast" | "past">("forecast");
 
   // Fetch RainViewer data
-  const { data: radarData, isLoading: isRadarLoading, error: radarError } = useRainViewer(location);
+  const { data: radarData, isLoading: isRadarLoading } =
+    useRainViewer(location);
 
   // Fetch overlay data for non-precipitation layers
   const {
@@ -37,16 +39,30 @@ export function RadarScreen({ location, weatherData }: RadarScreenProps) {
     error: overlayError,
   } = useRadarOverlayData(location);
 
+  // Compute nowcast availability
+  const nowcastAvailable = !!(
+    radarData?.nowcastFrames && radarData.nowcastFrames.length > 0
+  );
+
+  // Auto-fallback to 'past' mode when nowcast is empty after data loads
+  useEffect(() => {
+    if (!isRadarLoading && radarData && !nowcastAvailable) {
+      setFrameMode("past");
+    }
+  }, [isRadarLoading, radarData, nowcastAvailable]);
+
   // Determine active frames based on mode
   const activeFrames =
-    frameMode === 'forecast' && radarData?.nowcastFrames && radarData.nowcastFrames.length > 0
-      ? radarData.nowcastFrames
+    frameMode === "forecast" && nowcastAvailable
+      ? radarData!.nowcastFrames
       : radarData?.pastFrames || [];
 
   // Playback controls
   const {
     currentFrameIndex,
     isPlaying,
+    speed,
+    setSpeed,
     play,
     pause,
     seekToFrame,
@@ -55,12 +71,8 @@ export function RadarScreen({ location, weatherData }: RadarScreenProps) {
   } = useRadarPlayback(activeFrames);
 
   // Alert system
-  const {
-    alertSettings,
-    updateAlertSettings,
-    activeAlert,
-    dismissAlert,
-  } = useRadarAlerts(location, radarData, activeFrames, currentFrameIndex);
+  const { alertSettings, updateAlertSettings, activeAlert, dismissAlert } =
+    useRadarAlerts(location, radarData, activeFrames, currentFrameIndex);
 
   // Show empty state if no location
   if (!location) {
@@ -68,10 +80,20 @@ export function RadarScreen({ location, weatherData }: RadarScreenProps) {
   }
 
   const currentFrame = activeFrames[currentFrameIndex] || null;
-  const showForecastLabel = frameMode === 'forecast' && activeFrames.length > 0;
+  const showForecastLabel = frameMode === "forecast" && activeFrames.length > 0;
 
   const handleLayersChange = (layers: Set<string>) => {
     setEnabledLayers(layers);
+  };
+
+  const handleModeChange = (mode: "forecast" | "past") => {
+    setFrameMode(mode);
+    // Pause playback when switching modes to give user control
+    pause();
+  };
+
+  const handleSpeedChange = (newSpeed: PlaybackSpeed) => {
+    setSpeed(newSpeed);
   };
 
   return (
@@ -83,7 +105,11 @@ export function RadarScreen({ location, weatherData }: RadarScreenProps) {
 
       {/* Controls Row */}
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-        <RadarFrameModeToggle mode={frameMode} onModeChange={setFrameMode} />
+        <RadarFrameModeToggle
+          mode={frameMode}
+          onModeChange={handleModeChange}
+          nowcastAvailable={nowcastAvailable}
+        />
         <div className="flex gap-2 sm:gap-3">
           <RadarLayerToggles
             enabledLayers={enabledLayers}
@@ -120,12 +146,15 @@ export function RadarScreen({ location, weatherData }: RadarScreenProps) {
           currentFrameIndex={currentFrameIndex}
           totalFrames={activeFrames.length}
           isPlaying={isPlaying}
+          speed={speed}
           onPlay={play}
           onPause={pause}
           onSeek={seekToFrame}
           onPrevious={previous}
           onNext={next}
+          onSpeedChange={handleSpeedChange}
           currentFrame={currentFrame}
+          isLoading={isRadarLoading}
         />
       </div>
 

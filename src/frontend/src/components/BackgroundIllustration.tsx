@@ -1,17 +1,17 @@
-import { useEffect, useState } from 'react';
-import { isDarkWeatherTheme } from '../lib/weatherContrast';
+import { useEffect, useState } from "react";
+import { isDarkWeatherTheme } from "../lib/weatherContrast";
 
-type WeatherTheme = 'clear' | 'cloudy' | 'rain' | 'snow';
+type WeatherTheme = "clear" | "cloudy" | "rain" | "snow";
 
 interface BackgroundIllustrationProps {
   theme: WeatherTheme;
 }
 
 const themeImages: Record<WeatherTheme, string> = {
-  clear: '/assets/generated/bg-clear.dim_1600x900.png',
-  cloudy: '/assets/generated/bg-cloudy.dim_1600x900.png',
-  rain: '/assets/generated/bg-rain.dim_1600x900.png',
-  snow: '/assets/generated/bg-snow.dim_1600x900.png',
+  clear: "/assets/generated/bg-clear.dim_1600x900.png",
+  cloudy: "/assets/generated/bg-cloudy.dim_1600x900.png",
+  rain: "/assets/generated/bg-rain.dim_1600x900.png",
+  snow: "/assets/generated/bg-snow.dim_1600x900.png",
 };
 
 export function BackgroundIllustration({ theme }: BackgroundIllustrationProps) {
@@ -38,16 +38,16 @@ export function BackgroundIllustration({ theme }: BackgroundIllustrationProps) {
     <div className="fixed inset-0 z-0">
       <div
         className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-700 ${
-          isTransitioning ? 'opacity-0' : 'opacity-100'
+          isTransitioning ? "opacity-0" : "opacity-100"
         }`}
         style={{ backgroundImage: `url(${currentImage})` }}
       />
       {/* Enhanced overlay for better readability */}
-      <div 
+      <div
         className={`absolute inset-0 transition-opacity duration-700 ${
-          isDark 
-            ? 'bg-gradient-to-b from-black/30 via-black/20 to-black/40' 
-            : 'bg-gradient-to-b from-white/25 via-white/15 to-white/30'
+          isDark
+            ? "bg-gradient-to-b from-black/30 via-black/20 to-black/40"
+            : "bg-gradient-to-b from-white/25 via-white/15 to-white/30"
         }`}
       />
     </div>

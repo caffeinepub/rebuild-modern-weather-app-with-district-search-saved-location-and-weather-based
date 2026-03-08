@@ -8,7 +8,7 @@
 export async function fetchWithTimeout(
   url: string,
   options: RequestInit = {},
-  timeoutMs: number = 10000
+  timeoutMs = 10000,
 ): Promise<Response> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -22,8 +22,8 @@ export async function fetchWithTimeout(
     return response;
   } catch (error) {
     clearTimeout(timeoutId);
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error('Request timeout - please try again');
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error("Request timeout - please try again");
     }
     throw error;
   }
