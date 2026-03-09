@@ -41,7 +41,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 glass-surface-strong border-t border-foreground/10">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-foreground/10 bg-card shadow-lg">
       <div className="max-w-7xl mx-auto px-2 sm:px-4">
         <div className="flex items-center justify-around h-16 sm:h-14">
           {tabs.map((tab) => {
@@ -51,18 +51,19 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
               <button
                 type="button"
                 key={tab.id}
+                data-ocid={`nav.${tab.id}.tab`}
                 onClick={() => onTabChange(tab.id)}
                 className={`flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all min-h-[44px] min-w-[44px] sm:min-h-[40px] sm:min-w-[40px] ${
                   isActive
-                    ? "text-primary scale-110 shadow-glow"
+                    ? "text-primary scale-110"
                     : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
                 }`}
               >
-                <Icon
-                  className={`w-6 h-6 sm:w-5 sm:h-5 ${isActive ? "drop-shadow-glow" : ""}`}
-                />
+                <Icon className="w-6 h-6 sm:w-5 sm:h-5" />
                 <span
-                  className={`text-xs sm:text-[10px] font-medium ${isActive ? "font-semibold" : ""}`}
+                  className={`text-xs sm:text-[10px] font-medium ${
+                    isActive ? "font-semibold" : ""
+                  }`}
                 >
                   {tab.label}
                 </span>
